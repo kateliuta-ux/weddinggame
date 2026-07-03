@@ -137,13 +137,13 @@
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
     </div>
-    <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» —</div>
+    <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» → «Сватання» —</div>
   </div>
 
   <div id="end-screen" class="overlay hidden">
     <div class="big">ДАЛІ БУДЕ…</div>
     <div class="date">06 · 09 · 2026 — КИЇВ</div>
-    <p>Це прототип. Попереду: «сватання», шахи в будиночках,<br>сяюча коробочка, заява в Дії — і запрошення саме для тебе.</p>
+    <p>Це прототип. Попереду: шахи в будиночках, сяюча коробочка,<br>заява в Дії — і запрошення саме для тебе.</p>
     <button class="btn" id="btn-restart">На початок</button>
   </div>
 </div>
@@ -181,6 +181,7 @@ const CHARS = {
   // Катя — блондинка з каре, Діма — шатен із чубчиком-шторкою (за фото)
   katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, cls:'name-katya', style:'bob'    },
   dima: { name:'ДІМА', hair:'#4a3423', top:COL.sage, topD:COL.sageD, cls:'name-dima',  style:'fringe' },
+  starosta:{ name:'СТАРОСТА', hair:'#9a9488', top:'#7a5c3e', topD:'#5f462e', cls:'', style:'fringe' },
 };
 
 /* ---------------- сценарії ----------------
@@ -248,6 +249,17 @@ function tetrisOutroScript(pov){
     {who:'dima', emo:'happy',text:'Вона повертається раніше!\nВпевнений, це не через мене. (Через нього.)'},
   ];
 }
+function svatIntroScript(pov){
+  return [
+    {who:null, emo:null, text:'— У вас куниця, у нас мисливець!'},
+    {who: pov, emo:'shy', text:'(це про нас)'},
+  ];
+}
+function svatOutroScript(pov){
+  return [
+    {who:null, emo:null, text:'Рушники подано. Сватів перев’язано.\n(Насправді цього не було. Але тепер — було.)'},
+  ];
+}
 
 /* ---------------- стан гри ---------------- */
 const game = {
@@ -265,6 +277,7 @@ const game = {
   swipeX:0,                 // зсув карточки при свайпі
   battle:null,              // {heart:{x,y}, bullets:[], meter, invuln, over}
   tetris:null,              // стан тетрісу (Лондон)
+  svat:null,                // стан сватання
 };
 
 const input = {left:false, right:false, down:false, action:false, actionEdge:false};
@@ -787,7 +800,7 @@ function updateTetris(){
     if(t.winT===80 && !t.outroStarted){
       t.outroStarted = true;
       stopMusic();
-      startDialog(tetrisOutroScript(game.pov), ()=> setTimeout(finishGame, 700));
+      startDialog(tetrisOutroScript(game.pov), ()=> setPhase('cap5'));
     }
     return;
   }
@@ -930,6 +943,195 @@ function drawTetris(){
   } else if(t.started && !game.watch){
     ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font='7px monospace'; ctx.textAlign='center';
     ctx.fillText(isTouch ? '◀ ▶ рухати · A — крутити · ▼ — швидше' : '◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше', W/2, H-5);
+  }
+}
+
+/* ================= Сватання ================= */
+function startSvat(){
+  game.svat = {
+    step:'talk',            // talk | mash | slider | tied
+    meter:0, particles:[],
+    slider:{x:0, dir:1, stopped:false, verdict:null, msgT:0},
+    tiedT:0,
+  };
+  setPhase('svat');
+  startDialog(svatIntroScript(game.pov), ()=>{ game.svat.step='mash'; });
+}
+function updateSvat(){
+  const s = game.svat; if(!s) return;
+
+  if(s.step==='mash'){
+    if(game.watch) s.meter += 1.1;
+    else {
+      s.meter = Math.max(0, s.meter - 0.15);
+      if(input.actionEdge){
+        s.meter += 7;
+        input.actionEdge = false;
+        for(let i=0;i<4;i++) s.particles.push({
+          x: game.pov==='katya' ? 60 : 168, y: game.pov==='katya' ? 96 : 92,
+          vx:(Math.random()-0.5)*2.4, vy:-Math.random()*2-0.5, life:26,
+        });
+      }
+    }
+    s.particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life--; });
+    s.particles = s.particles.filter(p=>p.life>0);
+    if(s.meter >= 100){ s.step='slider'; s.slider.x = 0; }
+    return;
+  }
+
+  if(s.step==='slider'){
+    const sl = s.slider;
+    if(sl.msgT > 0){ sl.msgT--; if(sl.msgT===0){ sl.stopped=false; sl.verdict=null; } return; }
+    if(!sl.stopped){
+      sl.x += sl.dir*2.2;
+      if(sl.x>=100){ sl.x=100; sl.dir=-1; }
+      if(sl.x<=0){ sl.x=0; sl.dir=1; }
+      const inRush = sl.x>38 && sl.x<62;
+      const press = game.watch ? (inRush && game.phaseT>200) : input.actionEdge;
+      if(press){
+        input.actionEdge = false;
+        sl.stopped = true;
+        sl.verdict = inRush ? 'рушник' : 'гарбуз';
+        if(sl.verdict==='гарбуз') sl.msgT = 80;      // жарт і ще спроба
+        else { s.step='tied'; s.tiedT=0; }
+      }
+    }
+    return;
+  }
+
+  if(s.step==='tied'){
+    s.tiedT++;
+    if(s.tiedT===90){
+      startDialog(svatOutroScript(game.pov), ()=> setTimeout(finishGame, 700));
+    }
+  }
+}
+function drawHata(){
+  const s = game.svat;
+  // стіни — глиняна мазанка
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle = '#d9c9a8'; ctx.fillRect(0,0,W,14);
+  ctx.fillStyle = '#7a5c3e'; ctx.fillRect(0,14,W,3);          // сволок
+  // долівка
+  ctx.fillStyle = '#a8845a'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle = '#96744c';
+  for(let fx=0; fx<W; fx+=32) ctx.fillRect(fx,FLOOR_Y,2,H-FLOOR_Y);
+
+  // ПІЧ (зліва): білена, з комином і черінню
+  ctx.fillStyle = '#f4efe2'; ctx.fillRect(22,34,74,118);       // корпус
+  ctx.fillStyle = '#f4efe2'; ctx.fillRect(34,17,42,17);        // комин
+  ctx.fillStyle = '#ddd4bd'; ctx.fillRect(22,34,74,4);
+  ctx.fillStyle = COL.ink; ctx.fillRect(38,76,42,30);          // челюсті печі
+  ctx.fillStyle = '#c96a2e'; ctx.fillRect(42,92,34,12);        // жар
+  ctx.fillStyle = '#e8a04e'; ctx.fillRect(46,96,26,6);
+  // народний розпис на печі (квіти як на кахлях)
+  for(let i=0;i<3;i++){
+    const px2 = 34+i*20;
+    ctx.fillStyle = '#A8505F'; ctx.fillRect(px2,52,6,6);
+    ctx.fillStyle = '#3F7C77'; ctx.fillRect(px2+2,58,2,6);
+    ctx.fillStyle = '#B58A2E'; ctx.fillRect(px2-2,54,2,2); ctx.fillRect(px2+6,54,2,2);
+  }
+  // колупана ямка в печі (у грі за Катю)
+  if(game.pov==='katya' && s && s.meter>0){
+    ctx.fillStyle = '#ddd4bd';
+    ctx.fillRect(58, 92, Math.min(10, 2+s.meter/12), Math.min(8, 2+s.meter/16));
+  }
+
+  // РУШНИКИ на стіні (справжня схема: білі з червоним гео-орнаментом)
+  [150, 190].forEach(rx=>{
+    ctx.fillStyle = '#faf6ea'; ctx.fillRect(rx,24,18,56);
+    ctx.fillStyle = '#b3323c';
+    for(let ry=0; ry<3; ry++){
+      ctx.fillRect(rx+2, 30+ry*16, 14, 2);
+      for(let k=0;k<3;k++) ctx.fillRect(rx+3+k*5, 34+ry*16, 3, 3);   // ромби
+    }
+  });
+
+  // СТІЛ із хлібом на рушнику
+  ctx.fillStyle = '#8a5a36'; ctx.fillRect(220,108,72,8);
+  ctx.fillStyle = '#6e4426'; ctx.fillRect(226,116,6,36); ctx.fillRect(280,116,6,36);
+  ctx.fillStyle = '#faf6ea'; ctx.fillRect(238,104,36,6);       // рушник під хлібом
+  ctx.fillStyle = '#b3323c'; ctx.fillRect(238,107,36,2);
+  ctx.fillStyle = '#c98a3e'; ctx.fillRect(244,94,24,12);       // хлібина
+  ctx.fillStyle = '#e0a85a'; ctx.fillRect(246,94,20,5);
+
+  // ГАРБУЗ у кутку (чекає свого часу 🌝)
+  ctx.fillStyle = '#d97e2e'; ctx.fillRect(296,138,18,14);
+  ctx.fillStyle = '#b3611c'; ctx.fillRect(299,138,3,14); ctx.fillRect(307,138,3,14);
+  ctx.fillStyle = '#3F7C77'; ctx.fillRect(303,134,4,5);
+
+  // вікно з рушниковим обрамленням
+  ctx.fillStyle = '#7a5c3e'; ctx.fillRect(116,36,26,30);
+  ctx.fillStyle = '#bfe0e8'; ctx.fillRect(119,39,20,24);
+  ctx.fillStyle = '#7a5c3e'; ctx.fillRect(128,39,2,24); ctx.fillRect(119,50,20,2);
+}
+function drawSvat(){
+  const s = game.svat; if(!s) return;
+  drawHata();
+
+  const me = game.pov, other = me==='katya' ? 'dima' : 'katya';
+  const bob = (game.t>>5)&1;
+
+  // старости у брилях, перев'язані рушниками після згоди
+  [246, 284].forEach((sx,i)=>{
+    drawPerson(sx, FLOOR_Y+2-((i+(game.t>>5))&1), 'starosta', 0, -1, false);
+    ctx.fillStyle = '#5a3a22';                                  // бриль
+    ctx.fillRect(sx-8, FLOOR_Y-50, 16, 3); ctx.fillRect(sx-5, FLOOR_Y-54, 10, 4);
+    if(s.step==='tied'){                                        // рушник через плече
+      ctx.fillStyle = '#faf6ea'; ctx.fillRect(sx-7, FLOOR_Y-36, 5, 22);
+      ctx.fillStyle = '#b3323c'; ctx.fillRect(sx-7, FLOOR_Y-30, 5, 2); ctx.fillRect(sx-7, FLOOR_Y-20, 5, 2);
+    }
+  });
+  // Катя біля печі, Діма з хлібом посередині
+  drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
+  drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
+  ctx.fillStyle = '#c98a3e'; ctx.fillRect(160,FLOOR_Y-24,14,7);  // хліб у руках Діми
+  ctx.fillStyle = '#e0a85a'; ctx.fillRect(162,FLOOR_Y-24,10,3);
+
+  if(s.step==='mash'){
+    // шкала і підказка
+    const label = me==='katya' ? 'КОЛУПАЙ ПІЧ!' : 'ТРИМАЙ ХЛІБ РІВНО!';
+    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(60,8,200,30);
+    ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+    ctx.fillText(label, W/2, 19);
+    ctx.fillStyle = '#333'; ctx.fillRect(80,24,160,8);
+    ctx.fillStyle = me==='katya' ? COL.rose : COL.sage;
+    ctx.fillRect(80,24,160*Math.min(1,s.meter/100),8);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='7px monospace';
+    ctx.fillText(game.watch?'':(isTouch?'тапай А швидко-швидко':'тисни ПРОБІЛ швидко-швидко'), W/2, H-6);
+    // часточки побілки/крихти
+    ctx.fillStyle = me==='katya' ? '#f4efe2' : '#e0a85a';
+    s.particles.forEach(p=> ctx.fillRect(p.x, p.y, 2, 2));
+  }
+
+  if(s.step==='slider'){
+    const sl = s.slider;
+    ctx.fillStyle = 'rgba(0,0,0,.72)'; ctx.fillRect(40,26,240,66);
+    ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+    ctx.fillText('ГАРБУЗ ЧИ РУШНИК?', W/2, 42);
+    // смуга: гарбуз | рушник | гарбуз
+    const bx=70, by=52, bw=180, bh=16;
+    ctx.fillStyle = '#d97e2e'; ctx.fillRect(bx,by,bw,bh);
+    ctx.fillStyle = '#faf6ea'; ctx.fillRect(bx+bw*0.38,by,bw*0.24,bh);
+    ctx.fillStyle = '#b3323c'; ctx.fillRect(bx+bw*0.38,by+6,bw*0.24,2);
+    // стрілка
+    const px2 = bx + bw*(sl.x/100);
+    ctx.fillStyle = '#fff'; ctx.fillRect(px2-1,by-6,3,bh+12);
+    ctx.font='7px monospace'; ctx.fillStyle='#fff';
+    ctx.fillText('🎃', bx+18, by+11); ctx.fillText('🎃', bx+bw-18, by+11);
+    if(sl.msgT>0){
+      ctx.fillStyle = '#d97e2e'; ctx.font='bold 11px monospace';
+      ctx.fillText('ГАРБУЗ! …жартую. Ще раз)', W/2, 84);
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font='7px monospace';
+      ctx.fillText(game.watch?'':(isTouch?'тап — зупинити на рушнику':'ПРОБІЛ — зупинити на рушнику'), W/2, 84);
+    }
+  }
+
+  if(s.step==='tied'){
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0,60,W,26);
+    ctx.fillStyle = COL.gold; ctx.font='bold 11px monospace'; ctx.textAlign='center';
+    ctx.fillText('ЗГОДА! РУШНИКИ ПОДАНО', W/2, 76);
   }
 }
 
@@ -1119,7 +1321,7 @@ function startGame(pov, watch){
   game.player = {x:36, dir:1, walking:false, phase:0};
   game.npc = {x:430, dir:-1, phase:0};
   game.camX = 0; game.swipeX = 0; game._setDone = false; game._dateDone = false;
-  game.battle = null; game.tetris = null; dragTarget = null; stopMusic();
+  game.battle = null; game.tetris = null; game.svat = null; dragTarget = null; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
   elHud.classList.remove('hidden');
@@ -1261,6 +1463,14 @@ function update(){
     case 'tetris':
       updateTetris();
       break;
+
+    case 'cap5':
+      if(game.phaseT > 70 || input.actionEdge) startSvat();
+      break;
+
+    case 'svat':
+      updateSvat();
+      break;
   }
 
   if(input.actionEdge && game.dialog) advanceDialog();
@@ -1343,6 +1553,12 @@ function render(){
       break;
     case 'tetris':
       drawTetris();
+      break;
+    case 'cap5':
+      drawCaption('СВАТАННЯ', '(робимо вигляд, що було)');
+      break;
+    case 'svat':
+      drawSvat();
       break;
   }
 }
