@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Катя ♥ Діма — гра-запрошення</title>
+<style>
+  :root{
+    --terra:#1E4E8A; --sage:#3F7C77; --rose:#A8505F; --gold:#B58A2E;
+    --bg:#EBEBE3; --surface:#F8F8F3; --ink:#1a1a24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Courier New",ui-monospace,monospace;
+    overflow:hidden;
+  }
+  #stage{
+    position:relative;
+    width:100%;max-width:960px;
+    aspect-ratio:16/9;
+    max-height:100vh;max-height:100dvh;
+    background:#000;
+    user-select:none;-webkit-user-select:none;
+    container-type:size;
+  }
+  canvas#game{
+    position:absolute;inset:0;width:100%;height:100%;
+    image-rendering:pixelated;image-rendering:crisp-edges;
+  }
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .hidden{display:none !important}
+
+  /* ---------- title screen ---------- */
+  #title-screen{gap:4%;background:transparent}
+  #title-screen h1{
+    color:#fff;font-size:clamp(20px,5.2cqw,42px);letter-spacing:2px;
+    text-shadow:3px 3px 0 var(--rose), 6px 6px 0 rgba(0,0,0,.6);
+  }
+  #title-screen .sub{color:#d8d4c4;font-size:clamp(10px,2.2cqw,17px);letter-spacing:1px}
+  .menu{display:flex;flex-direction:column;gap:10px;width:min(70%,340px)}
+  .btn{
+    font-family:inherit;font-weight:bold;cursor:pointer;
+    font-size:clamp(11px,2.6cqw,18px);letter-spacing:1px;
+    padding:.7em 1em;color:#fff;background:#2b2b38;
+    border:0;box-shadow:0 0 0 3px #000, inset 0 -4px 0 rgba(0,0,0,.35);
+    text-transform:uppercase;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 0 0 3px #000, inset 0 -2px 0 rgba(0,0,0,.35)}
+  .btn.katya{background:var(--rose)} .btn.dima{background:var(--sage)} .btn.watch{background:var(--terra)}
+  #title-screen .hint{color:#8a8878;font-size:clamp(8px,1.8cqw,13px)}
+
+  /* ---------- dialogue ---------- */
+  #dialog{
+    position:absolute;left:2%;right:2%;bottom:2%;
+    display:flex;gap:2.5%;align-items:stretch;
+    background:var(--surface);
+    border:3px solid var(--ink);
+    box-shadow:0 0 0 3px var(--surface), 0 6px 0 rgba(0,0,0,.5);
+    padding:1.6% 2%;
+    min-height:27%;
+    cursor:pointer;
+  }
+  #portrait-wrap{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px}
+  canvas#portrait{
+    width:clamp(48px,13cqw,86px);height:clamp(48px,13cqw,86px);
+    image-rendering:pixelated;border:3px solid var(--ink);background:#cfd6dd;
+  }
+  #dname{font-weight:bold;font-size:clamp(9px,2cqw,14px);color:var(--ink);letter-spacing:1px;text-transform:uppercase}
+  #dtext{flex:1;color:var(--ink);font-size:clamp(11px,2.6cqw,19px);line-height:1.45;align-self:center;white-space:pre-wrap}
+  #darrow{position:absolute;right:12px;bottom:6px;color:var(--rose);font-size:clamp(10px,2.4cqw,16px);animation:bob .6s steps(2) infinite}
+  @keyframes bob{50%{transform:translateY(3px)}}
+  .name-katya{color:var(--rose)!important} .name-dima{color:var(--sage)!important}
+
+  /* ---------- touch controls ---------- */
+  #controls{position:absolute;inset:0;pointer-events:none}
+  .pad{
+    position:absolute;bottom:4%;pointer-events:auto;
+    width:clamp(44px,12cqw,72px);height:clamp(44px,12cqw,72px);
+    background:rgba(248,248,243,.16);border:2px solid rgba(248,248,243,.45);
+    color:rgba(255,255,255,.85);font-size:clamp(18px,5cqw,30px);font-family:inherit;
+    display:flex;align-items:center;justify-content:center;border-radius:6px;
+  }
+  .pad:active{background:rgba(248,248,243,.38)}
+  #pad-left{left:3%} #pad-right{left:calc(3% + clamp(52px,14cqw,84px))}
+  #pad-a{right:3%;border-radius:50%;background:rgba(168,80,95,.3);border-color:rgba(168,80,95,.7)}
+
+  /* ---------- HUD / hints ---------- */
+  #hud{position:absolute;top:2.5%;left:2.5%;color:#fff;font-size:clamp(9px,2cqw,14px);letter-spacing:1px;text-shadow:2px 2px 0 #000}
+  #watch-hint{
+    position:absolute;top:2.5%;right:2.5%;color:#ffd;font-size:clamp(8px,1.9cqw,13px);
+    background:rgba(0,0,0,.55);padding:.4em .7em;border:2px solid rgba(255,255,255,.35);
+    animation:blink 1.6s steps(2) infinite;cursor:pointer;pointer-events:auto;
+  }
+  @keyframes blink{50%{opacity:.55}}
+  #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(8px,1.8cqw,12px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
+
+  /* ---------- end screen ---------- */
+  #end-screen{background:rgba(12,12,20,.94);gap:14px;padding:5%}
+  #end-screen .big{color:#fff;font-size:clamp(16px,4.4cqw,34px);letter-spacing:2px;text-shadow:3px 3px 0 var(--sage)}
+  #end-screen .date{color:var(--gold);font-size:clamp(12px,3cqw,22px);letter-spacing:2px}
+  #end-screen p{color:#c9c4b4;font-size:clamp(9px,2.1cqw,15px);max-width:80%;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="320" height="180"></canvas>
+
+  <div id="hud" class="hidden"></div>
+  <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ — торкнись, щоб грати</div>
+  <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — далі</div>
+
+  <div id="dialog" class="hidden">
+    <div id="portrait-wrap">
+      <canvas id="portrait" width="32" height="32"></canvas>
+      <div id="dname"></div>
+    </div>
+    <div id="dtext"></div>
+    <div id="darrow" class="hidden">▼</div>
+  </div>
+
+  <div id="controls" class="hidden">
+    <div class="pad" id="pad-left">◀</div>
+    <div class="pad" id="pad-right">▶</div>
+    <div class="pad" id="pad-a">A</div>
+  </div>
+
+  <div id="title-screen" class="overlay">
+    <h1>КАТЯ ♥ ДІМА</h1>
+    <div class="sub">шлях до весілля · 06.09.2026 · Київ</div>
+    <div class="menu">
+      <button class="btn katya" data-pov="katya">Грати за Катю</button>
+      <button class="btn dima" data-pov="dima">Грати за Діму</button>
+      <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
+    </div>
+    <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» —</div>
+  </div>
+
+  <div id="end-screen" class="overlay hidden">
+    <div class="big">ДАЛІ БУДЕ…</div>
+    <div class="date">06 · 09 · 2026 — КИЇВ</div>
+    <p>Це прототип. Попереду: тетріс-Лондон, «сватання», шахи в будиночках,<br>сяюча коробочка, заява в Дії — і запрошення саме для тебе.</p>
+    <button class="btn" id="btn-restart">На початок</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   КАТЯ ♥ ДІМА — гра-запрошення. Прототип v2.
+   Сцена 1: знімальний майданчик, 2021 (шоу, яке не вийшло).
+   Сцена 2: Тіндер, серпень 2022 — свайп, метч, перший чат.
+   Тексти — чернетка (частина з реальної переписки),
+   чекають схвалення Каті (game_shortlist.md).
+   ============================================================ */
+
+const cv = document.getElementById('game');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const W = 320, H = 180;
+const LEVEL_W = 560;
+const FLOOR_Y = 152;
+
+const COL = {
+  ink:'#1a1a24', skin:'#e8b08a', skinSh:'#c98f6c',
+  rose:'#A8505F', roseD:'#7d3a46', sage:'#3F7C77', sageD:'#2c5a56',
+  gold:'#B58A2E', terra:'#1E4E8A',
+  hairK:'#5a3a26', hairD:'#2e2620',
+  jeans:'#3a4a66', jeansD:'#2c3950',
+  studioWall:'#34303f', studioWallD:'#28242f', floor:'#6b6775', floorD:'#5a5665',
+  green:'#3fae54', greenD:'#2f8a41',
+  metal:'#8b8898', white:'#f0ede4',
+};
+
+const CHARS = {
+  katya:{ name:'КАТЯ', hair:COL.hairK, top:COL.rose, topD:COL.roseD, cls:'name-katya', ponytail:true  },
+  dima: { name:'ДІМА', hair:COL.hairD, top:COL.sage, topD:COL.sageD, cls:'name-dima',  ponytail:false },
+};
+
+/* ---------------- сценарії ----------------
+   Один скрипт — і для гри, і для автопроходження. */
+function setScript(pov){
+  return [
+    {who:null,    emo:null,    text:'Київ, 2021. Знімальний майданчик ютуб-шоу.'},
+    {who:'katya', emo:'normal',text:'Так, світло виставлене, камера готова.\nДімо, твій вихід!'},
+    {who:'dima',  emo:'happy', text:'А куди дивитись — в камеру чи на режисерку?)'},
+    {who:'katya', emo:'tired', text:'В камеру. Дубль три!'},
+    {who:null,    emo:null,    text:'Шоу так і не вийшло в світ.\nА Діма цю зустріч успішно забув…'},
+  ];
+}
+function chatScript(pov){
+  const intro = pov==='katya' ? [
+    {who:'katya', emo:'wow',   text:'Стоп. Це ж той хлопець зі зйомок 2021-го…'},
+    {who:'katya', emo:'normal',text:'Цікаво, чи він мене пам’ятає.'},
+  ] : [
+    {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
+  ];
+  const common = [
+    {who:'dima',  emo:'happy', text:'Йоу! Як трєня?)'},
+    {who:'katya', emo:'tired', text:'Йоу) стресово 🥲'},
+    {who:'katya', emo:'normal',text:'В суботу змагання, вперше йду.\nЩе й ногу підвернула…'},
+    {who:'dima',  emo:'wow',   text:'Цікаво, я ніколи не був. Там такий двіж,\nяк в карате-кіді?)'},
+    {who:'katya', emo:'happy', text:'Якщо глядачів пускають, то може бути й таке)'},
+    {who:'dima',  emo:'happy', text:'Удачки тобі завтра!'},
+    {who:'dima',  emo:'shy',   text:'ой'},
+    {who:'dima',  emo:'shy',   text:'в сб)'},
+  ];
+  const outro = pov==='katya' ? [
+    {who:null, emo:null, text:'(Не пам’ятав.)'},
+  ] : [
+    {who:null, emo:null, text:'(Бачив. 2021 рік, дубль три.)'},
+  ];
+  return [...intro, ...common, ...outro,
+    {who:null, emo:null, text:'11 серпня 2022. Так усе й почалося…'}];
+}
+function dateScript(pov){
+  const first = pov==='katya' ? [
+    {who:'katya', emo:'normal',text:'Тільки щоб ти розумів:\nу мене зараз все несерйозно.'},
+    {who:'dima',  emo:'happy', text:'Абсолютно! У мене теж.\nМаксимально несерйозно.'},
+  ] : [
+    {who:'dima',  emo:'normal',text:'Тільки щоб ти розуміла:\nу мене зараз все несерйозно.'},
+    {who:'katya', emo:'happy', text:'Ідеально. У мене тим більше.'},
+  ];
+  return [
+    {who:null, emo:null, text:'Пейзажна алея. Пиво, прогулянка,\nі все чомусь одразу дуже добре.'},
+    ...first,
+    {who:'katya', emo:'happy', text:'Чудово, що ми одне одного зрозуміли.'},
+    {who:'dima',  emo:'happy', text:'Ще по пиву?'},
+    {who:null, emo:null, text:'І тут щось пішло не за планом…'},
+  ];
+}
+function battleOutroScript(pov){
+  return [
+    {who:null,   emo:null,  text:'НЕСЕРЙОЗНІСТЬ: 0%'},
+    {who:'dima', emo:'shy',  text:'…проведу тебе додому?'},
+    {who:'katya',emo:'shy',  text:'Ну, якщо тобі по дорозі.'},
+    {who:null,   emo:null,  text:'Біля дому він її поцілував.\nНесерйозно, звісно ж.'},
+  ];
+}
+
+/* ---------------- стан гри ---------------- */
+const game = {
+  state:'title',            // title | play | end
+  pov:'katya',
+  watch:false,
+  t:0,
+  phase:'cap1',             // cap1 | set | cap2 | tinder | swipe | match | chat | cap3 | date | battle
+  phaseT:0,
+  player:{x:36, dir:1, walking:false, phase:0},
+  npc:{x:430, dir:-1, phase:0},
+  camX:0,
+  dialog:null,
+  onDialogEnd:null,
+  swipeX:0,                 // зсув карточки при свайпі
+  battle:null,              // {heart:{x,y}, bullets:[], meter, invuln, over}
+};
+
+const input = {left:false, right:false, action:false, actionEdge:false};
+
+/* ================= персонаж (кежуал) ================= */
+function drawPerson(x, y, who, phase, dir, walking){
+  const c = CHARS[who];
+  const px = (dx,dy,w,h,col)=>{ ctx.fillStyle=col; ctx.fillRect(Math.round(dx),Math.round(dy),w,h); };
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y));
+  if(dir<0) ctx.scale(-1,1);
+
+  const bob = walking ? (phase&1) : 0;
+  const legSpread = walking ? (phase&1 ? 2 : -1.2) : 0;
+
+  // ноги (джинси)
+  px(-6, -14+bob, 5, 14-bob, COL.jeansD);
+  px(-6, -3, 6, 3, COL.ink);
+  px(1+legSpread, -14+bob, 5, 14-bob, COL.jeans);
+  px(1+legSpread, -3, 6, 3, COL.ink);
+  // корпус (футболка/светр кольору персонажа)
+  px(-8, -34+bob, 16, 21, c.top);
+  px(-8, -34+bob, 4, 21, c.topD);
+  px(0, -33+bob, 3, 3, COL.skin);              // виріз
+  // руки
+  const armSwing = walking ? (phase&1 ? 3 : -3) : 0;
+  px(-11, -33+bob, 4, 12+armSwing, c.topD);
+  px(-11, -21+bob+armSwing, 4, 4, COL.skin);
+  px(7, -33+bob, 4, 12-armSwing, c.top);
+  px(7, -21+bob-armSwing, 4, 4, COL.skin);
+  // голова
+  px(-6, -46+bob, 12, 12, COL.skin);
+  px(-6, -37+bob, 12, 1, COL.skinSh);
+  // волосся
+  px(-7, -48+bob, 14, 5, c.hair);
+  px(-7, -46+bob, 3, 7, c.hair);
+  px(5, -45+bob, 2, 3, c.hair);
+  if(c.ponytail){
+    const swing = walking ? (phase&1?2:0) : 0;
+    px(-10, -46+bob+swing, 3, 10, c.hair);
+    px(-9, -36+bob+swing, 2, 3, c.hair);
+  }
+  // обличчя
+  px(1, -43+bob, 2, 2, COL.ink);
+  px(-3, -43+bob, 2, 2, COL.ink);
+  px(0, -39+bob, 3, 1, COL.skinSh);
+  ctx.restore();
+}
+
+/* ================= портрети (32x32) ================= */
+function drawPortraitInto(g, who, emo){
+  const c = CHARS[who];
+  const P = (x,y,w,h,col)=>{ g.fillStyle=col; g.fillRect(x,y,w,h); };
+  P(0,0,32,32,'#cfd6dd');
+  P(0,22,32,10,c.top);                             // плечі
+  P(13,20,6,6,COL.skin);                           // шия
+  P(7,4,18,18,COL.skin);                           // обличчя
+  P(7,20,18,2,COL.skinSh);
+  P(5,2,22,6,c.hair);                              // волосся
+  P(5,4,4,14,c.hair);
+  P(23,4,4,7,c.hair);
+  if(c.ponytail){ P(2,6,3,16,c.hair); P(3,22,2,4,c.hair); }
+  const eye = COL.ink;
+  if(emo==='happy'){
+    P(11,11,3,1,eye); P(10,12,1,1,eye); P(13,12,1,1,eye);
+    P(19,11,3,1,eye); P(18,12,1,1,eye); P(21,12,1,1,eye);
+    P(13,17,6,2,COL.roseD);
+    P(12,16,1,1,COL.roseD); P(19,16,1,1,COL.roseD);
+  } else if(emo==='wow'){
+    P(11,10,3,3,eye); P(19,10,3,3,eye);
+    P(10,8,4,1,c.hair); P(18,8,4,1,c.hair);
+    P(14,16,4,4,COL.roseD);
+  } else if(emo==='tired'){
+    P(11,12,3,1,eye); P(19,12,3,1,eye);
+    P(11,10,3,1,c.hair); P(19,10,3,1,c.hair);
+    P(13,18,6,1,COL.roseD);
+    P(8,14,3,2,'#e79a9a'); P(21,14,3,2,'#e79a9a');
+  } else if(emo==='shy'){
+    P(11,11,2,2,eye); P(19,11,2,2,eye);
+    P(13,18,5,1,COL.roseD);
+    P(8,15,4,2,'#ef9aa5'); P(20,15,4,2,'#ef9aa5');
+  } else {
+    P(11,11,2,2,eye); P(19,11,2,2,eye);
+    P(13,17,6,1,COL.roseD);
+  }
+}
+const pctx = document.getElementById('portrait').getContext('2d');
+pctx.imageSmoothingEnabled = false;
+
+// офскрін-портрети для тіндер-картки та метчу
+const offK = document.createElement('canvas'); offK.width=offK.height=32;
+const offD = document.createElement('canvas'); offD.width=offD.height=32;
+drawPortraitInto(offK.getContext('2d'), 'katya', 'normal');
+drawPortraitInto(offD.getContext('2d'), 'dima', 'normal');
+const offOf = who => who==='katya' ? offK : offD;
+
+/* ================= фон: знімальний майданчик ================= */
+function drawSet(camX){
+  // стіна студії
+  ctx.fillStyle = COL.studioWall; ctx.fillRect(0,0,W,FLOOR_Y);
+  // труси (рейки) під стелею
+  ctx.fillStyle = COL.studioWallD;
+  ctx.fillRect(0,10,W,4); ctx.fillRect(0,22,W,2);
+  for(let tx=0; tx<LEVEL_W; tx+=60){
+    const sx = Math.round(tx-camX); if(sx<-10||sx>W) continue;
+    ctx.fillRect(sx,10,3,14);
+  }
+  // підлога
+  ctx.fillStyle = COL.floor; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle = COL.floorD;
+  for(let fx=0; fx<LEVEL_W; fx+=48){
+    const sx = Math.round(fx-camX); if(sx<-4||sx>W) continue;
+    ctx.fillRect(sx,FLOOR_Y,2,H-FLOOR_Y);
+  }
+  // кабелі на підлозі
+  ctx.fillStyle = COL.ink;
+  for(let cx=20; cx<LEVEL_W; cx+=90){
+    const sx = Math.round(cx-camX); if(sx<-60||sx>W) continue;
+    ctx.fillRect(sx,FLOOR_Y+8,40,2); ctx.fillRect(sx+30,FLOOR_Y+14,34,2);
+  }
+
+  // хромакей (зелений екран) 360..510
+  const gx = Math.round(360-camX);
+  if(gx>-160 && gx<W){
+    ctx.fillStyle = COL.metal; ctx.fillRect(gx-4,36,3,FLOOR_Y-36); ctx.fillRect(gx+151,36,3,FLOOR_Y-36);
+    ctx.fillStyle = COL.ink; ctx.fillRect(gx-8,FLOOR_Y-2,12,4); ctx.fillRect(gx+147,FLOOR_Y-2,12,4);
+    ctx.fillStyle = COL.greenD; ctx.fillRect(gx,40,150,FLOOR_Y-40);
+    ctx.fillStyle = COL.green; ctx.fillRect(gx+4,44,142,FLOOR_Y-48);
+  }
+  // софтбокс
+  const lx = Math.round(300-camX);
+  if(lx>-40 && lx<W){
+    ctx.fillStyle = COL.metal; ctx.fillRect(lx+8,70,2,FLOOR_Y-70);
+    ctx.fillStyle = COL.ink; ctx.fillRect(lx,FLOOR_Y-2,18,3);
+    ctx.fillStyle = COL.white; ctx.fillRect(lx,50,20,22);
+    ctx.fillStyle = 'rgba(255,250,220,.25)';
+    ctx.beginPath(); ctx.moveTo(lx+20,52); ctx.lineTo(lx+62,80); ctx.lineTo(lx+62,120); ctx.lineTo(lx+20,72); ctx.fill();
+  }
+  // камера на штативі, дивиться вправо (на хромакей)
+  const kx = Math.round(210-camX);
+  if(kx>-50 && kx<W){
+    ctx.fillStyle = COL.ink;
+    ctx.fillRect(kx,84,26,16);                    // корпус
+    ctx.fillRect(kx+26,88,8,8);                   // об'єктив
+    ctx.fillStyle = '#c33'; ctx.fillRect(kx+3,87,3,3);  // REC
+    ctx.fillStyle = COL.metal;
+    ctx.fillRect(kx+11,100,4,20);                 // нога центральна
+    ctx.fillRect(kx+3,100,3,26); ctx.fillRect(kx+20,100,3,26); // ноги
+    ctx.fillStyle = COL.ink; ctx.fillRect(kx+1,126,8,3); ctx.fillRect(kx+18,126,8,3);
+  }
+  // режисерське крісло
+  const dx = Math.round(120-camX);
+  if(dx>-40 && dx<W){
+    ctx.fillStyle = COL.rose; ctx.fillRect(dx,96,26,10);       // спинка
+    ctx.fillStyle = '#fff'; ctx.font='bold 6px monospace'; ctx.textAlign='center';
+    ctx.fillText('KAASIN', dx+13, 103);
+    ctx.fillStyle = COL.ink;
+    ctx.fillRect(dx+2,106,3,22); ctx.fillRect(dx+21,106,3,22);
+    ctx.fillRect(dx+2,114,22,3);
+  }
+  // хлопавка біля хромакею
+  const cx2 = Math.round(400-camX);
+  if(cx2>-20 && cx2<W){
+    ctx.fillStyle = COL.ink; ctx.fillRect(cx2,FLOOR_Y-8,14,8);
+    ctx.fillStyle = COL.white; ctx.fillRect(cx2,FLOOR_Y-8,14,2);
+  }
+}
+
+/* ================= тіндер-сцена ================= */
+function drawPhone(){
+  // тло — розмитий вечірній Київ (просто градієнт + вогники)
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#241d33'); g.addColorStop(1,'#3a2438');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<24;i++){
+    const sx = (i*53)%W, sy = (i*37)%H;
+    ctx.fillStyle = 'rgba(255,230,160,.25)';
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+  // телефон
+  const px=115, py=8, pw=90, ph=164;
+  ctx.fillStyle = COL.ink; ctx.fillRect(px-4,py-4,pw+8,ph+8);
+  ctx.fillStyle = '#fff'; ctx.fillRect(px,py,pw,ph);
+  // шапка
+  ctx.fillStyle = COL.rose; ctx.fillRect(px,py,pw,16);
+  ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+  ctx.fillText('🔥 тіндер', px+pw/2, py+11);
+
+  const other = game.pov==='katya' ? 'dima' : 'katya';
+
+  // карточка (зсувається при свайпі)
+  const sx = game.swipeX;
+  ctx.save();
+  ctx.translate(px+pw/2+sx, py+86);
+  ctx.rotate(sx*0.008);
+  ctx.translate(-(pw/2-6), -64);
+  ctx.fillStyle = '#eee'; ctx.fillRect(-2,-2,pw-8,116);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,pw-12,112);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(offOf(other), 7, 6, 64, 64);
+  ctx.fillStyle = COL.ink; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+  ctx.fillText(other==='dima' ? 'Дмитро' : 'Катерина', (pw-12)/2, 84);
+  ctx.font='7px monospace'; ctx.fillStyle = '#777';
+  ctx.fillText('Київ · 2 км', (pw-12)/2, 95);
+  if(sx>10){
+    ctx.strokeStyle = COL.sage; ctx.lineWidth = 2;
+    ctx.strokeRect(4,4,36,14);
+    ctx.fillStyle = COL.sage; ctx.font='bold 8px monospace'; ctx.textAlign='left';
+    ctx.fillText('LIKE', 8, 14);
+  }
+  ctx.restore();
+
+  // кнопки
+  ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.arc(px+24, py+ph-18, 10, 0, 7); ctx.fill();
+  ctx.fillStyle = '#999'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+  ctx.fillText('✕', px+24, py+ph-14);
+  ctx.fillStyle = COL.rose; ctx.beginPath(); ctx.arc(px+pw-24, py+ph-18, 10, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText('♥', px+pw-24, py+ph-14);
+
+  // підказка
+  if(game.phase==='tinder' && !game.watch){
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0,H-16,W,16);
+    ctx.fillStyle = '#ffd'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(isTouch ? 'Тисни  A  — свайп вправо ➜' : 'ПРОБІЛ — свайп вправо ➜', W/2, H-5);
+  }
+}
+
+function drawMatch(){
+  ctx.fillStyle = '#1c1428'; ctx.fillRect(0,0,W,H);
+  // сердечка летять
+  for(let i=0;i<14;i++){
+    const hx = (i*47)%W;
+    const hy = (H - ((game.phaseT*0.7 + i*31)%H));
+    ctx.fillStyle = i%2 ? 'rgba(168,80,95,.8)' : 'rgba(181,138,46,.7)';
+    ctx.fillRect(hx,hy,3,3); ctx.fillRect(hx+4,hy,3,3);
+    ctx.fillRect(hx,hy+2,7,3); ctx.fillRect(hx+1,hy+5,5,2); ctx.fillRect(hx+3,hy+7,1,1);
+  }
+  const bounce = Math.abs(Math.sin(game.phaseT*0.08))*6;
+  ctx.fillStyle = COL.gold; ctx.font='bold 22px monospace'; ctx.textAlign='center';
+  ctx.fillText('ЦЕ МЕТЧ!', W/2, 46-bounce);
+  // портрети
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(88,64,72,72); ctx.fillRect(160,64,72,72);
+  ctx.drawImage(offK, 92, 68, 64, 64);
+  ctx.drawImage(offD, 164, 68, 64, 64);
+  // серце між ними
+  const hy2 = 92 + ((game.t>>3)&3);
+  ctx.fillStyle = COL.rose;
+  ctx.fillRect(152,hy2,6,6); ctx.fillRect(162,hy2,6,6);
+  ctx.fillRect(152,hy2+4,16,6); ctx.fillRect(155,hy2+10,10,4); ctx.fillRect(158,hy2+14,4,3);
+  ctx.fillStyle = '#c9c4b4'; ctx.font='8px monospace';
+  ctx.fillText('11 серпня 2022', W/2, 156);
+}
+
+/* ================= Пейзажна алея ================= */
+function drawPeizazhka(camX){
+  // вечірнє небо
+  const g = ctx.createLinearGradient(0,0,0,110);
+  g.addColorStop(0,'#2a2450'); g.addColorStop(.6,'#5a3a68'); g.addColorStop(1,'#c96a4e');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,110);
+  // місяць
+  ctx.fillStyle = '#f4e8c8'; ctx.fillRect(250,18,14,14);
+  ctx.fillStyle = '#2a2450'; ctx.fillRect(254,18,10,4);
+  // пагорби лівого берега + вогники (паралакс 0.3)
+  ctx.fillStyle = '#241d3a';
+  for(let hx=0; hx<LEVEL_W+200; hx+=90){
+    const sx = Math.round(hx - camX*0.3);
+    if(sx<-100||sx>W) continue;
+    ctx.fillRect(sx,86,100,24);
+    ctx.fillRect(sx+18,78,50,10);
+  }
+  for(let i=0;i<26;i++){
+    const sx = Math.round((i*61)%(W+80) - 40 - (camX*0.3)%(W+80));
+    ctx.fillStyle = 'rgba(255,220,140,.7)';
+    ctx.fillRect(((sx%(W+80))+(W+80))%(W+80)-40, 90+(i*13)%16, 2, 2);
+  }
+  // парапет із мозаїкою (фішка Пейзажки)
+  ctx.fillStyle = '#4a4456'; ctx.fillRect(0,110,W,14);
+  const mosaicCols = ['#A8505F','#B58A2E','#3F7C77','#1E4E8A','#c9c4b4'];
+  for(let mx=0; mx<LEVEL_W; mx+=8){
+    const sx = Math.round(mx-camX); if(sx<-8||sx>W) continue;
+    ctx.fillStyle = mosaicCols[(mx/8)%5|0];
+    ctx.fillRect(sx+1,112,6,5);
+  }
+  // бруківка
+  ctx.fillStyle = '#5a5461'; ctx.fillRect(0,124,W,H-124);
+  ctx.fillStyle = '#4c4754';
+  for(let fx=0; fx<LEVEL_W; fx+=22){
+    const sx = Math.round(fx-camX); if(sx<-22||sx>W) continue;
+    ctx.fillRect(sx,124+((fx/22)%2)*14,20,2);
+  }
+  // ліхтарі з сяйвом
+  for(let lx=80; lx<LEVEL_W; lx+=160){
+    const sx = Math.round(lx-camX); if(sx<-20||sx>W+20) continue;
+    ctx.fillStyle = COL.ink; ctx.fillRect(sx,64,3,88);
+    ctx.fillStyle = '#ffe8a0'; ctx.fillRect(sx-3,58,9,8);
+    ctx.fillStyle = 'rgba(255,232,160,.12)';
+    ctx.beginPath(); ctx.moveTo(sx+1,66); ctx.lineTo(sx-22,152); ctx.lineTo(sx+25,152); ctx.fill();
+  }
+  // мозаїчний кіт (символ Пейзажки)
+  const kx = Math.round(340-camX);
+  if(kx>-50 && kx<W){
+    ctx.fillStyle = COL.ink;
+    ctx.fillRect(kx,116,40,36);                       // тіло
+    ctx.fillRect(kx+30,100,16,20);                    // голова
+    ctx.fillRect(kx+30,94,5,8); ctx.fillRect(kx+41,94,5,8); // вуха
+    ctx.fillRect(kx-8,120,10,5);                      // хвіст
+    mosaicCols.forEach((col,i)=>{                     // мозаїчні плями
+      ctx.fillStyle = col;
+      ctx.fillRect(kx+4+i*7, 122+(i%3)*8, 5, 5);
+    });
+    ctx.fillStyle = '#fff'; ctx.fillRect(kx+33,104,3,3); ctx.fillRect(kx+40,104,3,3);
+  }
+  // лавка з пивом
+  const bx = Math.round(440-camX);
+  if(bx>-40 && bx<W){
+    ctx.fillStyle = '#6e4a2e'; ctx.fillRect(bx,130,34,5);
+    ctx.fillStyle = COL.ink; ctx.fillRect(bx+3,135,3,14); ctx.fillRect(bx+28,135,3,14);
+    ctx.fillStyle = '#b58a2e'; ctx.fillRect(bx+10,122,4,8); ctx.fillRect(bx+18,122,4,8); // пиво x2
+  }
+}
+
+/* ================= Undertale-поєдинок ================= */
+const BULLET_WORDS = ['СЕРЙОЗНІ СТОСУНКИ','ПЛАНИ НА МАЙБУТНЄ','ЗНАЙОМСТВО З МАМОЮ','СПІЛЬНИЙ ПОБУТ','ВІДПУСТКА РАЗОМ'];
+const BOX = {x:60, y:38, w:200, h:92};
+
+function startBattle(){
+  game.battle = {
+    heart:{x:BOX.x+BOX.w/2, y:BOX.y+BOX.h/2},
+    bullets:[], meter:100, invuln:0, over:false, spawnT:0, overT:0,
+  };
+  setPhase('battle');
+}
+function updateBattle(){
+  const b = game.battle; if(!b) return;
+  if(b.over){
+    b.overT++;
+    if(b.overT===110){
+      startDialog(battleOutroScript(game.pov), ()=> setTimeout(finishGame, 700));
+    }
+    return;
+  }
+  // рух серця
+  const h = b.heart, SP = 2.2;
+  if(game.watch){
+    h.y = BOX.y+BOX.h/2 + Math.sin(game.phaseT*0.05)*34;   // автопілот ухиляється так собі
+    h.x = BOX.x+BOX.w/2 + Math.sin(game.phaseT*0.023)*50;
+  } else {
+    if(keys['ArrowLeft']||input.left) h.x -= SP;
+    if(keys['ArrowRight']||input.right) h.x += SP;
+    if(keys['ArrowUp']) h.y -= SP;
+    if(keys['ArrowDown']) h.y += SP;
+    if(dragTarget){ h.x += (dragTarget.x-h.x)*0.3; h.y += (dragTarget.y-h.y)*0.3; }
+  }
+  h.x = Math.max(BOX.x+5, Math.min(BOX.x+BOX.w-5, h.x));
+  h.y = Math.max(BOX.y+5, Math.min(BOX.y+BOX.h-5, h.y));
+
+  // кулі-слова
+  b.spawnT++;
+  if(b.spawnT > 46){
+    b.spawnT = 0;
+    const word = BULLET_WORDS[(Math.random()*BULLET_WORDS.length)|0];
+    b.bullets.push({word, x:BOX.x+BOX.w+10, y:BOX.y+10+Math.random()*(BOX.h-20),
+                    v:0.9+Math.random()*1.1, wob:Math.random()*6.28});
+  }
+  b.bullets.forEach(bl=>{ bl.x -= bl.v; bl.y += Math.sin(game.phaseT*0.06+bl.wob)*0.35; });
+  b.bullets = b.bullets.filter(bl=> bl.x > BOX.x-120);
+
+  // влучання
+  if(b.invuln>0) b.invuln--;
+  if(b.invuln===0){
+    for(const bl of b.bullets){
+      const bw = bl.word.length*4.9, bh = 8;
+      if(h.x+4 > bl.x-2 && h.x-4 < bl.x+bw && h.y+4 > bl.y-bh && h.y-4 < bl.y+2){
+        b.meter = Math.max(0, b.meter-15); b.invuln = 45; break;
+      }
+    }
+  }
+  // несерйозність тане сама собою — бій неможливо виграти
+  b.meter = Math.max(0, b.meter - 0.075);
+  if(b.meter===0 && !b.over){ b.over = true; b.overT = 0; b.bullets = []; }
+}
+function drawBattle(){
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+  const b = game.battle; if(!b) return;
+  // рамка бою
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+  ctx.strokeRect(BOX.x, BOX.y, BOX.w, BOX.h);
+  // шкала НЕСЕРЙОЗНОСТІ
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.textAlign='left';
+  ctx.fillText('НЕСЕРЙОЗНІСТЬ', BOX.x, BOX.y-14);
+  ctx.fillStyle = '#333'; ctx.fillRect(BOX.x+100, BOX.y-21, 100, 8);
+  ctx.fillStyle = b.meter>40 ? COL.sage : COL.rose;
+  ctx.fillRect(BOX.x+100, BOX.y-21, b.meter, 8);
+  ctx.fillStyle = '#fff'; ctx.fillText(Math.ceil(b.meter)+'%', BOX.x+204, BOX.y-14);
+
+  if(b.over){
+    // велике серце — кінець бою
+    const s = Math.min(4, 1+b.overT*0.06);
+    ctx.save();
+    ctx.translate(BOX.x+BOX.w/2, BOX.y+BOX.h/2);
+    ctx.scale(s,s);
+    ctx.fillStyle = COL.rose;
+    ctx.fillRect(-5,-4,4,4); ctx.fillRect(1,-4,4,4);
+    ctx.fillRect(-5,-1,10,4); ctx.fillRect(-3,3,6,3); ctx.fillRect(-1,6,2,2);
+    ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+    if(b.overT>50) ctx.fillText('Від цього не ухилишся.', W/2, BOX.y+BOX.h+18);
+    return;
+  }
+  // кулі-слова
+  ctx.font = 'bold 8px monospace'; ctx.textAlign='left';
+  ctx.save();
+  ctx.beginPath(); ctx.rect(BOX.x,BOX.y,BOX.w,BOX.h); ctx.clip();
+  b.bullets.forEach(bl=>{
+    ctx.fillStyle = '#fff';
+    ctx.fillText(bl.word, bl.x, bl.y);
+  });
+  ctx.restore();
+  // серце гравця
+  const h = b.heart;
+  if(!(b.invuln>0 && (game.t>>2)&1)){
+    ctx.fillStyle = COL.rose;
+    ctx.fillRect(h.x-4,h.y-3,3,3); ctx.fillRect(h.x+1,h.y-3,3,3);
+    ctx.fillRect(h.x-4,h.y-1,8,3); ctx.fillRect(h.x-2,h.y+2,4,2); ctx.fillRect(h.x-1,h.y+4,2,1);
+  }
+  // підказка
+  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='7px monospace'; ctx.textAlign='center';
+  ctx.fillText(game.watch ? '' : (isTouch ? 'тягни серце пальцем' : 'стрілки — ухилятись'), W/2, H-6);
+}
+
+/* ================= титри сцен ================= */
+function drawCaption(line1, line2){
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.fillStyle = COL.gold; ctx.font='bold 13px monospace';
+  ctx.fillText(line1, W/2, 82);
+  ctx.fillStyle = '#d8d4c4'; ctx.font='9px monospace';
+  ctx.fillText(line2, W/2, 102);
+}
+
+/* ================= діалогова система ================= */
+const elDialog = document.getElementById('dialog');
+const elText  = document.getElementById('dtext');
+const elName  = document.getElementById('dname');
+const elArrow = document.getElementById('darrow');
+const elPortraitWrap = document.getElementById('portrait-wrap');
+
+function startDialog(lines, onEnd){
+  game.dialog = {lines, idx:0, shown:0, timer:0, waitTimer:0};
+  game.onDialogEnd = onEnd || null;
+  elDialog.classList.remove('hidden');
+  showLine();
+}
+function showLine(){
+  const d = game.dialog, ln = d.lines[d.idx];
+  d.shown = 0; d.waitTimer = 0;
+  elArrow.classList.add('hidden');
+  if(ln.who){
+    const c = CHARS[ln.who];
+    elPortraitWrap.style.visibility='visible';
+    elName.textContent = c.name + (ln.who===game.pov && !game.watch ? ' (ти)' : '');
+    elName.className = c.cls;
+    drawPortraitInto(pctx, ln.who, ln.emo);
+  } else {
+    elPortraitWrap.style.visibility='hidden';
+    elName.textContent='';
+  }
+  elText.textContent = '';
+}
+function advanceDialog(){
+  const d = game.dialog; if(!d) return;
+  const ln = d.lines[d.idx];
+  if(d.shown < ln.text.length){ d.shown = ln.text.length; elText.textContent = ln.text; elArrow.classList.remove('hidden'); return; }
+  d.idx++;
+  if(d.idx >= d.lines.length){
+    game.dialog = null;
+    elDialog.classList.add('hidden');
+    const cb = game.onDialogEnd; game.onDialogEnd = null;
+    if(cb) cb();
+  } else showLine();
+}
+function updateDialog(){
+  const d = game.dialog; if(!d) return;
+  const ln = d.lines[d.idx];
+  if(d.shown < ln.text.length){
+    d.timer++;
+    if(d.timer >= 2){ d.timer = 0; d.shown++; elText.textContent = ln.text.slice(0, d.shown); }
+    if(d.shown === ln.text.length) elArrow.classList.remove('hidden');
+  } else if(game.watch){
+    d.waitTimer++;
+    if(d.waitTimer > 80) advanceDialog();
+  }
+}
+
+/* ================= керування ================= */
+const keys = {};
+addEventListener('keydown', e=>{
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+  if(e.repeat) return;
+  keys[e.key] = true;
+  if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
+  takeOver();
+});
+addEventListener('keyup', e=>{ keys[e.key] = false; });
+
+function bindPad(id, prop){
+  const el = document.getElementById(id);
+  const on = e=>{ e.preventDefault(); input[prop]=true; if(prop==='action') input.actionEdge=true; takeOver(); };
+  const off = e=>{ e.preventDefault(); input[prop]=false; };
+  el.addEventListener('pointerdown', on);
+  el.addEventListener('pointerup', off);
+  el.addEventListener('pointerleave', off);
+  el.addEventListener('pointercancel', off);
+}
+bindPad('pad-left','left'); bindPad('pad-right','right'); bindPad('pad-a','action');
+
+elDialog.addEventListener('pointerdown', e=>{ e.preventDefault(); input.actionEdge = true; takeOver(); });
+
+/* тягнути серце в бою (тач і миша) */
+let dragTarget = null;
+function canvasPos(e){
+  const r = cv.getBoundingClientRect();
+  return {x:(e.clientX-r.left)/r.width*W, y:(e.clientY-r.top)/r.height*H};
+}
+cv.addEventListener('pointerdown', e=>{
+  e.preventDefault(); takeOver();
+  if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
+  else input.actionEdge = true;
+});
+cv.addEventListener('pointermove', e=>{
+  if(dragTarget) dragTarget = canvasPos(e);
+});
+addEventListener('pointerup', ()=>{ dragTarget = null; });
+
+const isTouch = matchMedia('(pointer:coarse)').matches;
+
+function takeOver(){
+  if(game.watch && game.state==='play'){
+    game.watch = false;
+    document.getElementById('watch-hint').classList.add('hidden');
+    updateHudAndControls();
+  }
+}
+document.getElementById('watch-hint').addEventListener('pointerdown', takeOver);
+
+/* ================= стани / UI ================= */
+const elTitle = document.getElementById('title-screen');
+const elEnd = document.getElementById('end-screen');
+const elHud = document.getElementById('hud');
+
+function updateHudAndControls(){
+  elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name;
+  const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
+  document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !walkPhase);
+  document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
+}
+
+function setPhase(p){
+  game.phase = p; game.phaseT = 0;
+  updateHudAndControls();
+}
+
+function startGame(pov, watch){
+  game.state = 'play';
+  game.watch = watch;
+  game.pov = watch ? 'katya' : pov;
+  game.t = 0; game.dialog = null; game.onDialogEnd = null;
+  game.player = {x:36, dir:1, walking:false, phase:0};
+  game.npc = {x:430, dir:-1, phase:0};
+  game.camX = 0; game.swipeX = 0; game._setDone = false; game._dateDone = false;
+  game.battle = null; dragTarget = null;
+  elTitle.classList.add('hidden');
+  elEnd.classList.add('hidden');
+  elHud.classList.remove('hidden');
+  document.getElementById('watch-hint').classList.toggle('hidden', !watch);
+  setPhase('cap1');
+}
+
+function finishGame(){
+  game.state = 'end';
+  elEnd.classList.remove('hidden');
+  elHud.classList.add('hidden');
+  document.getElementById('watch-hint').classList.add('hidden');
+  updateHudAndControls();
+}
+
+document.querySelectorAll('#title-screen .btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const p = b.dataset.pov;
+    startGame(p==='watch' ? 'katya' : p, p==='watch');
+  });
+});
+document.getElementById('btn-restart').addEventListener('click', ()=>{
+  game.state = 'title';
+  elEnd.classList.add('hidden');
+  elHud.classList.add('hidden');
+  document.getElementById('watch-hint').classList.add('hidden');
+  document.getElementById('controls').classList.add('hidden');
+  document.getElementById('kbd-hint').classList.add('hidden');
+  elTitle.classList.remove('hidden');
+});
+
+/* ================= головний цикл ================= */
+function update(){
+  game.t++; game.phaseT++;
+  if(game.state!=='play') return;
+
+  const p = game.player, npc = game.npc;
+
+  switch(game.phase){
+
+    case 'cap1':
+      if(game.phaseT > 120 || input.actionEdge) setPhase('set');
+      break;
+
+    case 'set': {
+      let mv = 0;
+      if(!game.dialog){
+        if(game.watch){
+          if(p.x < npc.x - 34) mv = 1;
+        } else {
+          if(keys['ArrowLeft']||input.left) mv = -1;
+          if(keys['ArrowRight']||input.right) mv = 1;
+        }
+      }
+      p.walking = mv!==0;
+      if(mv!==0){
+        p.dir = mv;
+        p.x = Math.max(14, Math.min(LEVEL_W-14, p.x + mv*1.6));
+        if(game.t%8===0) p.phase++;
+      }
+      npc.dir = p.x > npc.x ? 1 : -1;
+
+      if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._setDone){
+        game._setDone = true;
+        startDialog(setScript(game.pov), ()=> setPhase('cap2'));
+      }
+      const target = Math.max(0, Math.min(LEVEL_W-W, p.x - 130));
+      game.camX += (target - game.camX)*0.12;
+      break;
+    }
+
+    case 'cap2':
+      if(game.phaseT > 120 || input.actionEdge) setPhase('tinder');
+      break;
+
+    case 'tinder':
+      if((game.watch && game.phaseT > 110) || (!game.watch && input.actionEdge)){
+        setPhase('swipe');
+      }
+      break;
+
+    case 'swipe':
+      game.swipeX += 7;
+      if(game.swipeX > 130) setPhase('match');
+      break;
+
+    case 'match':
+      if(game.phaseT === 130 || (!game.watch && input.actionEdge && game.phaseT>30)){
+        setPhase('chat');
+        startDialog(chatScript(game.pov), ()=>{
+          // перехід до сцени першого побачення
+          game.player = {x:36, dir:1, walking:false, phase:0};
+          game.npc = {x:410, dir:-1, phase:0};
+          game.camX = 0; game._dateDone = false;
+          setPhase('cap3');
+        });
+      }
+      break;
+
+    case 'cap3':
+      if(game.phaseT > 120 || input.actionEdge) setPhase('date');
+      break;
+
+    case 'date': {
+      let mv = 0;
+      if(!game.dialog){
+        if(game.watch){
+          if(p.x < npc.x - 34) mv = 1;
+        } else {
+          if(keys['ArrowLeft']||input.left) mv = -1;
+          if(keys['ArrowRight']||input.right) mv = 1;
+        }
+      }
+      p.walking = mv!==0;
+      if(mv!==0){
+        p.dir = mv;
+        p.x = Math.max(14, Math.min(LEVEL_W-14, p.x + mv*1.6));
+        if(game.t%8===0) p.phase++;
+      }
+      npc.dir = p.x > npc.x ? 1 : -1;
+      if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._dateDone){
+        game._dateDone = true;
+        startDialog(dateScript(game.pov), ()=> startBattle());
+      }
+      const target2 = Math.max(0, Math.min(LEVEL_W-W, p.x - 130));
+      game.camX += (target2 - game.camX)*0.12;
+      break;
+    }
+
+    case 'battle':
+      updateBattle();
+      break;
+  }
+
+  if(input.actionEdge && game.dialog) advanceDialog();
+  input.actionEdge = false;
+  updateDialog();
+}
+
+function render(){
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+
+  if(game.state==='title'){
+    drawSet(120);
+    ctx.fillStyle = 'rgba(10,10,22,.55)'; ctx.fillRect(0,0,W,H);
+    const bob = (game.t>>4)&1;
+    drawPerson(120, FLOOR_Y+2-bob, 'katya', 0, 1, false);
+    drawPerson(200, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false);
+    const hy = 96 + ((game.t>>3)&3);
+    ctx.fillStyle = COL.rose;
+    ctx.fillRect(156,hy,4,4); ctx.fillRect(162,hy,4,4);
+    ctx.fillRect(156,hy+3,10,4); ctx.fillRect(158,hy+7,6,3); ctx.fillRect(160,hy+10,2,2);
+    return;
+  }
+  if(game.state==='end'){ return; }
+
+  switch(game.phase){
+    case 'cap1':
+      drawCaption('КИЇВ · 2021', 'знімальний майданчик ютуб-шоу');
+      break;
+    case 'set': {
+      const camX = Math.round(game.camX);
+      drawSet(camX);
+      const other = game.pov==='katya' ? 'dima' : 'katya';
+      const npcBob = (game.t>>5)&1;
+      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
+      drawPerson(game.player.x-camX, FLOOR_Y+2, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      if(!game.dialog && !game._setDone){
+        const nx = Math.round(game.npc.x-camX);
+        if(nx>-20 && nx<W+20){
+          ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+          ctx.fillText('!', nx, 92 - ((game.t>>4)&1)*2);
+        }
+      }
+      break;
+    }
+    case 'cap2':
+      drawCaption('РІК ПОТОМУ · СЕРПЕНЬ 2022', 'десь у тіндері…');
+      break;
+    case 'tinder':
+    case 'swipe':
+      drawPhone();
+      break;
+    case 'match':
+    case 'chat':
+      drawMatch();
+      break;
+    case 'cap3':
+      drawCaption('ЗА КІЛЬКА ДНІВ', 'Пейзажна алея · перше побачення');
+      break;
+    case 'date': {
+      const camX = Math.round(game.camX);
+      drawPeizazhka(camX);
+      const other = game.pov==='katya' ? 'dima' : 'katya';
+      const npcBob = (game.t>>5)&1;
+      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
+      drawPerson(game.player.x-camX, FLOOR_Y+2, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      if(!game.dialog && !game._dateDone){
+        const nx = Math.round(game.npc.x-camX);
+        if(nx>-20 && nx<W+20){
+          ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+          ctx.fillText('!', nx, 92 - ((game.t>>4)&1)*2);
+        }
+      }
+      break;
+    }
+    case 'battle':
+      drawBattle();
+      break;
+  }
+}
+
+function loop(){ update(); render(); requestAnimationFrame(loop); }
+loop();
+</script>
+</body>
+</html>
