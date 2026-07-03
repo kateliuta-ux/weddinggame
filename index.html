@@ -104,6 +104,26 @@
   }
   #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(8px,1.8cqw,12px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
 
+  /* ---------- семплер ---------- */
+  #sampler-screen{background:#14121c;gap:2.2%;padding:2%}
+  .s-head{color:#fff;font-weight:bold;font-size:clamp(11px,2.6cqw,18px);letter-spacing:1px;text-align:center}
+  .s-head span{display:block;color:#8a8878;font-weight:normal;font-size:clamp(8px,1.8cqw,12px);margin-top:2px}
+  #s-grid{
+    display:grid;gap:2px;
+    grid-template-columns:auto repeat(16,1fr);
+    width:min(94%,700px);
+  }
+  .s-label{color:#8a8878;font-size:clamp(7px,1.6cqw,11px);align-self:center;padding-right:4px;text-align:right}
+  .s-cell{
+    aspect-ratio:1;background:#2b2b38;border:1px solid #3c3a4a;cursor:pointer;border-radius:2px;
+  }
+  .s-cell.on{background:var(--rose);border-color:#d98a96}
+  .s-cell.col-now{filter:brightness(1.6)}
+  .s-cell:nth-child(17n+6), .s-cell:nth-child(17n+10), .s-cell:nth-child(17n+14){border-left:2px solid #55515f}
+  .s-controls{display:flex;gap:8px}
+  .s-btn{font-size:clamp(10px,2.2cqw,15px);padding:.4em .9em}
+  #s-play{background:var(--sage)} #s-code{background:var(--terra)} #s-back{background:#55515f}
+
   /* ---------- end screen ---------- */
   #end-screen{background:rgba(12,12,20,.94);gap:14px;padding:5%}
   #end-screen .big{color:#fff;font-size:clamp(16px,4.4cqw,34px);letter-spacing:2px;text-shadow:3px 3px 0 var(--sage)}
@@ -143,8 +163,20 @@
       <button class="btn katya" data-pov="katya">Грати за Катю</button>
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
+      <button class="btn" id="btn-sampler">🎹 Семплер</button>
     </div>
     <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» → «Сватання» —</div>
+  </div>
+
+  <div id="sampler-screen" class="overlay hidden">
+    <div class="s-head">🎹 СЕМПЛЕР <span>накидай мелодію — «КОД» скопіює її для гри</span></div>
+    <div id="s-grid"></div>
+    <div class="s-controls">
+      <button class="btn s-btn" id="s-play">▶</button>
+      <button class="btn s-btn" id="s-clear">ЧИСТКА</button>
+      <button class="btn s-btn" id="s-code">КОД</button>
+      <button class="btn s-btn" id="s-back">НАЗАД</button>
+    </div>
   </div>
 
   <div id="end-screen" class="overlay hidden">
@@ -1197,42 +1229,52 @@ function drawSvat(){
   }
 }
 
-/* ---- 8-біт «Щедрик» (Леонтович, суспільне надбання) ---- */
+/* ---- музика: «Минає день, минає ніч» (Мозговий/Рибчинський), приспів ----
+   Реконструкція мелодії по пам'яті — Катя виправить у семплері. */
 let audioCtx = null, musicTimer = null, musicOn = false;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playNote(f, t, d, type, vol){
+  const o = audioCtx.createOscillator(), gn = audioCtx.createGain();
+  o.type = type; o.frequency.value = f;
+  gn.gain.setValueAtTime(vol, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t+d*0.92);
+  o.connect(gn); gn.connect(audioCtx.destination);
+  o.start(t); o.stop(t+d);
+}
+const A4=440, B4=493.88, C5=523.25, D5=587.33, E5=659.25, Gs4=415.30;
+const MELODY = [ // «Біда не в тім, що ти мене не любиш…»
+  [E5,.38],[E5,.38],[D5,.38],[C5,.76],
+  [D5,.38],[C5,.38],[B4,.38],[A4,.76],
+  [E5,.38],[E5,.38],[D5,.38],[C5,.38],[D5,.38],[C5,.38],
+  [B4,.38],[A4,.38],[Gs4,.76],[A4,1.14],
+];
+const BASSLINE = [110, 146.83, 164.81, 110];       // Am Dm E Am
 function startMusic(){
   try{
-    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==='suspended') audioCtx.resume();
+    ensureAudio();
     if(musicOn) return;
     musicOn = true;
-    const Bb4=466.16, A4=440.00, G4=392.00, D4=293.66, G3=196.00;
-    // такт «Щедрика»: Bb A Bb G + тихий бас
-    const seq = [[Bb4,.32],[A4,.16],[Bb4,.16],[G4,.32]];
-    let nextT = audioCtx.currentTime + 0.05, bar = 0;
-    const scheduleBar = ()=>{
+    const loopDur = MELODY.reduce((a,[,d])=>a+d,0);
+    let nextT = audioCtx.currentTime + 0.05;
+    const schedule = ()=>{
       if(!musicOn) return;
-      while(nextT < audioCtx.currentTime + 0.6){
+      while(nextT < audioCtx.currentTime + 0.8){
         let tt = nextT;
-        seq.forEach(([f,d])=>{
-          const o = audioCtx.createOscillator(), gn = audioCtx.createGain();
-          o.type='square'; o.frequency.value = f;
-          gn.gain.setValueAtTime(0.045, tt);
-          gn.gain.exponentialRampToValueAtTime(0.001, tt+d*0.92);
-          o.connect(gn); gn.connect(audioCtx.destination);
-          o.start(tt); o.stop(tt+d);
-          tt += d;
+        MELODY.forEach(([f,d])=> { playNote(f, tt, d, 'square', 0.04); tt += d; });
+        const barLen = loopDur/4;
+        BASSLINE.forEach((bf,i)=>{
+          playNote(bf, nextT+i*barLen, barLen*0.95, 'triangle', 0.055);
+          playNote(bf*2, nextT+i*barLen+barLen/2, barLen*0.4, 'triangle', 0.03);
         });
-        const b = audioCtx.createOscillator(), bg = audioCtx.createGain();
-        b.type='triangle'; b.frequency.value = (bar%2)? D4/2 : G3;
-        bg.gain.setValueAtTime(0.05, nextT);
-        bg.gain.exponentialRampToValueAtTime(0.001, nextT+0.9);
-        b.connect(bg); bg.connect(audioCtx.destination);
-        b.start(nextT); b.stop(nextT+0.96);
-        nextT += 0.96; bar++;
+        nextT += loopDur;
       }
     };
-    scheduleBar();
-    musicTimer = setInterval(scheduleBar, 300);
+    schedule();
+    musicTimer = setInterval(schedule, 400);
   }catch(e){ /* без звуку — теж гра */ }
 }
 function stopMusic(){
@@ -1403,7 +1445,7 @@ function finishGame(){
   updateHudAndControls();
 }
 
-document.querySelectorAll('#title-screen .btn').forEach(b=>{
+document.querySelectorAll('#title-screen .btn[data-pov]').forEach(b=>{
   b.addEventListener('click', ()=>{
     const p = b.dataset.pov;
     startGame(p==='watch' ? 'katya' : p, p==='watch');
@@ -1629,6 +1671,80 @@ function render(){
       break;
   }
 }
+
+/* ================= семплер ================= */
+const SMP = {
+  rows: [
+    {n:'A5', f:880.00}, {n:'G5', f:783.99}, {n:'E5', f:659.25}, {n:'D5', f:587.33},
+    {n:'C5', f:523.25}, {n:'B4', f:493.88}, {n:'A4', f:440.00}, {n:'G4', f:392.00},
+  ],
+  steps: 16,
+  grid: [],            // grid[row][step] = bool
+  playing: false, timer: null, col: 0,
+};
+(function buildSampler(){
+  SMP.grid = SMP.rows.map(()=>Array(SMP.steps).fill(false));
+  const el = document.getElementById('s-grid');
+  SMP.rows.forEach((row, r)=>{
+    const lab = document.createElement('div');
+    lab.className = 's-label'; lab.textContent = row.n;
+    el.appendChild(lab);
+    for(let c=0; c<SMP.steps; c++){
+      const cell = document.createElement('div');
+      cell.className = 's-cell';
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('pointerdown', e=>{
+        e.preventDefault();
+        SMP.grid[r][c] = !SMP.grid[r][c];
+        cell.classList.toggle('on', SMP.grid[r][c]);
+        if(SMP.grid[r][c]){ ensureAudio(); playNote(row.f, audioCtx.currentTime, 0.22, 'square', 0.06); }
+      });
+      el.appendChild(cell);
+    }
+  });
+})();
+function samplerHighlight(col){
+  document.querySelectorAll('.s-cell.col-now').forEach(c=>c.classList.remove('col-now'));
+  if(col>=0) document.querySelectorAll(`.s-cell[data-c="${col}"]`).forEach(c=>c.classList.add('col-now'));
+}
+function samplerStop(){
+  SMP.playing = false;
+  if(SMP.timer){ clearInterval(SMP.timer); SMP.timer = null; }
+  samplerHighlight(-1);
+  document.getElementById('s-play').textContent = '▶';
+}
+document.getElementById('s-play').addEventListener('click', ()=>{
+  if(SMP.playing){ samplerStop(); return; }
+  ensureAudio();
+  SMP.playing = true; SMP.col = 0;
+  document.getElementById('s-play').textContent = '■';
+  SMP.timer = setInterval(()=>{
+    const t = audioCtx.currentTime;
+    SMP.rows.forEach((row,r)=>{ if(SMP.grid[r][SMP.col]) playNote(row.f, t, 0.24, 'square', 0.06); });
+    samplerHighlight(SMP.col);
+    SMP.col = (SMP.col+1) % SMP.steps;
+  }, 240);
+});
+document.getElementById('s-clear').addEventListener('click', ()=>{
+  SMP.grid.forEach(r=>r.fill(false));
+  document.querySelectorAll('.s-cell.on').forEach(c=>c.classList.remove('on'));
+});
+document.getElementById('s-code').addEventListener('click', ()=>{
+  const code = SMP.grid.map((row,r)=> row.map((v,c)=> v? `${SMP.rows[r].n}:${c}`:null).filter(Boolean).join(','))
+    .filter(s=>s).join(';') || '(порожньо)';
+  const msg = 'МЕЛОДІЯ: ' + code;
+  if(navigator.clipboard) navigator.clipboard.writeText(msg).catch(()=>{});
+  alert(msg + '\n\n(скопійовано — надішли цей код Клоду, і мелодія потрапить у гру)');
+});
+document.getElementById('s-back').addEventListener('click', ()=>{
+  samplerStop();
+  document.getElementById('sampler-screen').classList.add('hidden');
+  elTitle.classList.remove('hidden');
+});
+document.getElementById('btn-sampler').addEventListener('click', ()=>{
+  elTitle.classList.add('hidden');
+  document.getElementById('sampler-screen').classList.remove('hidden');
+});
 
 function loop(){ update(); render(); requestAnimationFrame(loop); }
 loop();
