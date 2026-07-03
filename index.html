@@ -96,6 +96,12 @@
     animation:blink 1.6s steps(2) infinite;cursor:pointer;pointer-events:auto;
   }
   @keyframes blink{50%{opacity:.55}}
+  #pause-btn{
+    position:absolute;top:2.5%;right:2.5%;cursor:pointer;
+    color:#fff;font-size:clamp(14px,3.4cqw,22px);
+    background:rgba(0,0,0,.55);padding:.15em .45em;
+    border:2px solid rgba(255,255,255,.35);user-select:none;
+  }
   #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(8px,1.8cqw,12px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
 
   /* ---------- end screen ---------- */
@@ -111,6 +117,7 @@
 
   <div id="hud" class="hidden"></div>
   <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ — торкнись, щоб грати</div>
+  <div id="pause-btn" class="hidden">⏸</div>
   <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — далі</div>
 
   <div id="dialog" class="hidden">
@@ -235,7 +242,7 @@ function battleOutroScript(pov){
 }
 function tetrisIntroScript(pov){
   return pov==='katya' ? [
-    {who:'katya', emo:'normal',text:'Місяць у Лондоні заради візи.\n…але все нагадує про одного креативника.'},
+    {who:'katya', emo:'normal',text:'Місяць у Лондоні заради візи.\n…але все нагадує про одного хлопця з Києва.'},
     {who:null,    emo:null,   text:'Місія: спакуватись додому. Достроково.'},
   ] : [
     {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
@@ -333,6 +340,27 @@ function drawPerson(x, y, who, phase, dir, walking){
   ctx.restore();
 }
 
+/* ================= Кітана 🐈 =================
+   Кішка з двору Дана, з осені 2023 в сім'ї.
+   Колір поки умовний — чекаю фото. */
+function drawKitana(x, y, dir){
+  const px = (dx,dy,w,h,col)=>{ ctx.fillStyle=col; ctx.fillRect(Math.round(dx),Math.round(dy),w,h); };
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y));
+  if(dir<0) ctx.scale(-1,1);
+  const grey = '#6e6a78', dark = '#55515f';
+  px(-7, -8, 12, 8, grey);                       // тіло (сидить)
+  px(-7, -4, 12, 4, dark);
+  px(2, -14, 8, 8, grey);                        // голова
+  px(2, -17, 3, 4, grey); px(7, -17, 3, 4, grey);// вушка
+  px(3, -16, 1, 2, '#e8a0b0'); px(8, -16, 1, 2, '#e8a0b0');
+  const flick = ((game.t>>4)&1) ? 2 : 0;         // хвіст махає
+  px(-11, -10-flick, 4, 3, grey); px(-9, -8-flick, 3, 6, grey);
+  px(4, -11, 2, 2, '#3F7C77'); px(8, -11, 2, 2, '#3F7C77');  // очі (зелені)
+  px(6, -8, 2, 1, '#e8a0b0');                    // носик
+  ctx.restore();
+}
+
 /* ================= портрети (32x32) ================= */
 function drawPortraitInto(g, who, emo){
   const c = CHARS[who];
@@ -422,6 +450,25 @@ function drawSet(camX){
     ctx.fillStyle = COL.ink; ctx.fillRect(gx-8,FLOOR_Y-2,12,4); ctx.fillRect(gx+147,FLOOR_Y-2,12,4);
     ctx.fillStyle = COL.greenD; ctx.fillRect(gx,40,150,FLOOR_Y-40);
     ctx.fillStyle = COL.green; ctx.fillRect(gx+4,44,142,FLOOR_Y-48);
+    // назва шоу + піксельний вихор-«надо»
+    ctx.fillStyle = '#fff'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
+    ctx.fillText('ШТОРМНАДО', gx+75, 62);
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.fillRect(gx+58,68,34,3); ctx.fillRect(gx+64,73,24,3);
+    ctx.fillRect(gx+70,78,14,3); ctx.fillRect(gx+74,83,7,3);
+  }
+  // стенд із брифом і таймер шторму (година на ідеї)
+  const bx2 = Math.round(150-camX);
+  if(bx2>-40 && bx2<W){
+    ctx.fillStyle = COL.metal; ctx.fillRect(bx2+10,86,2,FLOOR_Y-86);
+    ctx.fillStyle = '#f8f8f3'; ctx.fillRect(bx2,60,24,28);
+    ctx.fillStyle = COL.ink; ctx.font='bold 6px monospace'; ctx.textAlign='center';
+    ctx.fillText('БРИФ', bx2+12, 69);
+    ctx.fillStyle = '#999';
+    ctx.fillRect(bx2+4,73,16,2); ctx.fillRect(bx2+4,78,16,2); ctx.fillRect(bx2+4,83,10,2);
+    ctx.fillStyle = COL.ink; ctx.fillRect(bx2+28,64,30,14);
+    ctx.fillStyle = '#e33'; ctx.font='bold 8px monospace';
+    ctx.fillText('59:59', bx2+43, 74);
   }
   // софтбокс
   const lx = Math.round(300-camX);
@@ -743,11 +790,17 @@ function startTetris(){
   game.tetris = {
     grid: Array.from({length:TET.ROWS}, ()=>Array(TET.COLS).fill(null)),
     piece:null, fallT:0, moveT:0, lines:0, started:false,
-    win:false, winT:0, outroStarted:false,
+    win:false, winT:0, outroStarted:false, paused:false,
     flashRows:[], flashT:0, msgs:9000, ai:null,
   };
   setPhase('tetris');
   startDialog(tetrisIntroScript(game.pov), ()=>{ game.tetris.started = true; startMusic(); });
+}
+function toggleTetrisPause(){
+  const t = game.tetris;
+  if(!t || !t.started || t.win || game.watch) return;
+  t.paused = !t.paused;
+  if(t.paused) stopMusic(); else startMusic();
 }
 function tetCollides(t, key, rot, px, py){
   const cells = TETROMINOES[key].r[rot % TETROMINOES[key].r.length];
@@ -793,7 +846,7 @@ function tetLock(t){
   if(full.length){ t.flashRows = full; t.flashT = 18; }
 }
 function updateTetris(){
-  const t = game.tetris; if(!t || !t.started) return;
+  const t = game.tetris; if(!t || !t.started || t.paused) return;
 
   if(t.win){
     t.winT++;
@@ -934,6 +987,14 @@ function drawTetris(){
   ctx.fillText('тягнеться…', W-6, fy+33);
   ctx.textAlign='left';
 
+  if(t.paused){
+    ctx.fillStyle = 'rgba(0,0,0,.72)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#fff'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+    ctx.fillText('ПАУЗА', W/2, 86);
+    ctx.font='8px monospace'; ctx.fillStyle='#c9c4b4';
+    ctx.fillText('⏸ або P — продовжити', W/2, 100);
+    return;
+  }
   if(t.win){
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle = COL.gold; ctx.font='bold 14px monospace'; ctx.textAlign='center';
@@ -1082,9 +1143,10 @@ function drawSvat(){
       ctx.fillStyle = '#b3323c'; ctx.fillRect(sx-7, FLOOR_Y-30, 5, 2); ctx.fillRect(sx-7, FLOOR_Y-20, 5, 2);
     }
   });
-  // Катя біля печі, Діма з хлібом посередині
+  // Катя біля печі, Діма з хлібом посередині, Кітана гріється при печі
   drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
   drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
+  drawKitana(112, FLOOR_Y+2, -1);
   ctx.fillStyle = '#c98a3e'; ctx.fillRect(160,FLOOR_Y-24,14,7);  // хліб у руках Діми
   ctx.fillStyle = '#e0a85a'; ctx.fillRect(162,FLOOR_Y-24,10,3);
 
@@ -1250,6 +1312,7 @@ addEventListener('keydown', e=>{
   keys[e.key] = true;
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
   if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
+  if((e.key==='p'||e.key==='P'||e.key==='Escape') && game.phase==='tetris'){ toggleTetrisPause(); return; }
   takeOver();
 });
 addEventListener('keyup', e=>{ keys[e.key] = false; });
@@ -1293,6 +1356,7 @@ function takeOver(){
   }
 }
 document.getElementById('watch-hint').addEventListener('pointerdown', takeOver);
+document.getElementById('pause-btn').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); toggleTetrisPause(); });
 
 /* ================= стани / UI ================= */
 const elTitle = document.getElementById('title-screen');
@@ -1305,6 +1369,7 @@ function updateHudAndControls(){
   const padPhase = walkPhase || (game.state==='play' && game.phase==='tetris');
   document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase);
   document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
+  document.getElementById('pause-btn').classList.toggle('hidden', game.phase!=='tetris' || game.watch || game.state!=='play');
   document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
 }
 
@@ -1351,6 +1416,7 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
   document.getElementById('watch-hint').classList.add('hidden');
   document.getElementById('controls').classList.add('hidden');
   document.getElementById('kbd-hint').classList.add('hidden');
+  document.getElementById('pause-btn').classList.add('hidden');
   elTitle.classList.remove('hidden');
 });
 
@@ -1487,6 +1553,7 @@ function render(){
     const bob = (game.t>>4)&1;
     drawPerson(120, FLOOR_Y+2-bob, 'katya', 0, 1, false);
     drawPerson(200, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false);
+    drawKitana(160, FLOOR_Y+2, 1);
     const hy = 96 + ((game.t>>3)&3);
     ctx.fillStyle = COL.rose;
     ctx.fillRect(156,hy,4,4); ctx.fillRect(162,hy,4,4);
