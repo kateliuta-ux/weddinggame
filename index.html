@@ -186,84 +186,65 @@ const CHARS = {
    Один скрипт — і для гри, і для автопроходження. */
 function setScript(pov){
   return [
-    {who:null,    emo:null,    text:'Київ, 2021. Знімальний майданчик ютуб-шоу.'},
-    {who:'katya', emo:'normal',text:'Так, світло виставлене, камера готова.\nДімо, твій вихід!'},
+    {who:'katya', emo:'tired', text:'Дімо, в камеру. Дубль три!'},
     {who:'dima',  emo:'happy', text:'А куди дивитись — в камеру чи на режисерку?)'},
-    {who:'katya', emo:'tired', text:'В камеру. Дубль три!'},
-    {who:null,    emo:null,    text:'Шоу так і не вийшло в світ.\nА Діма цю зустріч успішно забув…'},
+    {who:null,    emo:null,    text:'Шоу ніхто не побачив.\nДіма цю зустріч успішно забув…'},
   ];
 }
 function chatScript(pov){
   const intro = pov==='katya' ? [
-    {who:'katya', emo:'wow',   text:'Стоп. Це ж той хлопець зі зйомок 2021-го…'},
-    {who:'katya', emo:'normal',text:'Цікаво, чи він мене пам’ятає.'},
+    {who:'katya', emo:'wow',   text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
   ] : [
     {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
   ];
   const common = [
     {who:'dima',  emo:'happy', text:'Йоу! Як трєня?)'},
     {who:'katya', emo:'tired', text:'Йоу) стресово 🥲'},
-    {who:'katya', emo:'normal',text:'В суботу змагання, вперше йду.\nЩе й ногу підвернула…'},
-    {who:'dima',  emo:'wow',   text:'Цікаво, я ніколи не був. Там такий двіж,\nяк в карате-кіді?)'},
-    {who:'katya', emo:'happy', text:'Якщо глядачів пускають, то може бути й таке)'},
+    {who:'dima',  emo:'wow',   text:'А там такий двіж, як в карате-кіді?)'},
     {who:'dima',  emo:'happy', text:'Удачки тобі завтра!'},
     {who:'dima',  emo:'shy',   text:'ой'},
     {who:'dima',  emo:'shy',   text:'в сб)'},
   ];
   const outro = pov==='katya' ? [
-    {who:null, emo:null, text:'(Не пам’ятав.)'},
+    {who:null, emo:null, text:'11 серпня 2022. (Не пам’ятав.)'},
   ] : [
-    {who:null, emo:null, text:'(Бачив. 2021 рік, дубль три.)'},
+    {who:null, emo:null, text:'11 серпня 2022. (Бачив. Дубль три.)'},
   ];
-  return [...intro, ...common, ...outro,
-    {who:null, emo:null, text:'11 серпня 2022. Так усе й почалося…'}];
+  return [...intro, ...common, ...outro];
 }
 function dateScript(pov){
   const first = pov==='katya' ? [
-    {who:'katya', emo:'normal',text:'Тільки щоб ти розумів:\nу мене зараз все несерйозно.'},
-    {who:'dima',  emo:'happy', text:'Абсолютно! У мене теж.\nМаксимально несерйозно.'},
+    {who:'katya', emo:'normal',text:'Щоб ти розумів: у мене все несерйозно.'},
+    {who:'dima',  emo:'happy', text:'Абсолютно. Максимально несерйозно.'},
   ] : [
-    {who:'dima',  emo:'normal',text:'Тільки щоб ти розуміла:\nу мене зараз все несерйозно.'},
+    {who:'dima',  emo:'normal',text:'Щоб ти розуміла: у мене все несерйозно.'},
     {who:'katya', emo:'happy', text:'Ідеально. У мене тим більше.'},
   ];
   return [
-    {who:null, emo:null, text:'Пейзажна алея. Пиво, прогулянка,\nі все чомусь одразу дуже добре.'},
     ...first,
-    {who:'katya', emo:'happy', text:'Чудово, що ми одне одного зрозуміли.'},
-    {who:'dima',  emo:'happy', text:'Ще по пиву?'},
     {who:null, emo:null, text:'І тут щось пішло не за планом…'},
   ];
 }
 function battleOutroScript(pov){
   return [
-    {who:null,   emo:null,  text:'НЕСЕРЙОЗНІСТЬ: 0%'},
     {who:'dima', emo:'shy',  text:'…проведу тебе додому?'},
-    {who:'katya',emo:'shy',  text:'Ну, якщо тобі по дорозі.'},
-    {who:null,   emo:null,  text:'Біля дому він її поцілував.\nНесерйозно, звісно ж.'},
+    {who:null,   emo:null,  text:'Біля дому — поцілунок. Несерйозно, звісно.'},
   ];
 }
 function tetrisIntroScript(pov){
   return pov==='katya' ? [
-    {who:null,    emo:null,   text:'Жовтень 2022. Лондон.\nДля візи треба висидіти тут місяць.'},
-    {who:'katya', emo:'tired',text:'Тут гарно. У брата затишно.'},
-    {who:'katya', emo:'normal',text:'…але чому все нагадує про одного\nкреативника з Києва.'},
-    {who:null,    emo:null,   text:'Місія: спакувати валізу. Достроково.'},
+    {who:'katya', emo:'normal',text:'Місяць у Лондоні заради візи.\n…але все нагадує про одного креативника.'},
+    {who:null,    emo:null,   text:'Місія: спакуватись додому. Достроково.'},
   ] : [
-    {who:null,   emo:null,   text:'Жовтень 2022. Київ—Лондон.\n11 223 повідомлення за місяць.'},
-    {who:'dima', emo:'normal',text:'Та нормально все. Просто цікаво, як там вона.'},
-    {who:'dima', emo:'shy',  text:'…вже вп’яте за сьогодні цікаво.'},
+    {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
     {who:null,   emo:null,   text:'Тим часом у Лондоні пакується валіза.'},
   ];
 }
 function tetrisOutroScript(pov){
   return pov==='katya' ? [
-    {who:null,    emo:null,  text:'Валізу спаковано.'},
     {who:'katya', emo:'happy',text:'Ледь висиділа місяць. Їду додому!'},
-    {who:null,    emo:null,  text:'Офіційна причина: «ну просто все зробила».\nСправжня причина їхала в тій самій валізі.'},
   ] : [
-    {who:null,   emo:null,  text:'Валізу спаковано.'},
-    {who:'dima', emo:'happy',text:'Вона повертається на місяць раніше!'},
-    {who:'dima', emo:'normal',text:'Впевнений, це не через мене.\n(Це було через нього.)'},
+    {who:'dima', emo:'happy',text:'Вона повертається раніше!\nВпевнений, це не через мене. (Через нього.)'},
   ];
 }
 
@@ -1033,12 +1014,12 @@ function updateDialog(){
   const d = game.dialog; if(!d) return;
   const ln = d.lines[d.idx];
   if(d.shown < ln.text.length){
-    d.timer++;
-    if(d.timer >= 2){ d.timer = 0; d.shown++; elText.textContent = ln.text.slice(0, d.shown); }
+    d.shown = Math.min(ln.text.length, d.shown + 2);
+    elText.textContent = ln.text.slice(0, d.shown);
     if(d.shown === ln.text.length) elArrow.classList.remove('hidden');
   } else if(game.watch){
     d.waitTimer++;
-    if(d.waitTimer > 80) advanceDialog();
+    if(d.waitTimer > 45) advanceDialog();
   }
 }
 
@@ -1164,7 +1145,7 @@ function update(){
   switch(game.phase){
 
     case 'cap1':
-      if(game.phaseT > 120 || input.actionEdge) setPhase('set');
+      if(game.phaseT > 70 || input.actionEdge) setPhase('set');
       break;
 
     case 'set': {
@@ -1195,7 +1176,7 @@ function update(){
     }
 
     case 'cap2':
-      if(game.phaseT > 120 || input.actionEdge) setPhase('tinder');
+      if(game.phaseT > 70 || input.actionEdge) setPhase('tinder');
       break;
 
     case 'tinder':
@@ -1210,7 +1191,7 @@ function update(){
       break;
 
     case 'match':
-      if(game.phaseT === 130 || (!game.watch && input.actionEdge && game.phaseT>30)){
+      if(game.phaseT === 95 || (!game.watch && input.actionEdge && game.phaseT>25)){
         setPhase('chat');
         startDialog(chatScript(game.pov), ()=>{
           // перехід до сцени першого побачення
@@ -1223,7 +1204,7 @@ function update(){
       break;
 
     case 'cap3':
-      if(game.phaseT > 120 || input.actionEdge) setPhase('date');
+      if(game.phaseT > 70 || input.actionEdge) setPhase('date');
       break;
 
     case 'date': {
@@ -1257,7 +1238,7 @@ function update(){
       break;
 
     case 'cap4':
-      if(game.phaseT > 120 || input.actionEdge) startTetris();
+      if(game.phaseT > 70 || input.actionEdge) startTetris();
       break;
 
     case 'tetris':
