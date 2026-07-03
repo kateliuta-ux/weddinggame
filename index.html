@@ -374,22 +374,27 @@ function drawPerson(x, y, who, phase, dir, walking){
 
 /* ================= Кітана 🐈 =================
    Кішка з двору Дана, з осені 2023 в сім'ї.
-   Колір поки умовний — чекаю фото. */
+   Розмита черепаха: сіро-блакитна з персиковими плямами,
+   зелені очі, і час від часу показує язик (сімейне). */
 function drawKitana(x, y, dir){
   const px = (dx,dy,w,h,col)=>{ ctx.fillStyle=col; ctx.fillRect(Math.round(dx),Math.round(dy),w,h); };
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   if(dir<0) ctx.scale(-1,1);
-  const grey = '#6e6a78', dark = '#55515f';
+  const grey = '#7d7888', dark = '#615c6e', peach = '#c9967a';
   px(-7, -8, 12, 8, grey);                       // тіло (сидить)
   px(-7, -4, 12, 4, dark);
+  px(-5, -8, 4, 3, peach);                       // персикові плями
+  px(0, -5, 3, 3, peach);
   px(2, -14, 8, 8, grey);                        // голова
+  px(2, -14, 3, 3, peach);                       // пляма на лобі (як на фото)
   px(2, -17, 3, 4, grey); px(7, -17, 3, 4, grey);// вушка
   px(3, -16, 1, 2, '#e8a0b0'); px(8, -16, 1, 2, '#e8a0b0');
   const flick = ((game.t>>4)&1) ? 2 : 0;         // хвіст махає
-  px(-11, -10-flick, 4, 3, grey); px(-9, -8-flick, 3, 6, grey);
-  px(4, -11, 2, 2, '#3F7C77'); px(8, -11, 2, 2, '#3F7C77');  // очі (зелені)
+  px(-11, -10-flick, 4, 3, grey); px(-9, -8-flick, 3, 6, peach);
+  px(4, -11, 2, 2, '#5a8c4e'); px(8, -11, 2, 2, '#5a8c4e');  // зелені очі
   px(6, -8, 2, 1, '#e8a0b0');                    // носик
+  if(((game.t>>7)&3)===0) px(6, -7, 2, 2, '#e87a90');  // язичок 😛
   ctx.restore();
 }
 
