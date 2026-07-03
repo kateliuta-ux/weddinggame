@@ -86,6 +86,7 @@
   .pad:active{background:rgba(248,248,243,.38)}
   #pad-left{left:3%} #pad-right{left:calc(3% + clamp(52px,14cqw,84px))}
   #pad-a{right:3%;border-radius:50%;background:rgba(168,80,95,.3);border-color:rgba(168,80,95,.7)}
+  #pad-down{right:calc(3% + clamp(52px,14cqw,84px))}
 
   /* ---------- HUD / hints ---------- */
   #hud{position:absolute;top:2.5%;left:2.5%;color:#fff;font-size:clamp(9px,2cqw,14px);letter-spacing:1px;text-shadow:2px 2px 0 #000}
@@ -124,6 +125,7 @@
   <div id="controls" class="hidden">
     <div class="pad" id="pad-left">◀</div>
     <div class="pad" id="pad-right">▶</div>
+    <div class="pad hidden" id="pad-down">▼</div>
     <div class="pad" id="pad-a">A</div>
   </div>
 
@@ -135,13 +137,13 @@
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
     </div>
-    <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» —</div>
+    <div class="hint">— прототип: «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» —</div>
   </div>
 
   <div id="end-screen" class="overlay hidden">
     <div class="big">ДАЛІ БУДЕ…</div>
     <div class="date">06 · 09 · 2026 — КИЇВ</div>
-    <p>Це прототип. Попереду: тетріс-Лондон, «сватання», шахи в будиночках,<br>сяюча коробочка, заява в Дії — і запрошення саме для тебе.</p>
+    <p>Це прототип. Попереду: «сватання», шахи в будиночках,<br>сяюча коробочка, заява в Дії — і запрошення саме для тебе.</p>
     <button class="btn" id="btn-restart">На початок</button>
   </div>
 </div>
@@ -240,6 +242,30 @@ function battleOutroScript(pov){
     {who:null,   emo:null,  text:'Біля дому він її поцілував.\nНесерйозно, звісно ж.'},
   ];
 }
+function tetrisIntroScript(pov){
+  return pov==='katya' ? [
+    {who:null,    emo:null,   text:'Жовтень 2022. Лондон.\nДля візи треба висидіти тут місяць.'},
+    {who:'katya', emo:'tired',text:'Тут гарно. У брата затишно.'},
+    {who:'katya', emo:'normal',text:'…але чому все нагадує про одного\nкреативника з Києва.'},
+    {who:null,    emo:null,   text:'Місія: спакувати валізу. Достроково.'},
+  ] : [
+    {who:null,   emo:null,   text:'Жовтень 2022. Київ—Лондон.\n11 223 повідомлення за місяць.'},
+    {who:'dima', emo:'normal',text:'Та нормально все. Просто цікаво, як там вона.'},
+    {who:'dima', emo:'shy',  text:'…вже вп’яте за сьогодні цікаво.'},
+    {who:null,   emo:null,   text:'Тим часом у Лондоні пакується валіза.'},
+  ];
+}
+function tetrisOutroScript(pov){
+  return pov==='katya' ? [
+    {who:null,    emo:null,  text:'Валізу спаковано.'},
+    {who:'katya', emo:'happy',text:'Ледь висиділа місяць. Їду додому!'},
+    {who:null,    emo:null,  text:'Офіційна причина: «ну просто все зробила».\nСправжня причина їхала в тій самій валізі.'},
+  ] : [
+    {who:null,   emo:null,  text:'Валізу спаковано.'},
+    {who:'dima', emo:'happy',text:'Вона повертається на місяць раніше!'},
+    {who:'dima', emo:'normal',text:'Впевнений, це не через мене.\n(Це було через нього.)'},
+  ];
+}
 
 /* ---------------- стан гри ---------------- */
 const game = {
@@ -256,9 +282,10 @@ const game = {
   onDialogEnd:null,
   swipeX:0,                 // зсув карточки при свайпі
   battle:null,              // {heart:{x,y}, bullets:[], meter, invuln, over}
+  tetris:null,              // стан тетрісу (Лондон)
 };
 
-const input = {left:false, right:false, action:false, actionEdge:false};
+const input = {left:false, right:false, down:false, action:false, actionEdge:false};
 
 /* ================= персонаж (кежуал) ================= */
 function drawPerson(x, y, who, phase, dir, walking){
@@ -595,7 +622,7 @@ function updateBattle(){
   if(b.over){
     b.overT++;
     if(b.overT===110){
-      startDialog(battleOutroScript(game.pov), ()=> setTimeout(finishGame, 700));
+      startDialog(battleOutroScript(game.pov), ()=> setPhase('cap4'));
     }
     return;
   }
@@ -688,6 +715,269 @@ function drawBattle(){
   ctx.fillText(game.watch ? '' : (isTouch ? 'тягни серце пальцем' : 'стрілки — ухилятись'), W/2, H-6);
 }
 
+/* ================= Лондон-тетріс ================= */
+const TET = {COLS:9, ROWS:13, CELL:7, X:196, Y:32, WIN_LINES:3};
+const TETROMINOES = {
+  I:{c:'#4a90d9', r:[[[0,1],[1,1],[2,1],[3,1]], [[2,0],[2,1],[2,2],[2,3]]]},
+  O:{c:'#B58A2E', r:[[[1,0],[2,0],[1,1],[2,1]]]},
+  T:{c:'#A8505F', r:[[[1,0],[0,1],[1,1],[2,1]], [[1,0],[1,1],[2,1],[1,2]], [[0,1],[1,1],[2,1],[1,2]], [[1,0],[0,1],[1,1],[1,2]]]},
+  S:{c:'#3F7C77', r:[[[1,0],[2,0],[0,1],[1,1]], [[1,0],[1,1],[2,1],[2,2]]]},
+  Z:{c:'#c96a4e', r:[[[0,0],[1,0],[1,1],[2,1]], [[2,0],[1,1],[2,1],[1,2]]]},
+  J:{c:'#1E4E8A', r:[[[0,0],[0,1],[1,1],[2,1]], [[1,0],[2,0],[1,1],[1,2]], [[0,1],[1,1],[2,1],[2,2]], [[1,0],[1,1],[0,2],[1,2]]]},
+  L:{c:'#8a6bb5', r:[[[2,0],[0,1],[1,1],[2,1]], [[1,0],[1,1],[1,2],[2,2]], [[0,1],[1,1],[2,1],[0,2]], [[0,0],[1,0],[1,1],[1,2]]]},
+};
+const TET_KEYS = Object.keys(TETROMINOES);
+
+function startTetris(){
+  game.tetris = {
+    grid: Array.from({length:TET.ROWS}, ()=>Array(TET.COLS).fill(null)),
+    piece:null, fallT:0, moveT:0, lines:0, started:false,
+    win:false, winT:0, outroStarted:false,
+    flashRows:[], flashT:0, msgs:9000, ai:null,
+  };
+  setPhase('tetris');
+  startDialog(tetrisIntroScript(game.pov), ()=>{ game.tetris.started = true; startMusic(); });
+}
+function tetCollides(t, key, rot, px, py){
+  const cells = TETROMINOES[key].r[rot % TETROMINOES[key].r.length];
+  return cells.some(([cx,cy])=>{
+    const x = px+cx, y = py+cy;
+    return x<0 || x>=TET.COLS || y>=TET.ROWS || (y>=0 && t.grid[y][x]);
+  });
+}
+function tetSpawn(t){
+  const key = TET_KEYS[(Math.random()*TET_KEYS.length)|0];
+  t.piece = {key, rot:0, x:3, y:-1};
+  if(tetCollides(t, key, 0, 3, -1)){
+    // валіза переповнена — перепаковуємо (без фейлів, це ж історія кохання)
+    t.grid = Array.from({length:TET.ROWS}, ()=>Array(TET.COLS).fill(null));
+  }
+  if(game.watch) tetPlanAI(t);
+}
+function tetPlanAI(t){
+  // жадібний автопілот: мінімальна висота + без дірок, наскільки вміє
+  let best = null;
+  const rots = TETROMINOES[t.piece.key].r.length;
+  for(let rot=0; rot<rots; rot++){
+    for(let x=-2; x<TET.COLS; x++){
+      if(tetCollides(t, t.piece.key, rot, x, 0) && tetCollides(t, t.piece.key, rot, x, -1)) continue;
+      let y = t.piece.y;
+      while(!tetCollides(t, t.piece.key, rot, x, y+1)) y++;
+      if(tetCollides(t, t.piece.key, rot, x, y)) continue;
+      const score = -y*2 + Math.abs(x-3)*0.1;   // нижче = краще
+      if(best===null || score < best.score) best = {rot, x, score};
+    }
+  }
+  t.ai = best ? {rot:best.rot, x:best.x} : {rot:0, x:3};
+}
+function tetLock(t){
+  const cells = TETROMINOES[t.piece.key].r[t.piece.rot % TETROMINOES[t.piece.key].r.length];
+  cells.forEach(([cx,cy])=>{
+    const y = t.piece.y+cy, x = t.piece.x+cx;
+    if(y>=0 && y<TET.ROWS && x>=0 && x<TET.COLS) t.grid[y][x] = TETROMINOES[t.piece.key].c;
+  });
+  t.piece = null;
+  const full = [];
+  for(let y=0;y<TET.ROWS;y++) if(t.grid[y].every(c=>c)) full.push(y);
+  if(full.length){ t.flashRows = full; t.flashT = 18; }
+}
+function updateTetris(){
+  const t = game.tetris; if(!t || !t.started) return;
+
+  if(t.win){
+    t.winT++;
+    if(t.winT===80 && !t.outroStarted){
+      t.outroStarted = true;
+      stopMusic();
+      startDialog(tetrisOutroScript(game.pov), ()=> setTimeout(finishGame, 700));
+    }
+    return;
+  }
+  // лічильник повідомлень тікає
+  if(t.msgs < 11223) t.msgs = Math.min(11223, t.msgs + 2 + t.lines*2);
+
+  // спалах зібраних рядків
+  if(t.flashT > 0){
+    t.flashT--;
+    if(t.flashT===0){
+      t.flashRows.sort((a,b)=>a-b).forEach(y=>{
+        t.grid.splice(y,1);
+        t.grid.unshift(Array(TET.COLS).fill(null));
+      });
+      t.lines += t.flashRows.length;
+      t.flashRows = [];
+      if(t.lines >= TET.WIN_LINES){ t.win = true; t.winT = 0; }
+    }
+    return;
+  }
+  if(t.lines >= TET.WIN_LINES || (game.watch && game.phaseT > 3200)){ t.win = true; t.winT = 0; return; }
+
+  if(!t.piece){ tetSpawn(t); return; }
+  const p = t.piece;
+
+  if(game.watch && t.ai){
+    if(game.phaseT % 5 === 0){
+      if(p.rot !== t.ai.rot && !tetCollides(t,p.key,(p.rot+1),p.x,p.y)) p.rot = (p.rot+1) % TETROMINOES[p.key].r.length;
+      else if(p.x < t.ai.x && !tetCollides(t,p.key,p.rot,p.x+1,p.y)) p.x++;
+      else if(p.x > t.ai.x && !tetCollides(t,p.key,p.rot,p.x-1,p.y)) p.x--;
+    }
+  } else if(!game.watch){
+    // рух з утриманням
+    t.moveT++;
+    const L = keys['ArrowLeft']||input.left, R = keys['ArrowRight']||input.right;
+    if((L||R) && t.moveT>=7){
+      t.moveT = 0;
+      const dx = L ? -1 : 1;
+      if(!tetCollides(t,p.key,p.rot,p.x+dx,p.y)) p.x += dx;
+    }
+    if(!L && !R) t.moveT = 7;
+    // поворот (A / пробіл / тап / ArrowUp)
+    if(input.actionEdge){
+      const nr = (p.rot+1) % TETROMINOES[p.key].r.length;
+      for(const kick of [0,-1,1,-2,2]){
+        if(!tetCollides(t,p.key,nr,p.x+kick,p.y)){ p.rot = nr; p.x += kick; break; }
+      }
+      input.actionEdge = false;
+    }
+  }
+  // падіння
+  t.fallT++;
+  const soft = keys['ArrowDown'] || input.down || (game.watch && t.ai && p.x===t.ai.x && p.rot===t.ai.rot);
+  if(t.fallT >= (soft?2:24)){
+    t.fallT = 0;
+    if(!tetCollides(t,p.key,p.rot,p.x,p.y+1)) p.y++;
+    else tetLock(t);
+  }
+}
+function drawTetris(){
+  // кімната в Лондоні
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#2c2838'); g.addColorStop(1,'#3c3448');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  const t = game.tetris; if(!t) return;
+
+  // вікно з дощем і Біг-Беном
+  ctx.fillStyle = COL.ink; ctx.fillRect(18,22,78,86);
+  ctx.fillStyle = '#1c2440'; ctx.fillRect(22,26,70,78);
+  ctx.fillStyle = '#141a30';                                  // силует Біг-Бена
+  ctx.fillRect(66,40,14,64); ctx.fillRect(69,32,8,10);
+  ctx.fillRect(71,26,4,8);
+  ctx.fillStyle = '#f4e8c8'; ctx.fillRect(69,46,8,8);         // циферблат
+  ctx.fillStyle = '#141a30'; ctx.fillRect(72,48,2,4);
+  ctx.fillStyle = '#2a3454';                                  // будинки
+  ctx.fillRect(24,74,18,30); ctx.fillRect(44,82,16,22);
+  ctx.fillStyle = 'rgba(255,220,140,.5)';
+  ctx.fillRect(27,80,2,2); ctx.fillRect(33,88,2,2); ctx.fillRect(48,88,2,2);
+  ctx.fillStyle = 'rgba(160,190,230,.4)';                     // дощ
+  for(let i=0;i<12;i++){
+    const rx = 24 + (i*17 + (game.t*2)) % 66;
+    const ry = 28 + (i*23 + game.t*3) % 72;
+    ctx.fillRect(rx, ry, 1, 5);
+  }
+  ctx.fillStyle = COL.ink; ctx.fillRect(56,26,3,78);          // рама
+
+  // телефон із лічильником повідомлень
+  ctx.fillStyle = COL.ink; ctx.fillRect(24,118,66,40);
+  ctx.fillStyle = '#f8f8f3'; ctx.fillRect(27,121,60,34);
+  ctx.fillStyle = COL.sage; ctx.font='bold 8px monospace'; ctx.textAlign='left';
+  ctx.fillText('ДІМА 💬', 31, 131);
+  ctx.fillStyle = COL.ink; ctx.font='bold 10px monospace';
+  ctx.fillText('✉ ' + t.msgs.toLocaleString('uk-UA'), 31, 144);
+  ctx.font='6px monospace'; ctx.fillStyle='#888';
+  ctx.fillText('повідомлень за місяць', 31, 152);
+
+  // валіза-стакан
+  const fx = TET.X, fy = TET.Y, fw = TET.COLS*TET.CELL, fh = TET.ROWS*TET.CELL;
+  ctx.fillStyle = '#6e4a2e';                                  // корпус валізи
+  ctx.fillRect(fx-6, fy-4, fw+12, fh+12);
+  ctx.fillStyle = '#5a3a22';
+  ctx.fillRect(fx-6, fy-4, fw+12, 3); ctx.fillRect(fx-6, fy+fh+5, fw+12, 3);
+  ctx.fillStyle = '#8a5a36';                                  // ручка
+  ctx.fillRect(fx+fw/2-12, fy-12, 24, 5);
+  ctx.fillRect(fx+fw/2-12, fy-12, 4, 9); ctx.fillRect(fx+fw/2+8, fy-12, 4, 9);
+  ctx.fillStyle = '#241d2e'; ctx.fillRect(fx, fy, fw, fh);    // нутро
+
+  // сітка
+  for(let y=0;y<TET.ROWS;y++)
+    for(let x=0;x<TET.COLS;x++){
+      const c = t.grid[y][x];
+      if(!c) continue;
+      const flash = t.flashRows.includes(y) && (game.t>>1)&1;
+      ctx.fillStyle = flash ? '#fff' : c;
+      ctx.fillRect(fx+x*TET.CELL, fy+y*TET.CELL, TET.CELL-1, TET.CELL-1);
+    }
+  // поточна фігура
+  if(t.piece && !t.win){
+    const p = t.piece, def = TETROMINOES[p.key];
+    ctx.fillStyle = def.c;
+    def.r[p.rot % def.r.length].forEach(([cx,cy])=>{
+      const y = p.y+cy; if(y<0) return;
+      ctx.fillRect(fx+(p.x+cx)*TET.CELL, fy+y*TET.CELL, TET.CELL-1, TET.CELL-1);
+    });
+  }
+  // рахунок
+  ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='right';
+  ctx.fillText('РЯДКИ '+Math.min(t.lines,TET.WIN_LINES)+'/'+TET.WIN_LINES, W-6, fy+10);
+  ctx.fillStyle = '#8a8878'; ctx.font='7px monospace';
+  ctx.fillText('жовтень', W-6, fy+24);
+  ctx.fillText('тягнеться…', W-6, fy+33);
+  ctx.textAlign='left';
+
+  if(t.win){
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = COL.gold; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+    ctx.fillText('ВАЛІЗУ СПАКОВАНО!', W/2, 86);
+    ctx.fillStyle = '#fff'; ctx.font='8px monospace';
+    ctx.fillText('достроково', W/2, 100);
+  } else if(t.started && !game.watch){
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillText(isTouch ? '◀ ▶ рухати · A — крутити · ▼ — швидше' : '◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше', W/2, H-5);
+  }
+}
+
+/* ---- 8-біт «Щедрик» (Леонтович, суспільне надбання) ---- */
+let audioCtx = null, musicTimer = null, musicOn = false;
+function startMusic(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    if(musicOn) return;
+    musicOn = true;
+    const Bb4=466.16, A4=440.00, G4=392.00, D4=293.66, G3=196.00;
+    // такт «Щедрика»: Bb A Bb G + тихий бас
+    const seq = [[Bb4,.32],[A4,.16],[Bb4,.16],[G4,.32]];
+    let nextT = audioCtx.currentTime + 0.05, bar = 0;
+    const scheduleBar = ()=>{
+      if(!musicOn) return;
+      while(nextT < audioCtx.currentTime + 0.6){
+        let tt = nextT;
+        seq.forEach(([f,d])=>{
+          const o = audioCtx.createOscillator(), gn = audioCtx.createGain();
+          o.type='square'; o.frequency.value = f;
+          gn.gain.setValueAtTime(0.045, tt);
+          gn.gain.exponentialRampToValueAtTime(0.001, tt+d*0.92);
+          o.connect(gn); gn.connect(audioCtx.destination);
+          o.start(tt); o.stop(tt+d);
+          tt += d;
+        });
+        const b = audioCtx.createOscillator(), bg = audioCtx.createGain();
+        b.type='triangle'; b.frequency.value = (bar%2)? D4/2 : G3;
+        bg.gain.setValueAtTime(0.05, nextT);
+        bg.gain.exponentialRampToValueAtTime(0.001, nextT+0.9);
+        b.connect(bg); bg.connect(audioCtx.destination);
+        b.start(nextT); b.stop(nextT+0.96);
+        nextT += 0.96; bar++;
+      }
+    };
+    scheduleBar();
+    musicTimer = setInterval(scheduleBar, 300);
+  }catch(e){ /* без звуку — теж гра */ }
+}
+function stopMusic(){
+  musicOn = false;
+  if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
+}
+
 /* ================= титри сцен ================= */
 function drawCaption(line1, line2){
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
@@ -759,6 +1049,7 @@ addEventListener('keydown', e=>{
   if(e.repeat) return;
   keys[e.key] = true;
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
+  if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
   takeOver();
 });
 addEventListener('keyup', e=>{ keys[e.key] = false; });
@@ -772,7 +1063,7 @@ function bindPad(id, prop){
   el.addEventListener('pointerleave', off);
   el.addEventListener('pointercancel', off);
 }
-bindPad('pad-left','left'); bindPad('pad-right','right'); bindPad('pad-a','action');
+bindPad('pad-left','left'); bindPad('pad-right','right'); bindPad('pad-down','down'); bindPad('pad-a','action');
 
 elDialog.addEventListener('pointerdown', e=>{ e.preventDefault(); input.actionEdge = true; takeOver(); });
 
@@ -811,7 +1102,9 @@ const elHud = document.getElementById('hud');
 function updateHudAndControls(){
   elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name;
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
-  document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !walkPhase);
+  const padPhase = walkPhase || (game.state==='play' && game.phase==='tetris');
+  document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase);
+  document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
   document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
 }
 
@@ -828,7 +1121,7 @@ function startGame(pov, watch){
   game.player = {x:36, dir:1, walking:false, phase:0};
   game.npc = {x:430, dir:-1, phase:0};
   game.camX = 0; game.swipeX = 0; game._setDone = false; game._dateDone = false;
-  game.battle = null; dragTarget = null;
+  game.battle = null; game.tetris = null; dragTarget = null; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
   elHud.classList.remove('hidden');
@@ -837,6 +1130,7 @@ function startGame(pov, watch){
 }
 
 function finishGame(){
+  stopMusic();
   game.state = 'end';
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
@@ -961,6 +1255,14 @@ function update(){
     case 'battle':
       updateBattle();
       break;
+
+    case 'cap4':
+      if(game.phaseT > 120 || input.actionEdge) startTetris();
+      break;
+
+    case 'tetris':
+      updateTetris();
+      break;
   }
 
   if(input.actionEdge && game.dialog) advanceDialog();
@@ -1037,6 +1339,12 @@ function render(){
     }
     case 'battle':
       drawBattle();
+      break;
+    case 'cap4':
+      drawCaption('ЖОВТЕНЬ 2022 · ЛОНДОН', 'місяць, який треба висидіти');
+      break;
+    case 'tetris':
+      drawTetris();
       break;
   }
 }
