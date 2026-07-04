@@ -205,6 +205,13 @@
       <button class="btn" id="btn-sampler">🎹 Семплер</button>
     </div>
     <div class="hint">— «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» → «Сватання» → «Мінімаліст» —</div>
+    <div id="ach-btn" style="color:#B58A2E;cursor:pointer;font-size:clamp(10px,2.2cqw,14px);letter-spacing:1px">🏆 0/8</div>
+  </div>
+
+  <div id="ach-screen" class="overlay hidden" style="background:#14121c;gap:2%">
+    <div class="s-head">🏆 ДОСЯГНЕННЯ</div>
+    <div id="ach-list" style="display:flex;flex-direction:column;gap:6px;width:min(88%,420px)"></div>
+    <button class="btn s-btn" id="ach-back" style="background:#55515f">НАЗАД</button>
   </div>
 
   <div id="sampler-screen" class="overlay hidden">
@@ -285,6 +292,40 @@ const SLOTS = {
   A: {what:'Церемонія і банкет', when:'6 вересня 2026 · час уточнюється', where:'Київ · локація уточнюється'},
   B: {what:'Банкет',             when:'6 вересня 2026 · час уточнюється', where:'Київ · локація уточнюється'},
 };
+
+/* ---------------- досягнення 🏆 ---------------- */
+const ACHS = [
+  {id:'dubl3',  icon:'🎬', title:'Дубль три',        desc:'пережити зйомку Штормнадо'},
+  {id:'storm',  icon:'💡', title:'Шторм зібрано',    desc:'усі ідеї на майданчику'},
+  {id:'hearts', icon:'💘', title:'Всі серця твої',   desc:'усі сердечка на Пейзажці'},
+  {id:'harbuz', icon:'🎃', title:'Гарбузова душа',   desc:'спіймати гарбуза на сватанні'},
+  {id:'purr',   icon:'🐈', title:'Мурчальниця',      desc:'погладити Кітану'},
+  {id:'mate1',  icon:'♛',  title:'Гросмейстерка',    desc:'мат із першої спроби'},
+  {id:'ring',   icon:'💍', title:'Той самий палець', desc:'обрати підмізинний одразу'},
+  {id:'both',   icon:'👀', title:'Обидві сторони',   desc:'пройти за Катю і за Діму'},
+];
+let achDone = new Set(JSON.parse(localStorage.getItem('wed-ach')||'[]'));
+const achToasts = [];
+function achUnlock(id){
+  if(game.watch || achDone.has(id)) return;
+  achDone.add(id);
+  localStorage.setItem('wed-ach', JSON.stringify([...achDone]));
+  const a = ACHS.find(x=>x.id===id);
+  achToasts.push({text: a.icon+' '+a.title, t: 170});
+  updateAchButton();
+}
+function drawAchToasts(){
+  achToasts.forEach((tt,i)=>{
+    tt.t--;
+    const y = 6 + i*16 - (tt.t>150 ? (tt.t-150)*2 : 0);
+    ctx.fillStyle = 'rgba(0,0,0,.75)';
+    ctx.fillRect(W/2-70, y, 140, 13);
+    ctx.fillStyle = COL.gold; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    ctx.fillText('🏆 '+tt.text, W/2, y+10);
+    ctx.textAlign='left';
+  });
+  for(let i=achToasts.length-1;i>=0;i--) if(achToasts[i].t<=0) achToasts.splice(i,1);
+}
 
 const CHARS = {
   // Катя — блондинка з каре, Діма — шатен із чубчиком-шторкою (за фото)
@@ -447,7 +488,10 @@ function walkJumpAndCollect(p){
     if(it.taken) return;
     if(Math.abs(p.x - it.x) < 11 && Math.abs(bodyY - it.y) < 17){
       it.taken = true; c.got++;
-      if(c.got === c.items.length) c.toastT = 80;
+      if(c.got === c.items.length){
+        c.toastT = 80;
+        achUnlock(c.kind==='idea' ? 'storm' : 'hearts');
+      }
     }
   });
   if(c.toastT > 0) c.toastT--;
@@ -1258,7 +1302,7 @@ function updateSvat(){
         input.actionEdge = false;
         sl.stopped = true;
         sl.verdict = inRush ? 'рушник' : 'гарбуз';
-        if(sl.verdict==='гарбуз') sl.msgT = 80;      // жарт і ще спроба
+        if(sl.verdict==='гарбуз'){ sl.msgT = 80; achUnlock('harbuz'); }  // жарт і ще спроба
         else { s.step='tied'; s.tiedT=0; }
       }
     }
@@ -1352,6 +1396,15 @@ function drawSvat(){
   drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
   drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
   drawKitana(112, FLOOR_Y+2, -1);
+  if(s.purrT > 0){
+    s.purrT--;
+    ctx.fillStyle = COL.rose;
+    const hy2 = FLOOR_Y-24 - (70-s.purrT)*0.3;
+    ctx.fillRect(108,hy2,2,2); ctx.fillRect(111,hy2-1,2,2); ctx.fillRect(114,hy2,2,2);
+    ctx.fillStyle = '#fff'; ctx.font='bold 7px monospace'; ctx.textAlign='center';
+    ctx.fillText('муррр♥', 112, hy2-4);
+    ctx.textAlign='left';
+  }
   ctx.fillStyle = '#c98a3e'; ctx.fillRect(160,FLOOR_Y-24,14,7);  // хліб у руках Діми
   ctx.fillStyle = '#e0a85a'; ctx.fillRect(162,FLOOR_Y-24,10,3);
 
@@ -1485,15 +1538,19 @@ function updateProp(){
       p.fingerSel = Math.max(0, Math.min(4, Math.floor((game._tapPos.x-95)/28)));
       game._tapPos = null; input.actionEdge = true;
     }
-    if(input.actionEdge){ input.actionEdge = false; p.finger = p.fingerSel; p.ringT = 0; }
+    if(input.actionEdge){
+      input.actionEdge = false;
+      p.finger = p.fingerSel; p.ringT = 0;
+      if(p.finger === 3) achUnlock('ring');
+    }
   }
 }
 function confirmChess(){
   const p = game.prop;
   const move = CHESS_MOVES[p.sel];
-  const win = game.pov==='katya' ? move.good : false;   // за Діму виграти неможливо
-  if(game.pov==='katya' && !move.good){ p.wrongT = 70; return; }
+  if(game.pov==='katya' && !move.good){ p.wrongT = 70; p._missed = true; return; }
   p.solved = true;
+  if(game.pov==='katya' && !p._missed) achUnlock('mate1');
   startDialog(propChessOutroScript(game.pov), ()=>{ game.prop.step='rummage'; game.prop.meter=0; });
 }
 function drawCabin(){
@@ -1950,6 +2007,13 @@ cv.addEventListener('pointerdown', e=>{
     game._tapPos = canvasPos(e);
   }
   else if(game.phase==='diia'){ game._holdPtr = true; }
+  else if(game.phase==='svat' && game.svat){
+    const pos = canvasPos(e);
+    if(Math.abs(pos.x-112) < 18 && pos.y > 118){    // тап по Кітані біля печі
+      game.svat.purrT = 70;
+      achUnlock('purr');
+    } else input.actionEdge = true;
+  }
   else input.actionEdge = true;
 });
 cv.addEventListener('pointermove', e=>{
@@ -2010,6 +2074,10 @@ function startGame(pov, watch){
 function finishGame(){
   stopMusic();
   game.state = 'end';
+  if(!game.watch){
+    localStorage.setItem('wed-done-'+game.pov, '1');
+    if(localStorage.getItem('wed-done-katya') && localStorage.getItem('wed-done-dima')) achUnlock('both');
+  }
   // персональне запрошення
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
@@ -2094,7 +2162,7 @@ function update(){
       walkJumpAndCollect(p);
       if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._setDone){
         game._setDone = true;
-        startDialog(setScript(game.pov), ()=> setPhase('cap2'));
+        startDialog(setScript(game.pov), ()=> { achUnlock('dubl3'); setPhase('cap2'); });
       }
       const target = Math.max(0, Math.min(LEVEL_W-W, p.x - 130));
       game.camX += (target - game.camX)*0.12;
@@ -2315,6 +2383,7 @@ function render(){
       drawWed();
       break;
   }
+  drawAchToasts();
 }
 
 /* ================= семплер ================= */
@@ -2389,6 +2458,32 @@ document.getElementById('s-back').addEventListener('click', ()=>{
 document.getElementById('btn-sampler').addEventListener('click', ()=>{
   elTitle.classList.add('hidden');
   document.getElementById('sampler-screen').classList.remove('hidden');
+});
+
+/* ================= панель досягнень ================= */
+function updateAchButton(){
+  document.getElementById('ach-btn').textContent = '🏆 ' + achDone.size + '/' + ACHS.length;
+}
+updateAchButton();
+document.getElementById('ach-btn').addEventListener('click', ()=>{
+  const list = document.getElementById('ach-list');
+  list.innerHTML = '';
+  ACHS.forEach(a=>{
+    const got = achDone.has(a.id);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;align-items:center;padding:6px 10px;'+
+      'background:'+(got?'#2b2b38':'#1c1a26')+';border:2px solid '+(got?'#B58A2E':'#2b2b38')+
+      ';color:'+(got?'#fff':'#55515f')+';font-size:clamp(10px,2.4cqw,14px)';
+    row.innerHTML = '<span style="font-size:1.3em">'+(got?a.icon:'🔒')+'</span>'+
+      '<span><b>'+a.title+'</b><br><span style="opacity:.65;font-size:.85em">'+a.desc+'</span></span>';
+    list.appendChild(row);
+  });
+  elTitle.classList.add('hidden');
+  document.getElementById('ach-screen').classList.remove('hidden');
+});
+document.getElementById('ach-back').addEventListener('click', ()=>{
+  document.getElementById('ach-screen').classList.add('hidden');
+  elTitle.classList.remove('hidden');
 });
 
 /* ================= мобільність ================= */
