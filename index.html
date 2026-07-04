@@ -367,7 +367,7 @@ function chatScript(pov){
     {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
   ];
   const common = [
-    {who:null, emo:null, text:'Слово за слово — і чат уже не спить:\nпро все на світі, зранку й до півночі.'},
+    {who:null, emo:null, text:'Слово за слово — чат уже не спить:\nвід ранку і до ночі він дзвенить.'},
     {who:null, emo:null, text:'(за кілька днів це виглядало так)'},
     {who:'dima',  emo:'happy', text:'Йоу! Як трєня?)'},
     {who:'katya', emo:'tired', text:'Йоу) стресово 🥲\nБоюсь потрапити до важчих суперниць.'},
@@ -397,19 +397,19 @@ function dateScript(pov){
   return [
     ...first,
     {who:'dima', emo:'shy', text:'…а можна, я проведу тебе додому?'},
-    {who:null, emo:null, text:'Пейзажка, пиво, ліхтарів вогні —\nі перший поцілунок при дверні.'},
-    {who:null, emo:null, text:'Умовились: усе це — несерйозно.\nТа вже любов підкрадувалась грізно…'},
+    {who:null, emo:null, text:'Пейзажка, пиво, ліхтарів вогні —\nі перший поцілунок, мов у сні.'},
+    {who:null, emo:null, text:'Умовились: усе це — несерйозно.\nТа вже любов підкрадалася грізно…'},
   ];
 }
 function battleOutroScript(pov){
   return [
-    {who:null, emo:null, text:'Несерйозність — нуль. Кінець торгам:\nвід цього серцю не втекти ніяк.'},
+    {who:null, emo:null, text:'Несерйозність тане, як весняний сніг —\nвід справжнього ще жоден не утік.'},
   ];
 }
 function tetrisIntroScript(pov){
   return pov==='katya' ? [
     {who:'katya', emo:'normal',text:'Місяць у Лондоні — заради візи.'},
-    {who:null,    emo:null,   text:'Та Біг-Бен б’є, а серце — в тон Києву.\nСклади валізу й повертайся швидше.'},
+    {who:null,    emo:null,   text:'У Лондоні дощі, і Біг-Бен б’є,\nа серце в Києві — давно уже твоє.'},
   ] : [
     {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
     {who:null,   emo:null,   text:'А в Лондоні — валіза й ліхтарі,\nі думка лиш одна: скоріш вертись.'},
@@ -417,7 +417,7 @@ function tetrisIntroScript(pov){
 }
 function tetrisOutroScript(pov){
   return pov==='katya' ? [
-    {who:null, emo:null, text:'Валіза склалась — місяць не добутий:\nлюбов не вміє довго в візах бути.'},
+    {who:null, emo:null, text:'Потяг рушив, місяць — не досиджено:\nлюбов і візи — речі несумісні.'},
   ] : [
     {who:null, emo:null, text:'Вернулась раніше — на місяць, на щастя.\n«Це не через мене» (це через нас, ясно).'},
   ];
@@ -428,12 +428,12 @@ function runIntroScript(pov){
     {who:null,    emo:null,   text:'Та серце — в Києві. Біжи дахами,\nстрибай пропуски — і на потяг, до нестями!'},
   ] : [
     {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
-    {who:null,   emo:null,   text:'А в Лондоні вона вже мчить дахами —\nскоріш на потяг, знову бути з нами.'},
+    {who:null,   emo:null,   text:'А в Лондоні вона летить дахами:\nскоріш додому — там чекає Діма.'},
   ];
 }
 function runOutroScript(pov){
   return pov==='katya' ? [
-    {who:null, emo:null, text:'Встигла на потяг — місяць не добутий:\nлюбов не вміє довго в візах бути.'},
+    {who:null, emo:null, text:'Потяг рушив, місяць — не досиджено:\nлюбов і візи — речі несумісні.'},
   ] : [
     {who:null, emo:null, text:'Вернулась раніше — на місяць, на щастя.\n«Це не через мене» (це через нас, ясно).'},
   ];
@@ -446,7 +446,7 @@ function svatIntroScript(pov){
 }
 function svatOutroScript(pov){
   return [
-    {who:null, emo:null, text:'Рушник на плечі — і зайшлось до згоди.\n(Насправді ні. Та хай живе у грі назавжди.)'},
+    {who:null, emo:null, text:'Рушники на сватах — отже, згода!\n(Насправді сватання не було. Але тепер — було.)'},
   ];
 }
 function propChessOutroScript(pov){
@@ -459,7 +459,7 @@ function propChessOutroScript(pov){
 function propBoxScript(pov){
   return [
     {who:'dima', emo:'shy', text:'…~~люблю~~ … ~~~ …\n~~~ дружиною ~~~ …'},
-    {who:null,   emo:null,  text:'Слова втонули в тиші й теплім світлі.\nАле найголовніше — таки почулось.'},
+    {who:null,   emo:null,  text:'Слова втонули в сяйві золотім —\nале «моєю будь» почули в нім.'},
   ];
 }
 function propOutroScript(pov){
@@ -2469,7 +2469,7 @@ function finishGame(){
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
   const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
-  const verse = '<i>Від Тіндера до килимка вінчання —<br>ми кличем тебе на своє свято!</i><br><br>';
+  const verse = '<i>Від свайпу вправо — до весільних дзвонів.<br>Приходь на свято — без зайвих церемоній!</i><br><br>';
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
@@ -3041,7 +3041,7 @@ function startKitana(){
 }
 function kitanaIntroScript(pov){
   return [
-    {who:null, emo:null, text:'Осіння двірня. Дан. І сірий клубок —\nмале кошеня, що обрало нас двох.'},
+    {who:null, emo:null, text:'Осінній двір у Дана. Сірий клубок —\nмале кошеня, що обрало нас двох.'},
     {who:null, emo:null, text:'🎤 Нявкай у мікрофон — гукай Кітану!\n(або тап / ПРОБІЛ)'},
   ];
 }
@@ -3144,7 +3144,7 @@ function drawKitanaScene(){
 }
 function kitanaOutroScript(pov){
   return [
-    {who:null, emo:null, text:'Кітана вибрала — і крапка тут:\nвід того дня цей дім і є їй кут. 🐈'},
+    {who:null, emo:null, text:'Кітана вибрала — і крапка тут:\nвідтоді в нас її затишний кут. 🐈'},
   ];
 }
 
