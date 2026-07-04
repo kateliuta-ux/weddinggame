@@ -443,6 +443,8 @@ const game = {
   svat:null,                // стан сватання
   prop:null,                // стан освідчення
   diia:null,                // стан подачі заяви в Дії
+  montage:null,             // ексклюзив Каті — монтаж
+  band:null,                // ексклюзив Діми — Space Spice Boy
   _tapPos:null,             // остання точка тапу по канві (для вибору ходу/пальця)
   _holdPtr:false,           // палець утримується на канві (для кнопки Дії)
 };
@@ -1908,6 +1910,122 @@ function drawWed(){
   ctx.fillText('06 · 09 · 2026', W/2, 26);
 }
 
+/* ================= ЕКСКЛЮЗИВ КАТІ: МОНТАЖ ================= */
+function montageIntroScript(){
+  return [
+    {who:'katya', emo:'normal', text:'Далі — моя робота. Монтаж.'},
+    {who:null,    emo:null,     text:'Ріж таймлайн, коли бігунець на ▸ мітці.\n(тап / ПРОБІЛ)'},
+  ];
+}
+function montageOutroScript(){
+  return [{who:'katya', emo:'happy', text:'Готово. Випуск ніхто не побачить —\nале монтаж чистий.'}];
+}
+function startMontage(){
+  game.montage = {x:0, cuts:0, need:5, marks:[], done:false, doneT:0, flashT:0, started:false};
+  for(let i=1;i<=8;i++) game.montage.marks.push({at: i/9, cut:false});
+  setPhase('montage');
+  startDialog(montageIntroScript(), ()=>{ game.montage.started = true; });
+}
+function montageCut(){
+  const m = game.montage; if(!m || !m.started || m.done) return;
+  for(const mk of m.marks){
+    if(!mk.cut && Math.abs(mk.at - m.x) < 0.035){ mk.cut = true; m.cuts++; m.flashT = 8;
+      if(m.cuts>=m.need){ m.done = true; m.doneT = 0; } return; }
+  }
+}
+function updateMontage(){
+  const m = game.montage; if(!m || !m.started) return;
+  if(m.done){ m.doneT++; if(m.doneT===60) startDialog(montageOutroScript(), ()=> setPhase('cap2')); return; }
+  if(m.flashT>0) m.flashT--;
+  m.x += 0.006; if(m.x>1) m.x = 0;
+  if(input.actionEdge && !game.dialog){ input.actionEdge=false; montageCut(); }
+  if(game.watch){ for(const mk of m.marks) if(!mk.cut && Math.abs(mk.at-m.x)<0.02){ montageCut(); break; } }
+}
+function drawMontage(){
+  const m = game.montage; if(!m) return;
+  ctx.fillStyle = '#14121c'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#0a0a12'; ctx.fillRect(30,60,260,120);
+  ctx.fillStyle = COL.greenD; ctx.fillRect(34,64,252,112);
+  ctx.fillStyle = '#fff'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+  ctx.fillText('ШТОРМНАДО · чорновий монтаж', W/2, 120);
+  ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='8px monospace';
+  ctx.fillText('різів: '+m.cuts+'/'+m.need, W/2, 138);
+  const tx=20, tw=W-40, ty=H/2, th=46;
+  ctx.fillStyle = '#2b2b38'; ctx.fillRect(tx,ty,tw,th);
+  for(let i=0;i<9;i++){ ctx.fillStyle = i%2?'#3F7C77':'#356e69'; ctx.fillRect(tx+tw*i/9+1,ty+8,tw/9-2,th-16); }
+  m.marks.forEach(mk=>{
+    ctx.fillStyle = mk.cut ? '#B58A2E' : '#fff';
+    ctx.fillRect(tx+tw*mk.at-1, ty-6, 2, th+12);
+    if(!mk.cut){ ctx.fillStyle='#fff'; ctx.font='8px monospace'; ctx.textAlign='center'; ctx.fillText('▸', tx+tw*mk.at, ty-8); }
+  });
+  const px = tx+tw*m.x;
+  ctx.fillStyle = m.flashT>0 ? '#fff' : COL.rose; ctx.fillRect(px-1, ty-12, 3, th+24);
+  ctx.fillStyle = COL.rose; ctx.fillRect(px-4, ty-16, 9, 5);
+  ctx.textAlign='center';
+  if(!m.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
+    ctx.fillText(game.watch?'':(isTouch?'тап — різати':'ПРОБІЛ — різати'), W/2, H-8); }
+  else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ЗМОНТОВАНО!', W/2, ty+th+30); }
+  ctx.textAlign='left';
+}
+
+/* ================= ЕКСКЛЮЗИВ ДІМИ: SPACE SPICE BOY ================= */
+function bandIntroScript(){
+  return [
+    {who:'dima', emo:'happy', text:'А в мене є гурт — SPACE SPICE BOY.'},
+    {who:null,   emo:null,    text:'Лови ноти на лінії! (тап у колонці / A S D)'},
+  ];
+}
+function bandOutroScript(){
+  return [{who:'dima', emo:'happy', text:'«Такой себе син», але хіт.'}];
+}
+function startBand(){
+  game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false};
+  setPhase('band');
+  startDialog(bandIntroScript(), ()=>{ game.band.started = true; });
+}
+function bandHit(lane){
+  const b = game.band; if(!b || !b.started || b.done) return;
+  b.hitFlash[lane] = 8;
+  for(const n of b.notes){
+    if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 22){ n.hit = true; b.hits++;
+      ensureAudio(); playNote([330,392,494][lane], audioCtx.currentTime, 0.18, 'square', 0.05);
+      if(b.hits>=b.need){ b.done = true; b.doneT = 0; } return; }
+  }
+}
+function updateBand(){
+  const b = game.band; if(!b || !b.started) return;
+  if(b.done){ b.doneT++; if(b.doneT===60) startDialog(bandOutroScript(), ()=> setPhase('cap2')); return; }
+  b.t++;
+  for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
+  if(b.t%28===0 && b.notes.length<40) b.notes.push({lane:(Math.random()*3|0), y:-10, hit:false});
+  b.notes.forEach(n=>{ n.y += 2.4; });
+  b.notes = b.notes.filter(n=> n.y < H+10 && !n.hit);
+  if(game.watch){ for(const n of b.notes) if(!n.hit && Math.abs(n.y-(H-70))<10) bandHit(n.lane); }
+}
+function drawBand(){
+  const b = game.band; if(!b) return;
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#1a1030'); g.addColorStop(1,'#2a1840'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  const lanes=[W/2-70, W/2, W/2+70], LW=54;
+  lanes.forEach((lx,i)=>{
+    ctx.fillStyle = b.hitFlash[i]>0 ? 'rgba(200,240,50,.3)' : 'rgba(255,255,255,.05)';
+    ctx.fillRect(lx-LW/2, 0, LW, H);
+  });
+  ctx.fillStyle = COL.gold; ctx.fillRect(0, H-70, W, 3);
+  lanes.forEach((lx,i)=>{ ctx.strokeStyle=b.hitFlash[i]>0?'#c8f032':'#fff'; ctx.lineWidth=2;
+    ctx.strokeRect(lx-LW/2+3, H-82, LW-6, 24); });
+  b.notes.forEach(n=>{ if(n.hit) return; ctx.fillStyle=['#A8505F','#B58A2E','#3F7C77'][n.lane];
+    ctx.fillRect(lanes[n.lane]-14, n.y-8, 28, 16); ctx.fillStyle='#fff'; ctx.fillRect(lanes[n.lane]-3, n.y-8, 3, 16); });
+  ctx.fillStyle='#fff'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
+  ctx.fillText('SPACE SPICE BOY', W/2, 30);
+  ctx.fillStyle=COL.gold; ctx.font='bold 10px monospace';
+  ctx.fillText(b.hits+'/'+b.need, W/2, 46);
+  if(!b.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
+    ctx.fillText(game.watch?'':(isTouch?'тап у колонці':'A S D — лови ноти'), W/2, H-8); }
+  else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ХІТ ЗАПИСАНО!', W/2, H/2); }
+  ctx.textAlign='left';
+}
+
 /* ---- музика: «Минає день, минає ніч» (Мозговий/Рибчинський), приспів ----
    Реконструкція мелодії по пам'яті — Катя виправить у семплері. */
 let audioCtx = null, musicTimer = null, musicOn = false;
@@ -2033,6 +2151,7 @@ addEventListener('keydown', e=>{
   if(e.repeat) return;
   keys[e.key] = true;
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
+  if(game.phase==='band'){ const l={a:0,s:1,d:2}[e.key.toLowerCase()]; if(l!==undefined) bandHit(l); }
   if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
   if((e.key==='p'||e.key==='P'||e.key==='Escape') && game.phase==='tetris'){ toggleTetrisPause(); return; }
   // перехоплення керування — лише навмисними ігровими клавішами
@@ -2068,6 +2187,11 @@ cv.addEventListener('pointerdown', e=>{
   else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
     game._tapPos = canvasPos(e);
   }
+  else if(game.phase==='band'){
+    const lane = canvasPos(e).x < W/2-25 ? 0 : canvasPos(e).x > W/2+25 ? 2 : 1;
+    bandHit(lane);
+  }
+  else if(game.phase==='montage'){ input.actionEdge = true; }
   else if(game.phase==='diia'){
     const pos = canvasPos(e);
     if(diiaTap(pos)){ /* обрано прізвище */ }
@@ -2141,7 +2265,7 @@ function startGame(pov, watch){
   initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.svat = null; game.prop = null;
-  game.diia = null; game.kitana = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null;
+  game.diia = null; game.kitana = null; game.montage = null; game.band = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null;
   dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
@@ -2245,12 +2369,26 @@ function update(){
       walkJumpAndCollect(p);
       if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._setDone){
         game._setDone = true;
-        startDialog(setScript(game.pov), ()=> { achUnlock('dubl3'); setPhase('cap2'); });
+        startDialog(setScript(game.pov), ()=> { achUnlock('dubl3'); setPhase(game.pov==='katya'?'capMont':'capBand'); });
       }
       const target = Math.max(0, Math.min(LEVEL_W-W, p.x - 130));
       game.camX += (target - game.camX)*0.12;
       break;
     }
+
+    case 'capMont':
+      if(game.phaseT > 70 || input.actionEdge) startMontage();
+      break;
+    case 'montage':
+      updateMontage();
+      break;
+    case 'capBand':
+      if(game.phaseT > 70 || input.actionEdge) startBand();
+      break;
+    case 'band':
+      if(input.actionEdge && !game.dialog){ input.actionEdge=false; }  // тап-обробка нижче в pointerdown
+      updateBand();
+      break;
 
     case 'cap2':
       if(game.phaseT > 70 || input.actionEdge) setPhase('tinder');
@@ -2424,6 +2562,18 @@ function render(){
       }
       break;
     }
+    case 'capMont':
+      drawCaption('ПІСЛЯ ЗЙОМКИ · 2021', 'монтажна Каті');
+      break;
+    case 'montage':
+      drawMontage();
+      break;
+    case 'capBand':
+      drawCaption('ТОГО Ж РОКУ', 'репетиція SPACE SPICE BOY');
+      break;
+    case 'band':
+      drawBand();
+      break;
     case 'cap2':
       drawCaption('РІК ПОТОМУ · СЕРПЕНЬ 2022', 'десь у тіндері…');
       break;
