@@ -310,15 +310,28 @@ const CHARS = {
   katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, cls:'name-katya', style:'bob'    },
   dima: { name:'ДІМА', hair:'#4a3423', top:COL.sage, topD:COL.sageD, cls:'name-dima',  style:'fringe' },
   starosta:{ name:'СТАРОСТА', hair:'#9a9488', top:'#7a5c3e', topD:'#5f462e', cls:'', style:'fringe' },
+  // креативник-напарник у кадрі Штормнадо (2021)
+  guy:{ name:'КРЕАТИВНИК', hair:'#2e2a26', top:'#3a4a5a', topD:'#2a3644', cls:'', style:'fringe' },
 };
+// Діма зразка Штормнадо-2021: мілірований блонд, сорочка
+const DIMA_2021 = {hair:'#6a5236', hi:'#e0cc94', top:'#e8e4da', topD:'#c9c4b4', style:'fringe'};
 
 /* ---------------- сценарії ----------------
    Один скрипт — і для гри, і для автопроходження. */
 function setScript(pov){
+  // ПОВ реально різні: Катя — режисерка за камерою, Діма — гість у кадрі
+  if(pov==='katya') return [
+    {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nДва креативники, година на ідею.'},
+    {who:'katya', emo:'tired',  text:'Той, з міліруванням. В камеру. Дубль три!'},
+    {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
+    {who:'katya', emo:'shy',    text:'(в камеру, Дімо.)'},
+    {who:null,    emo:null,     text:'Шоу ніхто так і не побачив.'},
+  ];
   return [
-    {who:'katya', emo:'tired', text:'Дімо, в камеру. Дубль три!'},
-    {who:'dima',  emo:'happy', text:'А куди дивитись — в камеру чи на режисерку?)'},
-    {who:null,    emo:null,    text:'Шоу ніхто не побачив.\nДіма цю зустріч успішно забув…'},
+    {who:null,   emo:null,   text:'Офіс агенції. Мене покликали в шоу\nпро ідеї. Поряд — ще один креативник.'},
+    {who:'guy',  emo:'normal',text:'Ну що, штормимо? Година пішла.'},
+    {who:'dima', emo:'happy', text:'А куди дивитись — в камеру\nчи на режисерку?)'},
+    {who:null,   emo:null,   text:'Режисерку я тоді до пуття й не роздивився.\n(Дарма.)'},
   ];
 }
 function chatScript(pov){
@@ -554,6 +567,11 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
     px(-6, -45+bob, 11, 2, c.hair);             // гривка над очима
     px(-7, -45+bob, 2, 5, c.hair);              // скроня
     px(6, -45+bob, 1, 4, c.hair);
+  }
+  // мілірування (світлі пасма) — Діма зразка Штормнадо 2021
+  if(c.hi){
+    px(-5, -48+bob, 2, 4, c.hi); px(0, -49+bob, 2, 3, c.hi);
+    px(3, -48+bob, 2, 4, c.hi); px(-7, -46+bob, 1, 3, c.hi);
   }
   // обличчя
   px(1, -42+bob, 2, 2, COL.ink);
@@ -1174,6 +1192,11 @@ function drawTetris(){
     ctx.fillRect(rx, ry, 1, 5);
   }
   ctx.fillStyle = COL.ink; ctx.fillRect(56,26,3,78);          // рама
+
+  // Катя біля вікна в неоново-зеленому світшоті (як на фото з Біг-Беном)
+  drawPerson(150, 130, 'katya', 0, -1, false, {top:'#c8f032', topD:'#9fbf1f'});
+  ctx.fillStyle = '#2a2a30';                                  // навушники на шиї
+  ctx.fillRect(144,116,3,4); ctx.fillRect(155,116,3,4); ctx.fillRect(144,114,14,2);
 
   // телефон із лічильником повідомлень
   ctx.fillStyle = COL.ink; ctx.fillRect(24,118,66,40);
@@ -2376,16 +2399,22 @@ function render(){
 
   switch(game.phase){
     case 'cap1':
-      drawCaption('КИЇВ · 2021', 'знімальний майданчик ютуб-шоу');
+      drawCaption('КИЇВ · 2021', 'офіс агенції · зйомка ШТОРМНАДО');
       break;
     case 'set': {
       const camX = Math.round(game.camX);
       drawSet(camX);
       drawCollect(camX);
+      // другий креативник — у кадрі біля хромакею разом з Дімою (за словами Каті)
+      const guyX = Math.round(398-camX);
+      if(guyX>-20 && guyX<W+20) drawPerson(guyX, FLOOR_Y+2, 'guy', 0, 1, false);
       const other = game.pov==='katya' ? 'dima' : 'katya';
       const npcBob = (game.t>>5)&1;
-      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
-      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      // хто грає Діму — той із міліруванням 2021
+      const npcSkin = other==='dima' ? DIMA_2021 : null;
+      const meSkin  = game.pov==='dima' ? DIMA_2021 : null;
+      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false, npcSkin);
+      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking, meSkin);
       if(!game.dialog && !game._setDone){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
