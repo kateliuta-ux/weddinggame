@@ -177,7 +177,7 @@
   <div id="hud" class="hidden"></div>
   <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ — торкнись, щоб грати</div>
   <div id="pause-btn" class="hidden">⏸</div>
-  <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — далі</div>
+  <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — стрибок</div>
 
   <div id="dialog" class="hidden">
     <div id="portrait-wrap">
@@ -399,8 +399,9 @@ const game = {
   t:0,
   phase:'cap1',             // cap1 | set | cap2 | tinder | swipe | match | chat | cap3 | date | battle
   phaseT:0,
-  player:{x:36, dir:1, walking:false, phase:0},
+  player:{x:36, dir:1, walking:false, phase:0, dy:0, vy:0},
   npc:{x:430, dir:-1, phase:0},
+  collect:null,             // {kind, items:[{x,y,taken}], got, toastT}
   camX:0,
   dialog:null,
   onDialogEnd:null,
@@ -415,6 +416,72 @@ const game = {
 };
 
 const input = {left:false, right:false, down:false, action:false, actionEdge:false};
+
+/* ---- стрибки і колекційки у сценах-прогулянках ---- */
+function initWalkScene(kind){
+  // низько/високо поперемінно: високі — тільки в стрибку
+  const xs = kind==='idea' ? [120,170,225,280,340] : [100,150,205,260,330];
+  game.collect = {
+    kind, got:0, toastT:0,
+    items: xs.map((x,i)=>({x, y: FLOOR_Y - (i%2 ? 66 : 32), taken:false})),
+  };
+  game.player.dy = 0; game.player.vy = 0;
+}
+function walkJumpAndCollect(p){
+  // стрибок: A / ПРОБІЛ / тап по сцені
+  if(!game.dialog && input.actionEdge){
+    input.actionEdge = false;
+    if(p.dy === 0){ p.vy = -5.4; }
+  }
+  // автопілот у режимі перегляду теж підстрибує
+  if(game.watch && !game.dialog && p.dy===0 && p.walking && game.t%96===0) p.vy = -5.4;
+  if(p.dy < 0 || p.vy < 0){
+    p.vy += 0.34;
+    p.dy = Math.min(0, p.dy + p.vy);
+    if(p.dy === 0 && p.vy > 0) p.vy = 0;
+  }
+  // збирання
+  const c = game.collect; if(!c) return;
+  const bodyY = FLOOR_Y + 2 + p.dy - 26;          // центр тулуба
+  c.items.forEach(it=>{
+    if(it.taken) return;
+    if(Math.abs(p.x - it.x) < 11 && Math.abs(bodyY - it.y) < 17){
+      it.taken = true; c.got++;
+      if(c.got === c.items.length) c.toastT = 80;
+    }
+  });
+  if(c.toastT > 0) c.toastT--;
+}
+function drawCollect(camX){
+  const c = game.collect; if(!c) return;
+  const t = game.t;
+  c.items.forEach((it,i)=>{
+    if(it.taken) return;
+    const sx = Math.round(it.x - camX), sy = Math.round(it.y + Math.sin(t*0.06+i)*2);
+    if(sx<-12||sx>W+12) return;
+    if(c.kind==='idea'){
+      ctx.fillStyle = 'rgba(255,232,140,.25)'; ctx.fillRect(sx-5,sy-6,12,14);   // сяйво
+      ctx.fillStyle = '#f4d46a'; ctx.fillRect(sx-3,sy-4,8,7);                    // колба
+      ctx.fillStyle = '#fff8d8'; ctx.fillRect(sx-1,sy-2,3,3);
+      ctx.fillStyle = '#8a8878'; ctx.fillRect(sx-1,sy+3,4,3);                    // цоколь
+    } else {
+      ctx.fillStyle = COL.rose;
+      ctx.fillRect(sx-4,sy-3,3,3); ctx.fillRect(sx+1,sy-3,3,3);
+      ctx.fillRect(sx-4,sy-1,8,3); ctx.fillRect(sx-2,sy+2,4,2); ctx.fillRect(sx-1,sy+4,2,1);
+    }
+  });
+  // лічильник
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(W-64,4,60,13);
+  ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='right';
+  ctx.fillText((c.kind==='idea'?'💡 ':'♥ ') + c.got + '/' + c.items.length, W-8, 14);
+  ctx.textAlign='left';
+  // тост за повний збір
+  if(c.toastT > 0){
+    ctx.fillStyle = COL.gold; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+    ctx.fillText(c.kind==='idea' ? 'ШТОРМ ЗІБРАНО!' : 'ВСІ СЕРЦЯ ТВОЇ!', W/2, 30);
+    ctx.textAlign='left';
+  }
+}
 
 /* ================= персонаж (кежуал) ================= */
 function drawPerson(x, y, who, phase, dir, walking, skin){
@@ -1927,8 +1994,9 @@ function startGame(pov, watch){
   game.watch = watch;
   game.pov = watch ? 'katya' : pov;
   game.t = 0; game.dialog = null; game.onDialogEnd = null;
-  game.player = {x:36, dir:1, walking:false, phase:0};
+  game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
   game.npc = {x:430, dir:-1, phase:0};
+  initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.svat = null; game.prop = null;
   game.diia = null; game._tapPos = null; game._holdPtr = false; dragTarget = null; stopMusic();
@@ -2023,6 +2091,7 @@ function update(){
       }
       npc.dir = p.x > npc.x ? 1 : -1;
 
+      walkJumpAndCollect(p);
       if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._setDone){
         game._setDone = true;
         startDialog(setScript(game.pov), ()=> setPhase('cap2'));
@@ -2052,9 +2121,10 @@ function update(){
         setPhase('chat');
         startDialog(chatScript(game.pov), ()=>{
           // перехід до сцени першого побачення
-          game.player = {x:36, dir:1, walking:false, phase:0};
+          game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
           game.npc = {x:410, dir:-1, phase:0};
           game.camX = 0; game._dateDone = false;
+          initWalkScene('heart');
           setPhase('cap3');
         });
       }
@@ -2081,6 +2151,7 @@ function update(){
         if(game.t%8===0) p.phase++;
       }
       npc.dir = p.x > npc.x ? 1 : -1;
+      walkJumpAndCollect(p);
       if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._dateDone){
         game._dateDone = true;
         startDialog(dateScript(game.pov), ()=> startBattle());
@@ -2165,10 +2236,11 @@ function render(){
     case 'set': {
       const camX = Math.round(game.camX);
       drawSet(camX);
+      drawCollect(camX);
       const other = game.pov==='katya' ? 'dima' : 'katya';
       const npcBob = (game.t>>5)&1;
       drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
-      drawPerson(game.player.x-camX, FLOOR_Y+2, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking);
       if(!game.dialog && !game._setDone){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
@@ -2195,10 +2267,11 @@ function render(){
     case 'date': {
       const camX = Math.round(game.camX);
       drawPeizazhka(camX);
+      drawCollect(camX);
       const other = game.pov==='katya' ? 'dima' : 'katya';
       const npcBob = (game.t>>5)&1;
       drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
-      drawPerson(game.player.x-camX, FLOOR_Y+2, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking);
       if(!game.dialog && !game._dateDone){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
