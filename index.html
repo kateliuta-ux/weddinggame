@@ -313,8 +313,8 @@ const CHARS = {
   // креативник-напарник у кадрі Штормнадо (2021)
   guy:{ name:'КРЕАТИВНИК', hair:'#2e2a26', top:'#3a4a5a', topD:'#2a3644', cls:'', style:'fringe' },
 };
-// Діма зразка Штормнадо-2021: мілірований блонд, сорочка
-const DIMA_2021 = {hair:'#6a5236', hi:'#e0cc94', top:'#e8e4da', topD:'#c9c4b4', style:'fringe'};
+// Діма зразка Штормнадо-2021: мілірований блонд, біле лонгслів-поло (за реальним кадром)
+const DIMA_2021 = {hair:'#8a7048', hi:'#ecdca0', top:'#f4f2ec', topD:'#d8d4c8', style:'fringe'};
 
 /* ---------------- сценарії ----------------
    Один скрипт — і для гри, і для автопроходження. */
@@ -666,66 +666,64 @@ drawPortraitInto(offD.getContext('2d'), 'dima', 'normal');
 const offOf = who => who==='katya' ? offK : offD;
 
 /* ================= фон: знімальний майданчик ================= */
+function drawBrain(x,y){                                // логотип Штормнадо — рожевий мозок
+  ctx.fillStyle='#e8a0b8';
+  ctx.fillRect(x+1,y+1,10,6); ctx.fillRect(x,y+2,12,4);
+  ctx.fillStyle='#d47a98';
+  ctx.fillRect(x+2,y+2,1,4); ctx.fillRect(x+5,y+1,1,5); ctx.fillRect(x+8,y+2,1,4);
+  ctx.fillRect(x+1,y+7,10,1);
+}
 function drawSet(camX){
-  // стіна студії
-  ctx.fillStyle = COL.studioWall; ctx.fillRect(0,0,W,FLOOR_Y);
-  // труси (рейки) під стелею
-  ctx.fillStyle = COL.studioWallD;
-  ctx.fillRect(0,10,W,4); ctx.fillRect(0,22,W,2);
-  for(let tx=0; tx<LEVEL_W; tx+=60){
-    const sx = Math.round(tx-camX); if(sx<-10||sx>W) continue;
-    ctx.fillRect(sx,10,3,14);
-  }
-  // підлога
-  ctx.fillStyle = COL.floor; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
-  ctx.fillStyle = COL.floorD;
-  for(let fx=0; fx<LEVEL_W; fx+=48){
-    const sx = Math.round(fx-camX); if(sx<-4||sx>W) continue;
-    ctx.fillRect(sx,FLOOR_Y,2,H-FLOOR_Y);
-  }
-  // кабелі на підлозі
-  ctx.fillStyle = COL.ink;
-  for(let cx=20; cx<LEVEL_W; cx+=90){
-    const sx = Math.round(cx-camX); if(sx<-60||sx>W) continue;
-    ctx.fillRect(sx,FLOOR_Y+8,40,2); ctx.fillRect(sx+30,FLOOR_Y+14,34,2);
+  // біла стіна офісу (галерейна, як на реальній зйомці)
+  ctx.fillStyle = '#e9e6df'; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle = '#ded9cf'; ctx.fillRect(0,FLOOR_Y-3,W,3);
+  // мʼяка тінь від рослини на стіні (низько, ледь помітна)
+  ctx.fillStyle = 'rgba(120,118,108,.06)';
+  const shx = Math.round(150-camX*0.6);
+  ctx.beginPath(); ctx.moveTo(shx,FLOOR_Y-90); ctx.lineTo(shx+70,FLOOR_Y-110); ctx.lineTo(shx+55,FLOOR_Y); ctx.lineTo(shx,FLOOR_Y); ctx.fill();
+  // кахляна підлога
+  ctx.fillStyle = '#c9c6bd'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle = '#bcb8ae';
+  for(let fx=0; fx<LEVEL_W; fx+=40){ const sx=Math.round(fx-camX); if(sx<-4||sx>W) continue; ctx.fillRect(sx,FLOOR_Y,1,H-FLOOR_Y); }
+  // килим з візерунком
+  const rgx = Math.round(250-camX);
+  if(rgx>-200 && rgx<W){ ctx.fillStyle='#c9a89a'; ctx.fillRect(rgx-130,FLOOR_Y+6,300,H-FLOOR_Y-8);
+    ctx.fillStyle='rgba(150,90,80,.4)'; for(let i=0;i<12;i++) ctx.fillRect(rgx-118+i*26, FLOOR_Y+16, 10,3); }
+
+  // рослина (драцена) у бетонному кашпо
+  const plx = Math.round(150-camX);
+  if(plx>-30&&plx<W){ ctx.fillStyle='#cfcabd'; ctx.fillRect(plx,FLOOR_Y-30,20,30);
+    for(let i=0;i<7;i++){ ctx.save(); ctx.translate(plx+10,FLOOR_Y-30); ctx.rotate(-1.1+i*0.36);
+      ctx.fillStyle='#3f6b3a'; ctx.fillRect(-1,-42,2,42); ctx.restore(); } }
+
+  // картина 1: портрет дитини (притулена до стіни)
+  const p1=Math.round(212-camX);
+  if(p1>-72&&p1<W){ ctx.fillStyle='#d8cfc0'; ctx.fillRect(p1,FLOOR_Y-150,70,150);
+    ctx.fillStyle='#c7b8a2'; ctx.fillRect(p1+18,FLOOR_Y-120,34,40);
+    ctx.fillStyle='#A8505F'; ctx.fillRect(p1+22,FLOOR_Y-104,26,6);
+    ctx.fillStyle='#e8e2d6'; ctx.fillRect(p1+14,FLOOR_Y-78,42,50); }
+
+  // фліпчарт на триніжку: бриф, таймер і логотип-мозок
+  const fcx=Math.round(258-camX);
+  if(fcx>-70&&fcx<W){
+    ctx.strokeStyle='#b8b4a8'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(fcx+8,FLOOR_Y-118); ctx.lineTo(fcx-4,FLOOR_Y);
+    ctx.moveTo(fcx+48,FLOOR_Y-118); ctx.lineTo(fcx+60,FLOOR_Y); ctx.stroke();
+    ctx.fillStyle='#fbfaf5'; ctx.fillRect(fcx,FLOOR_Y-150,58,74);
+    drawBrain(fcx+6, FLOOR_Y-146);
+    ctx.fillStyle=COL.ink; ctx.font='bold 6px monospace'; ctx.textAlign='left';
+    ctx.fillText('ШТОРМНАДО', fcx+20, FLOOR_Y-140);
+    ctx.fillStyle='#3F7C77';
+    for(let i=0;i<5;i++) ctx.fillRect(fcx+8, FLOOR_Y-128+i*8, 30, 2);
+    ctx.strokeStyle='#3F7C77'; ctx.beginPath(); ctx.arc(fcx+48,FLOOR_Y-124,6,0,7); ctx.stroke();
+    ctx.fillStyle='#e33'; ctx.font='5px monospace'; ctx.fillText('49', fcx+44, FLOOR_Y-121);
   }
 
-  // хромакей (зелений екран) — стоїть на підлозі
-  const gx = Math.round(360-camX), gTop = FLOOR_Y-200;
-  if(gx>-160 && gx<W){
-    ctx.fillStyle = COL.metal; ctx.fillRect(gx-4,gTop,3,FLOOR_Y-gTop); ctx.fillRect(gx+151,gTop,3,FLOOR_Y-gTop);
-    ctx.fillStyle = COL.ink; ctx.fillRect(gx-8,FLOOR_Y-2,12,4); ctx.fillRect(gx+147,FLOOR_Y-2,12,4);
-    ctx.fillStyle = COL.greenD; ctx.fillRect(gx,gTop+4,150,FLOOR_Y-gTop-4);
-    ctx.fillStyle = COL.green; ctx.fillRect(gx+4,gTop+8,142,FLOOR_Y-gTop-12);
-    // назва шоу + піксельний вихор-«надо»
-    ctx.fillStyle = '#fff'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-    ctx.fillText('ШТОРМНАДО', gx+75, gTop+26);
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.fillRect(gx+58,gTop+32,34,3); ctx.fillRect(gx+64,gTop+37,24,3);
-    ctx.fillRect(gx+70,gTop+42,14,3); ctx.fillRect(gx+74,gTop+47,7,3);
-  }
-  // стенд із брифом і таймер шторму (година на ідеї)
-  const bx2 = Math.round(150-camX);
-  if(bx2>-40 && bx2<W){
-    ctx.fillStyle = COL.metal; ctx.fillRect(bx2+10,88+GY,2,FLOOR_Y-88-GY);
-    ctx.fillStyle = '#f8f8f3'; ctx.fillRect(bx2,60+GY,24,28);
-    ctx.fillStyle = COL.ink; ctx.font='bold 6px monospace'; ctx.textAlign='center';
-    ctx.fillText('БРИФ', bx2+12, 69+GY);
-    ctx.fillStyle = '#999';
-    ctx.fillRect(bx2+4,73+GY,16,2); ctx.fillRect(bx2+4,78+GY,16,2); ctx.fillRect(bx2+4,83+GY,10,2);
-    ctx.fillStyle = COL.ink; ctx.fillRect(bx2+28,64+GY,30,14);
-    ctx.fillStyle = '#e33'; ctx.font='bold 8px monospace';
-    ctx.fillText('59:59', bx2+43, 74+GY);
-  }
-  // софтбокс
-  const lx = Math.round(300-camX);
-  if(lx>-40 && lx<W){
-    ctx.fillStyle = COL.metal; ctx.fillRect(lx+8,70+GY,2,FLOOR_Y-70-GY);
-    ctx.fillStyle = COL.ink; ctx.fillRect(lx,FLOOR_Y-2,18,3);
-    ctx.fillStyle = COL.white; ctx.fillRect(lx,50+GY,20,22);
-    ctx.fillStyle = 'rgba(255,250,220,.25)';
-    ctx.beginPath(); ctx.moveTo(lx+20,52+GY); ctx.lineTo(lx+62,80+GY); ctx.lineTo(lx+62,120+GY); ctx.lineTo(lx+20,72+GY); ctx.fill();
-  }
+  // картина 2: барвисте графіті
+  const p2=Math.round(345-camX);
+  if(p2>-60&&p2<W){ ctx.fillStyle='#e8e2d6'; ctx.fillRect(p2,FLOOR_Y-130,48,130);
+    const cc=['#e85aa0','#3F7C77','#f4c430','#1E4E8A','#A8505F'];
+    for(let i=0;i<18;i++){ ctx.fillStyle=cc[i%5]; ctx.fillRect(p2+4+(i*11%40), FLOOR_Y-124+((i*17)%116), 8, 8); } }
   // камера на штативі (ноги до підлоги)
   const kx = Math.round(210-camX);
   if(kx>-50 && kx<W){
