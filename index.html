@@ -90,17 +90,40 @@
   #pad-a{right:2%;border-radius:50%;background:rgba(168,80,95,.35);border-color:rgba(168,80,95,.75)}
   #pad-down{right:calc(2% + clamp(62px,17cqw,94px))}
 
-  /* ---------- підказка «поверни телефон» ---------- */
-  #rotate-hint{
-    position:absolute;inset:0;z-index:40;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-    background:rgba(10,10,18,.92);color:#fff;text-align:center;cursor:pointer;
-    font-size:clamp(12px,3.4cqw,18px);padding:8%;
+  /* ---------- вертикальний режим (телефон у портреті) ----------
+     Канва зверху, діалог під нею, кнопки внизу — нічого не перекривається. */
+  @media (orientation:portrait){
+    body{align-items:flex-start}
+    #stage{
+      max-width:none;height:100vh;height:100dvh;max-height:none;
+      aspect-ratio:auto;
+    }
+    canvas#game{
+      inset:auto;position:absolute;top:9%;left:0;
+      width:100%;height:auto;aspect-ratio:16/9;
+    }
+    #dialog{
+      top:calc(9% + 57vw + 10px);bottom:auto;
+      min-height:20%;
+    }
+    #hud{top:2%;left:3%}
+    #watch-hint,#pause-btn{top:2%}
+    #kbd-hint{display:none}
+    .pad{bottom:6%;width:clamp(58px,17vw,90px);height:clamp(58px,17vw,90px)}
+    #pad-left{left:4%} #pad-right{left:calc(4% + clamp(66px,19vw,100px))}
+    #pad-a{right:4%} #pad-down{right:calc(4% + clamp(66px,19vw,100px))}
+    #title-screen h1{font-size:clamp(24px,7.5vw,40px)}
+    #title-screen .sub{font-size:clamp(11px,3.2vw,16px)}
+    .btn{font-size:clamp(13px,4vw,18px)}
+    #title-screen .hint{font-size:clamp(8px,2.4vw,12px);padding:0 6%}
+    .menu{width:min(86%,360px)}
+    #dtext{font-size:clamp(13px,3.8vw,18px)}
+    #dname{font-size:clamp(10px,2.8vw,14px)}
+    canvas#portrait{width:clamp(56px,17vw,86px);height:clamp(56px,17vw,86px)}
+    .s-head{font-size:clamp(12px,3.6vw,17px)} .s-head span{font-size:clamp(9px,2.6vw,12px)}
+    #end-screen .big{font-size:clamp(20px,6vw,32px)}
+    #end-screen p{font-size:clamp(11px,3vw,15px);max-width:92%}
   }
-  #rotate-hint .turn{font-size:clamp(30px,9cqw,52px);animation:turnwiggle 1.6s ease-in-out infinite}
-  @keyframes turnwiggle{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
-  #rotate-hint .small{color:#8a8878;font-size:clamp(9px,2.2cqw,13px)}
-  @media (orientation:landscape){ #rotate-hint{display:none} }
 
   /* ---------- HUD / hints ---------- */
   #hud{position:absolute;top:2.5%;left:2.5%;color:#fff;font-size:clamp(9px,2cqw,14px);letter-spacing:1px;text-shadow:2px 2px 0 #000}
@@ -149,11 +172,6 @@
 <div id="stage">
   <canvas id="game" width="320" height="180"></canvas>
 
-  <div id="rotate-hint" class="hidden">
-    <div class="turn">📱</div>
-    <div>Поверни телефон горизонтально —<br>так грати значно зручніше</div>
-    <div class="small">(тапни, щоб грати вертикально)</div>
-  </div>
 
   <div id="hud" class="hidden"></div>
   <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ — торкнись, щоб грати</div>
@@ -2300,21 +2318,6 @@ document.getElementById('btn-sampler').addEventListener('click', ()=>{
 });
 
 /* ================= мобільність ================= */
-const elRotate = document.getElementById('rotate-hint');
-function updateRotateHint(){
-  const portrait = matchMedia('(orientation:portrait)').matches;
-  const show = isTouch && portrait && !sessionStorage.getItem('rot-ok');
-  elRotate.classList.toggle('hidden', !show);
-}
-elRotate.addEventListener('pointerdown', e=>{
-  e.stopPropagation();
-  sessionStorage.setItem('rot-ok','1');
-  elRotate.classList.add('hidden');
-});
-addEventListener('orientationchange', ()=> setTimeout(updateRotateHint, 300));
-addEventListener('resize', ()=> updateRotateHint());
-updateRotateHint();
-
 function tryFullscreen(){
   if(!isTouch) return;
   const el = document.documentElement;
