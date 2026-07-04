@@ -129,10 +129,18 @@
   /* ---------- HUD / hints ---------- */
   #hud{position:absolute;top:2.5%;left:2.5%;color:#fff;font-size:clamp(9px,2cqw,14px);letter-spacing:1px;text-shadow:2px 2px 0 #000}
   #watch-hint{
-    position:absolute;top:2.5%;right:2.5%;color:#ffd;font-size:clamp(8px,1.9cqw,13px);
-    background:rgba(0,0,0,.55);padding:.4em .7em;border:2px solid rgba(255,255,255,.35);
-    animation:blink 1.6s steps(2) infinite;cursor:pointer;pointer-events:auto;
+    position:absolute;top:2.5%;left:50%;transform:translateX(-50%);
+    color:#ffd;font-size:clamp(8px,1.9cqw,13px);white-space:nowrap;
+    background:rgba(0,0,0,.55);padding:.4em .7em;border:2px solid rgba(255,255,255,.3);
   }
+  #watch-play{
+    position:absolute;top:2.2%;right:2.5%;
+    pointer-events:auto;cursor:pointer;
+    color:#fff;font-family:inherit;font-weight:bold;letter-spacing:1px;
+    font-size:clamp(10px,2.3cqw,15px);padding:.45em 1em;
+    background:var(--rose);border:0;box-shadow:0 0 0 3px #000, inset 0 -4px 0 rgba(0,0,0,.35);
+  }
+  #watch-play:active{transform:translateY(2px)}
   @keyframes blink{50%{opacity:.55}}
   #pause-btn{
     position:absolute;top:2.5%;right:2.5%;cursor:pointer;
@@ -175,7 +183,8 @@
 
 
   <div id="hud" class="hidden"></div>
-  <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ — торкнись, щоб грати</div>
+  <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ</div>
+  <button id="watch-play" class="hidden">▶ ГРАТИ САМ</button>
   <div id="pause-btn" class="hidden">⏸</div>
   <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — стрибок</div>
 
@@ -1977,7 +1986,8 @@ addEventListener('keydown', e=>{
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
   if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
   if((e.key==='p'||e.key==='P'||e.key==='Escape') && game.phase==='tetris'){ toggleTetrisPause(); return; }
-  takeOver();
+  // перехоплення керування — лише навмисними ігровими клавішами
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Enter','z','Z'].includes(e.key)) takeOver();
 });
 addEventListener('keyup', e=>{ keys[e.key] = false; });
 
@@ -1992,7 +2002,7 @@ function bindPad(id, prop){
 }
 bindPad('pad-left','left'); bindPad('pad-right','right'); bindPad('pad-down','down'); bindPad('pad-a','action');
 
-elDialog.addEventListener('pointerdown', e=>{ e.preventDefault(); input.actionEdge = true; takeOver(); });
+elDialog.addEventListener('pointerdown', e=>{ e.preventDefault(); if(!game.watch) input.actionEdge = true; });
 
 /* тягнути серце в бою (тач і миша) */
 let dragTarget = null;
@@ -2001,7 +2011,8 @@ function canvasPos(e){
   return {x:(e.clientX-r.left)/r.width*W, y:(e.clientY-r.top)/r.height*H};
 }
 cv.addEventListener('pointerdown', e=>{
-  e.preventDefault(); takeOver();
+  e.preventDefault();
+  if(game.watch) return;   // у режимі перегляду дотик по сцені нічого не робить
   if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
   else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
     game._tapPos = canvasPos(e);
@@ -2027,10 +2038,11 @@ function takeOver(){
   if(game.watch && game.state==='play'){
     game.watch = false;
     document.getElementById('watch-hint').classList.add('hidden');
+    document.getElementById('watch-play').classList.add('hidden');
     updateHudAndControls();
   }
 }
-document.getElementById('watch-hint').addEventListener('pointerdown', takeOver);
+document.getElementById('watch-play').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); takeOver(); });
 document.getElementById('pause-btn').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); toggleTetrisPause(); });
 
 /* ================= стани / UI ================= */
@@ -2068,6 +2080,7 @@ function startGame(pov, watch){
   elEnd.classList.add('hidden');
   elHud.classList.remove('hidden');
   document.getElementById('watch-hint').classList.toggle('hidden', !watch);
+  document.getElementById('watch-play').classList.toggle('hidden', !watch);
   setPhase('cap1');
 }
 
@@ -2096,6 +2109,7 @@ function finishGame(){
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
   document.getElementById('watch-hint').classList.add('hidden');
+  document.getElementById('watch-play').classList.add('hidden');
   updateHudAndControls();
 }
 document.getElementById('btn-ics').addEventListener('click', ()=>{
@@ -2122,6 +2136,7 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
   elEnd.classList.add('hidden');
   elHud.classList.add('hidden');
   document.getElementById('watch-hint').classList.add('hidden');
+  document.getElementById('watch-play').classList.add('hidden');
   document.getElementById('controls').classList.add('hidden');
   document.getElementById('kbd-hint').classList.add('hidden');
   document.getElementById('pause-btn').classList.add('hidden');
