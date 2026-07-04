@@ -206,9 +206,17 @@
     <p id="inv-body"></p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
+      <button class="btn" id="btn-quiz" style="background:var(--terra)">🧠 Квіз про пару</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
+  </div>
+
+  <div id="quiz-screen" class="overlay hidden" style="background:#14121c;gap:2.4%">
+    <div class="s-head" id="quiz-q">?</div>
+    <div class="menu" id="quiz-opts"></div>
+    <div id="quiz-dots" style="color:#8a8878;font-size:12px;letter-spacing:4px"></div>
+    <div id="quiz-note" style="color:#B58A2E;font-size:clamp(10px,2.4cqw,14px);max-width:86%;text-align:center;min-height:2em"></div>
   </div>
 
   <div id="rsvp-screen" class="overlay hidden">
@@ -283,6 +291,7 @@ const ACHS = [
   {id:'flappy', icon:'🐈', title:'Котолов',          desc:'покликати Кітану нявканням'},
   {id:'egg',    icon:'🥚', title:'Слідопит',         desc:'знайти приховану пасхалку'},
   {id:'dvoye',  icon:'📼', title:'Гурт «ДВОЄ»',       desc:'знайти касету на тайтлі'},
+  {id:'quiz',   icon:'🧠', title:'Знавець пари',      desc:'5/5 у квізі про пару'},
 ];
 let achDone = new Set(JSON.parse(localStorage.getItem('wed-ach')||'[]'));
 const achToasts = [];
@@ -343,6 +352,8 @@ function chatScript(pov){
     {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
   ];
   const common = [
+    {who:null, emo:null, text:'Слово за слово — і чат уже не спить:\nпро все на світі, зранку й до півночі.'},
+    {who:null, emo:null, text:'(за кілька днів це виглядало так)'},
     {who:'dima',  emo:'happy', text:'Йоу! Як трєня?)'},
     {who:'katya', emo:'tired', text:'Йоу) стресово 🥲\nБоюсь потрапити до важчих суперниць.'},
     {who:'dima',  emo:'happy', text: CENSORED
@@ -3222,6 +3233,70 @@ document.getElementById('btn-rsvp').addEventListener('click', ()=>{
   elEnd.classList.add('hidden');
   elRsvp.classList.remove('hidden');
   rsvpShow();
+});
+
+/* ================= КВІЗ ПРО ПАРУ 🧠 ================= */
+const QUIZ = [
+  {q:'Де Катя і Діма вперше побачились?',
+   opts:['На зйомках ШТОРМНАДО','У Тіндері','На власному весіллі'],
+   ok:0, notes:['Так! Але Діма це успішно забув 🌝','Це вже вдруге. Вперше — на зйомках!','Ще ні. Але 6 вересня — так.']},
+  {q:'Що Катя подарувала Дімі 14 лютого 2026?',
+   opts:['Каблучку','Книжку «Шахи для дибілів»','Гарбуза'],
+   ok:1, notes:['Каблучка була з іншого боку столу)','Так! Бо він постійно програвав 😂','Гарбуз — то на сватанні, і то жарт.']},
+  {q:'Хто такий SPACE SPICE BOY?',
+   opts:['Гурт Діми','Кіт із двору Дана','Синтезатор Каті'],
+   ok:0, notes:['Так! «Такой себе син», але хіт.','Ні, то Кітана. І вона дівчинка.','Гарна спроба, але ні)']},
+  {q:'Скільки повідомлень вони написали за жовтень 2022?',
+   opts:['42','11 223','Мільйон'],
+   ok:1, notes:['За перші пʼять хвилин хіба.','Так! Рекорд усіх часів чату.','Відчувалось як мільйон, але 11 223.']},
+  {q:'Чим коробочка з каблучкою привернула увагу?',
+   opts:['Світилась світлодіодом','Заграла марш Мендельсона','Викотилась із рюкзака сама'],
+   ok:0, notes:['Так! Інженерія кохання ✨','Ні, було тихо. І дуже мило.','Майже — Діма довго в рюкзаку копошився.']},
+];
+const quiz = {idx:0, score:0};
+const elQuiz = document.getElementById('quiz-screen');
+function quizShow(){
+  const item = QUIZ[quiz.idx];
+  document.getElementById('quiz-dots').textContent = QUIZ.map((_,i)=> i===quiz.idx?'●':(i<quiz.idx?'✓':'○')).join(' ');
+  document.getElementById('quiz-note').textContent = '';
+  const opts = document.getElementById('quiz-opts');
+  opts.innerHTML = '';
+  if(!item){ quizFinish(); return; }
+  document.getElementById('quiz-q').textContent = item.q;
+  item.opts.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='btn'; b.style.background='#2b2b38'; b.textContent = opt;
+    b.addEventListener('click', ()=>{
+      const right = i===item.ok;
+      if(right) quiz.score++;
+      b.style.background = right ? 'var(--sage)' : '#7d3a46';
+      document.getElementById('quiz-note').textContent = item.notes[i];
+      opts.querySelectorAll('.btn').forEach(x=>x.disabled=true);
+      setTimeout(()=>{ quiz.idx++; quizShow(); }, 1400);
+    });
+    opts.appendChild(b);
+  });
+}
+function quizFinish(){
+  document.getElementById('quiz-q').textContent = 'Результат: ' + quiz.score + '/5';
+  document.getElementById('quiz-dots').textContent = '';
+  const note = quiz.score===5 ? 'Ти або Кітана, або мама. Приходь обовʼязково! 🏆'
+    : quiz.score>=3 ? 'Солідно! Решту дізнаєшся на весіллі 🥂'
+    : 'Тим більше приходь — стільки всього дізнаєшся!';
+  document.getElementById('quiz-note').textContent = note;
+  if(quiz.score===5) achUnlock('quiz');
+  const opts = document.getElementById('quiz-opts');
+  opts.innerHTML = '';
+  const back = document.createElement('button');
+  back.className='btn'; back.style.background='#55515f'; back.textContent='До запрошення';
+  back.addEventListener('click', ()=>{ elQuiz.classList.add('hidden'); elEnd.classList.remove('hidden'); });
+  opts.appendChild(back);
+}
+document.getElementById('btn-quiz').addEventListener('click', ()=>{
+  quiz.idx = 0; quiz.score = 0;
+  elEnd.classList.add('hidden');
+  elQuiz.classList.remove('hidden');
+  quizShow();
 });
 
 function loop(){ update(); render(); requestAnimationFrame(loop); }
