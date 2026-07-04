@@ -212,6 +212,7 @@
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
       <button class="btn" id="btn-sampler">🎹 Семплер</button>
+      <button class="btn" id="btn-bonus">🕹️ Літаюча Кітана</button>
     </div>
     <div class="hint">— «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» → «Сватання» → «Мінімаліст» —</div>
     <div id="ach-btn" style="color:#B58A2E;cursor:pointer;font-size:clamp(10px,2.2cqw,14px);letter-spacing:1px">🏆 0/8</div>
@@ -312,6 +313,9 @@ const ACHS = [
   {id:'mate1',  icon:'♛',  title:'Гросмейстерка',    desc:'мат із першої спроби'},
   {id:'ring',   icon:'💍', title:'Той самий палець', desc:'обрати підмізинний одразу'},
   {id:'both',   icon:'👀', title:'Обидві сторони',   desc:'пройти за Катю і за Діму'},
+  {id:'konami', icon:'🎮', title:'↑↑↓↓←→←→BA',      desc:'згадати старий код'},
+  {id:'flappy', icon:'🐈', title:'Літаюча Кітана',   desc:'набрати 12 у бонусі'},
+  {id:'egg',    icon:'🥚', title:'Слідопит',         desc:'знайти приховану пасхалку'},
 ];
 let achDone = new Set(JSON.parse(localStorage.getItem('wed-ach')||'[]'));
 const achToasts = [];
@@ -1983,6 +1987,11 @@ addEventListener('keydown', e=>{
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
   if(e.repeat) return;
   keys[e.key] = true;
+  if(game.state==='flappy'){
+    if(e.key===' '||e.key==='Enter'||e.key==='ArrowUp') flappyFlap();
+    if(e.key==='Escape'){ flappy=null; game.state='title'; elTitle.classList.remove('hidden'); }
+    return;
+  }
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
   if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
   if((e.key==='p'||e.key==='P'||e.key==='Escape') && game.phase==='tetris'){ toggleTetrisPause(); return; }
@@ -2012,12 +2021,18 @@ function canvasPos(e){
 }
 cv.addEventListener('pointerdown', e=>{
   e.preventDefault();
-  if(game.watch) return;   // у режимі перегляду дотик по сцені нічого не робить
+  if(game.state==='flappy'){
+    const pos = canvasPos(e);
+    if(pos.x < 26 && pos.y < 22){ flappy=null; game.state='title'; elTitle.classList.remove('hidden'); updateAchButton(); return; }
+    flappyFlap(); return;
+  }
+  if(game.state==='title'){ tryEgg(canvasPos(e)); return; }
+  if(game.watch){ if(game.state==='play') tryEgg(canvasPos(e)); return; }  // у перегляді — лише пасхалки
   if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
   else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
     game._tapPos = canvasPos(e);
   }
-  else if(game.phase==='diia'){ game._holdPtr = true; }
+  else if(game.phase==='diia'){ if(!tryEgg(canvasPos(e))) game._holdPtr = true; }
   else if(game.phase==='svat' && game.svat){
     const pos = canvasPos(e);
     if(Math.abs(pos.x-112) < 18 && pos.y > 118){    // тап по Кітані біля печі
@@ -2025,6 +2040,7 @@ cv.addEventListener('pointerdown', e=>{
       achUnlock('purr');
     } else input.actionEdge = true;
   }
+  else if(tryEgg(canvasPos(e))){ /* пасхалка спіймана */ }
   else input.actionEdge = true;
 });
 cv.addEventListener('pointermove', e=>{
@@ -2146,6 +2162,7 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
 /* ================= головний цикл ================= */
 function update(){
   game.t++; game.phaseT++;
+  if(game.state==='flappy'){ updateFlappy(); return; }
   if(game.state!=='play') return;
 
   const p = game.player, npc = game.npc;
@@ -2297,6 +2314,8 @@ function update(){
 function render(){
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
 
+  if(game.state==='flappy'){ drawFlappy(); return; }
+
   if(game.state==='title'){
     drawSet(120);
     ctx.fillStyle = 'rgba(10,10,22,.55)'; ctx.fillRect(0,0,W,H);
@@ -2304,6 +2323,7 @@ function render(){
     drawPerson(120, FLOOR_Y+2-bob, 'katya', 0, 1, false);
     drawPerson(200, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false);
     drawKitana(160, FLOOR_Y+2, 1);
+    drawEggParticles();
     const hy = 96 + ((game.t>>3)&3);
     ctx.fillStyle = COL.rose;
     ctx.fillRect(156,hy,4,4); ctx.fillRect(162,hy,4,4);
@@ -2398,6 +2418,7 @@ function render(){
       drawWed();
       break;
   }
+  drawEggParticles();
   drawAchToasts();
 }
 
@@ -2500,6 +2521,141 @@ document.getElementById('ach-back').addEventListener('click', ()=>{
   document.getElementById('ach-screen').classList.add('hidden');
   elTitle.classList.remove('hidden');
 });
+
+/* ================= пасхалки ================= */
+/* код Konami — глобально */
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiPos = 0, heartRain = false;
+addEventListener('keydown', e=>{
+  const k = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  konamiPos = (k === KONAMI[konamiPos]) ? konamiPos+1 : (k===KONAMI[0] ? 1 : 0);
+  if(konamiPos === KONAMI.length){
+    konamiPos = 0; heartRain = true;
+    const was = game.watch; game.watch = false; achUnlock('konami'); game.watch = was;
+    for(let i=0;i<30;i++) eggParticles.push({x:Math.random()*W, y:-Math.random()*40, vy:1+Math.random()*1.5, kind:'heart'});
+  }
+});
+/* клікабельні приховані пасхалки в сценах */
+const eggParticles = [];
+const SCENE_EGGS = {
+  // сцена: [{x,y,r,burst}]  (координати у світі 320x180, camX враховується для скрол-сцен)
+  title: [{x:160, y:98, r:16, kind:'heart', world:false}],   // серце між ними
+  set:   [{x:120, y:100, r:16, kind:'meow', world:true}],    // крісло KAASIN
+  diia:  [{x:160, y:60,  r:20, kind:'heart', world:false}],  // лого дія
+  wed:   [{x:70,  y:52,  r:18, kind:'confetti', world:false}], // сонце
+};
+function tryEgg(pos){
+  const key = game.state==='title' ? 'title' : game.phase;
+  const eggs = SCENE_EGGS[key];
+  if(!eggs) return false;
+  for(const e of eggs){
+    const ex = e.world ? e.x - game.camX : e.x;
+    if(Math.abs(pos.x-ex) < e.r && Math.abs(pos.y-e.y) < e.r){
+      achUnlock('egg');
+      const cols = {heart:'heart', meow:'meow', confetti:'confetti'};
+      for(let i=0;i<14;i++) eggParticles.push({
+        x:ex, y:e.y, vx:(Math.random()-0.5)*3, vy:-Math.random()*3-0.5, kind:e.kind,
+      });
+      return true;
+    }
+  }
+  return false;
+}
+function drawEggParticles(){
+  if(heartRain && game.t%6===0) eggParticles.push({x:Math.random()*W, y:-6, vy:1+Math.random()*1.5, kind:'heart'});
+  for(let i=eggParticles.length-1;i>=0;i--){
+    const p = eggParticles[i];
+    p.x += p.vx||0; p.y += (p.vy = (p.vy||0)+0.12);
+    if(p.kind==='heart'){
+      ctx.fillStyle = COL.rose;
+      ctx.fillRect(p.x-2,p.y-1,2,2); ctx.fillRect(p.x+1,p.y-1,2,2); ctx.fillRect(p.x-2,p.y,5,2);
+    } else if(p.kind==='confetti'){
+      ctx.fillStyle = ['#A8505F','#B58A2E','#3F7C77'][i%3]; ctx.fillRect(p.x,p.y,2,2);
+    } else { // meow
+      ctx.fillStyle = '#fff'; ctx.font='7px monospace'; ctx.fillText('ня', p.x, p.y);
+    }
+    if(p.y > H+8) eggParticles.splice(i,1);
+  }
+  if(eggParticles.length > 200) eggParticles.splice(0, eggParticles.length-200);
+}
+
+/* ================= бонус: Літаюча Кітана (Flappy) ================= */
+let flappy = null;
+function startFlappy(){
+  flappy = {y:90, vy:0, pipes:[], t:0, score:0, dead:false, deadT:0, best:+(localStorage.getItem('wed-flappy')||0)};
+  game.state = 'flappy';
+  elTitle.classList.add('hidden');
+  ['hud','watch-hint','watch-play','pause-btn','controls','kbd-hint','dialog']
+    .forEach(id=> document.getElementById(id).classList.add('hidden'));
+}
+function flappyFlap(){
+  if(!flappy) return;
+  if(flappy.dead){ if(flappy.deadT>30) startFlappy(); return; }
+  flappy.vy = -3.1;
+}
+function updateFlappy(){
+  const f = flappy; if(!f) return;
+  if(f.dead){ f.deadT++; return; }
+  f.t++;
+  f.vy += 0.28; f.y += f.vy;
+  if(f.t % 90 === 0){
+    const gap = 52, top = 24 + Math.random()*(H-24-gap-40);
+    f.pipes.push({x:W+10, top, gap, scored:false});
+  }
+  f.pipes.forEach(p=>{ p.x -= 1.8; });
+  f.pipes = f.pipes.filter(p=> p.x > -18);
+  // рахунок і зіткнення
+  const cx = 60, cr = 7;
+  for(const p of f.pipes){
+    if(!p.scored && p.x+16 < cx){ p.scored = true; f.score++; if(f.score>=12) achUnlock('flappy'); }
+    if(p.x < cx+cr && p.x+16 > cx-cr && (f.y-cr < p.top || f.y+cr > p.top+p.gap)) f.dead = true;
+  }
+  if(f.y > H-4 || f.y < 0){ f.y = Math.max(0, Math.min(H-4, f.y)); f.dead = true; }
+  if(f.dead){ f.deadT = 0; if(f.score > f.best){ f.best = f.score; localStorage.setItem('wed-flappy', f.score); } }
+}
+function drawFlappy(){
+  const f = flappy; if(!f) return;
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#bfe0e8'); g.addColorStop(1,'#e8dcc8'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // труби-будинки
+  f.pipes.forEach(p=>{
+    ctx.fillStyle = '#3F7C77';
+    ctx.fillRect(p.x, 0, 16, p.top);
+    ctx.fillRect(p.x, p.top+p.gap, 16, H-p.top-p.gap);
+    ctx.fillStyle = '#2c5a56';
+    ctx.fillRect(p.x-1, p.top-5, 18, 5); ctx.fillRect(p.x-1, p.top+p.gap, 18, 5);
+  });
+  // Кітана
+  const rot = Math.max(-0.5, Math.min(0.8, f.vy*0.08));
+  ctx.save(); ctx.translate(60, f.y); ctx.rotate(rot);
+  ctx.fillStyle = '#7d7888'; ctx.fillRect(-7,-6,14,12);
+  ctx.fillStyle = '#c9967a'; ctx.fillRect(-5,-4,4,4);
+  ctx.fillStyle = '#7d7888'; ctx.fillRect(-9,-8,4,4); ctx.fillRect(3,-8,4,4);  // вушка
+  ctx.fillStyle = '#5a8c4e'; ctx.fillRect(-4,-3,2,2); ctx.fillRect(2,-3,2,2);   // очі
+  const wing = (game.t>>2)&1;
+  ctx.fillStyle = '#615c6e'; ctx.fillRect(-2, wing?2:-8, 6, 4);                 // крило
+  ctx.restore();
+  // кнопка виходу
+  ctx.fillStyle = 'rgba(26,26,36,.55)'; ctx.fillRect(4,4,18,14);
+  ctx.fillStyle = '#fff'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+  ctx.fillText('✕', 13, 14);
+  // рахунок
+  ctx.fillStyle = '#1a1a24'; ctx.font='bold 16px monospace'; ctx.textAlign='center';
+  ctx.fillText(f.score, W/2, 28);
+  if(f.dead){
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#fff'; ctx.font='bold 13px monospace';
+    ctx.fillText('КІТАНА ПРИЗЕМЛИЛАСЬ', W/2, 78);
+    ctx.font='9px monospace';
+    ctx.fillText('рахунок '+f.score+'  ·  рекорд '+f.best, W/2, 96);
+    ctx.fillStyle = '#ffd'; ctx.fillText(isTouch?'тап — ще раз':'ПРОБІЛ — ще раз', W/2, 116);
+  } else {
+    ctx.fillStyle = 'rgba(26,26,36,.5)'; ctx.font='8px monospace';
+    ctx.fillText(isTouch?'тап — махати крилами':'ПРОБІЛ / тап — махати', W/2, H-8);
+  }
+  ctx.textAlign='left';
+}
+document.getElementById('btn-bonus')?.addEventListener?.('click', startFlappy);
 
 /* ================= мобільність ================= */
 /* заборона будь-якого зуму: подвійний тап, піінч, жести iOS */
