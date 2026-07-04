@@ -59,12 +59,12 @@
   /* ---------- dialogue ---------- */
   #dialog{
     position:absolute;left:2%;right:2%;bottom:2%;
-    display:flex;gap:2.5%;align-items:center;
+    display:flex;gap:3%;align-items:center;
     background:var(--surface);
     border:3px solid var(--ink);
     box-shadow:0 0 0 3px var(--surface), 0 6px 0 rgba(0,0,0,.5);
-    padding:2% 2.5%;
-    min-height:15%;max-height:22%;
+    padding:2.6% 3%;
+    min-height:13%;
     cursor:pointer;
   }
   #portrait-wrap{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -72,8 +72,8 @@
     width:clamp(48px,16cqw,72px);height:clamp(48px,16cqw,72px);
     image-rendering:pixelated;border:3px solid var(--ink);background:#cfd6dd;
   }
-  #dname{font-weight:bold;font-size:clamp(9px,2cqw,14px);color:var(--ink);letter-spacing:1px;text-transform:uppercase}
-  #dtext{flex:1;color:var(--ink);font-size:clamp(13px,2.8cqw,19px);line-height:1.45;align-self:center;white-space:pre-wrap}
+  #dname{font-weight:bold;font-size:clamp(11px,2.6cqw,14px);color:var(--ink);letter-spacing:1px;text-transform:uppercase}
+  #dtext{flex:1;color:var(--ink);font-size:clamp(15px,4cqw,20px);line-height:1.4;align-self:center;white-space:pre-wrap;overflow-wrap:anywhere}
   #darrow{position:absolute;right:12px;bottom:6px;color:var(--rose);font-size:clamp(10px,2.4cqw,16px);animation:bob .6s steps(2) infinite}
   @keyframes bob{50%{transform:translateY(3px)}}
   .name-katya{color:var(--rose)!important} .name-dima{color:var(--sage)!important}
@@ -876,7 +876,7 @@ function drawPhone(){
   ctx.drawImage(offOf(other), 7, 6, 64, 64);
   ctx.fillStyle = COL.ink; ctx.font='bold 8px monospace'; ctx.textAlign='center';
   ctx.fillText(other==='dima' ? 'Дмитро' : 'Катерина', (pw-12)/2, 84);
-  ctx.font='7px monospace'; ctx.fillStyle = '#777';
+  ctx.font='9px monospace'; ctx.fillStyle = '#777';
   ctx.fillText('Київ · 2 км', (pw-12)/2, 95);
   if(sx>10){
     ctx.strokeStyle = COL.sage; ctx.lineWidth = 2;
@@ -1110,7 +1110,7 @@ function drawBattle(){
     ctx.fillRect(h.x-4,h.y-1,8,3); ctx.fillRect(h.x-2,h.y+2,4,2); ctx.fillRect(h.x-1,h.y+4,2,1);
   }
   // підказка
-  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='7px monospace'; ctx.textAlign='center';
+  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace'; ctx.textAlign='center';
   ctx.fillText(game.watch ? '' : (isTouch ? 'тягни серце пальцем' : 'стрілки — ухилятись'), W/2, H-6);
 }
 
@@ -1328,7 +1328,7 @@ function drawTetris(){
   // рахунок
   ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='right';
   ctx.fillText('РЯДКИ '+Math.min(t.lines,TET.WIN_LINES)+'/'+TET.WIN_LINES, W-6, fy+10);
-  ctx.fillStyle = '#8a8878'; ctx.font='7px monospace';
+  ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
   ctx.fillText('жовтень', W-6, fy+24);
   ctx.fillText('тягнеться…', W-6, fy+33);
   ctx.textAlign='left';
@@ -1348,7 +1348,7 @@ function drawTetris(){
     ctx.fillStyle = '#fff'; ctx.font='8px monospace';
     ctx.fillText('достроково', W/2, 100);
   } else if(t.started && !game.watch){
-    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font='9px monospace'; ctx.textAlign='center';
     ctx.fillText(isTouch ? '◀ ▶ рухати · A — крутити · ▼ — швидше' : '◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше', W/2, H-5);
   }
 }
@@ -1518,7 +1518,7 @@ function drawSvat(){
     ctx.fillStyle = '#333'; ctx.fillRect(80,24,160,8);
     ctx.fillStyle = me==='katya' ? COL.rose : COL.sage;
     ctx.fillRect(80,24,160*Math.min(1,s.meter/100),8);
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='7px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
     ctx.fillText(game.watch?'':(isTouch?'тапай А швидко-швидко':'тисни ПРОБІЛ швидко-швидко'), W/2, H-6);
     // часточки побілки/крихти
     ctx.fillStyle = me==='katya' ? '#f4efe2' : '#e0a85a';
@@ -1538,13 +1538,13 @@ function drawSvat(){
     // стрілка
     const px2 = bx + bw*(sl.x/100);
     ctx.fillStyle = '#fff'; ctx.fillRect(px2-1,by-6,3,bh+12);
-    ctx.font='7px monospace'; ctx.fillStyle='#fff';
+    ctx.font='9px monospace'; ctx.fillStyle='#fff';
     ctx.fillText('🎃', bx+18, by+11); ctx.fillText('🎃', bx+bw-18, by+11);
     if(sl.msgT>0){
       ctx.fillStyle = '#d97e2e'; ctx.font='bold 11px monospace';
       ctx.fillText('ГАРБУЗ! …жартую. Ще раз)', W/2, 84);
     } else {
-      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font='7px monospace';
+      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font='9px monospace';
       ctx.fillText(game.watch?'':(isTouch?'тап — зупинити на рушнику':'ПРОБІЛ — зупинити на рушнику'), W/2, 84);
     }
   }
@@ -1742,7 +1742,7 @@ function drawProp(){
       ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace';
       ctx.fillText(m.label, mx+36, 97);
     });
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='7px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
     ctx.fillText(p.wrongT>0 ? CHESS_MOVES[p.sel].note+'… ще раз' :
       (game.watch?'':(isTouch?'тапни хід':'← → і ПРОБІЛ')), W/2, H-6);
     return;
@@ -1754,14 +1754,14 @@ function drawProp(){
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(50,8,220,36);
     ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
     ctx.fillText(label, W/2, 20);
-    ctx.fillStyle = '#8a8878'; ctx.font='7px monospace';
+    ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
     ctx.fillText(sub, W/2, 30);
     ctx.fillStyle = '#333'; ctx.fillRect(80,34,160,7);
     ctx.fillStyle = game.pov==='dima' ? COL.sage : COL.rose;
     ctx.fillRect(80,34,160*Math.min(1,p.meter/100),7);
     ctx.fillStyle = '#c9c4b4';
     p.particles.forEach(q=> ctx.fillRect(q.x, q.y, 2, 2));      // шкарпетки і зарядки летять
-    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='7px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
     ctx.fillText(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
     return;
   }
@@ -1802,7 +1802,7 @@ function drawProp(){
     ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
     ctx.fillText(p.finger<0 ? 'НА ЯКИЙ ПАЛЕЦЬ??' : 'ПІДХОДИТЬ!', W/2, 26+FZ);
     if(p.finger<0){
-      ctx.fillStyle = '#8a8878'; ctx.font='7px monospace';
+      ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
       ctx.fillText('(і яка рука? хтозна. обирай)', W/2, 36+FZ);
     }
     // долоня
@@ -1823,7 +1823,7 @@ function drawProp(){
       ctx.fillText('(головне вже було сказано)', W/2, H-38);
     }
     if(p.finger<0){
-      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='7px monospace';
+      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
       ctx.fillText(game.watch?'':(isTouch?'тапни палець':'← → і ПРОБІЛ'), W/2, H-34);
     }
   }
@@ -1907,21 +1907,21 @@ function drawDiia(){
       ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888'; ctx.font='6px monospace';
       ctx.fillText(s.note, px+pw/2, oy+20);
     });
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='7px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='9px monospace';
     ctx.fillText(game.watch?'':'обери прізвище після весілля', W/2, H-6);
   } else if(d.step==='submit'){
     ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24'; ctx.textAlign='center';
     ctx.fillText('💍', px+pw/2, py+50);
     ctx.font='bold 8px monospace';
     ctx.fillText('Шлюб онлайн', px+pw/2, py+66);
-    ctx.font='7px monospace'; ctx.fillStyle='#777';
+    ctx.font='9px monospace'; ctx.fillStyle='#777';
     ctx.fillText('прізвище: '+(game.diiaSurname||''), px+pw/2, py+80);
     // кнопка з прогресом утримання
     ctx.fillStyle = '#dcd9d0'; ctx.fillRect(px+10, py+110, pw-20, 22);
     ctx.fillStyle = '#1E4E8A'; ctx.fillRect(px+10, py+110, (pw-20)*d.hold/100, 22);
     ctx.fillStyle = d.hold>45 ? '#fff' : '#1a1a24'; ctx.font='bold 8px monospace';
     ctx.fillText('ПОДАТИ ЗАЯВУ', px+pw/2, py+124);
-    ctx.fillStyle = '#777'; ctx.font='7px monospace';
+    ctx.fillStyle = '#777'; ctx.font='9px monospace';
     const st = d.hold>5 ? DIIA_STATUSES[Math.min(3, Math.floor(d.hold/28))] : '';
     ctx.fillText(st, px+pw/2, py+146);
     ctx.fillStyle = 'rgba(255,255,255,.55)';
@@ -1931,7 +1931,7 @@ function drawDiia(){
     ctx.fillText('✓', px+pw/2, py+64);
     ctx.fillStyle = '#1a1a24'; ctx.font='bold 8px monospace';
     ctx.fillText('Заяву надіслано', px+pw/2, py+84);
-    ctx.font='7px monospace'; ctx.fillStyle='#777';
+    ctx.font='9px monospace'; ctx.fillStyle='#777';
     ctx.fillText('16 червня 2026', px+pw/2, py+98);
     ctx.fillText('найромантичніша кнопка Дії', px+pw/2, py+110);
     d.confetti.forEach(q=>{ ctx.fillStyle=q.c; ctx.fillRect(q.x, q.y, 3, 3); });
@@ -2072,12 +2072,12 @@ function drawRun(){
   // прогрес-смуга «до потяга»
   ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(40,8,240,8);
   ctx.fillStyle=COL.rose; ctx.fillRect(40,8,240*Math.min(1,r.dist/r.goal),8);
-  ctx.fillStyle='#fff'; ctx.font='7px monospace'; ctx.textAlign='center'; ctx.fillText('🚂 на потяг', W/2, 14);
+  ctx.fillStyle='#fff'; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.fillText('🚂 на потяг', W/2, 14);
   // вокзал наприкінці
   const stx = Math.round(PX+(r.goal-r.dist));
   if(stx<W+40){ ctx.fillStyle='#5a4a3a'; ctx.fillRect(stx,FLOOR_Y-60,60,60);
     ctx.fillStyle='#f4c430'; ctx.fillRect(stx+8,FLOOR_Y-40,44,10);
-    ctx.fillStyle='#1a1a24'; ctx.font='7px monospace'; ctx.fillText('STATION', stx+30, FLOOR_Y-32); }
+    ctx.fillStyle='#1a1a24'; ctx.font='9px monospace'; ctx.fillText('STATION', stx+30, FLOOR_Y-32); }
   if(!r.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
     ctx.fillText(game.watch?'':(isTouch?'тап — стрибок':'ПРОБІЛ — стрибок'), W/2, H-8); }
   else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ДОДОМУ! 🚂', W/2, H/2); }
@@ -2285,13 +2285,15 @@ function showLine(){
   elArrow.classList.add('hidden');
   if(ln.who){
     const c = CHARS[ln.who];
-    elPortraitWrap.style.visibility='visible';
+    elPortraitWrap.style.display='';
     elName.textContent = c.name + (ln.who===game.pov && !game.watch ? ' (ти)' : '');
     elName.className = c.cls;
     drawPortraitInto(pctx, ln.who, ln.emo);
+    elText.style.textAlign='left';
   } else {
-    elPortraitWrap.style.visibility='hidden';
+    elPortraitWrap.style.display='none';    // вірші наратора — на всю ширину, по центру
     elName.textContent='';
+    elText.style.textAlign='center';
   }
   elText.textContent = '';
 }
@@ -3000,7 +3002,7 @@ function drawEggParticles(){
     } else if(p.kind==='confetti'){
       ctx.fillStyle = ['#A8505F','#B58A2E','#3F7C77'][i%3]; ctx.fillRect(p.x,p.y,2,2);
     } else { // meow
-      ctx.fillStyle = '#fff'; ctx.font='7px monospace'; ctx.fillText('ня', p.x, p.y);
+      ctx.fillStyle = '#fff'; ctx.font='9px monospace'; ctx.fillText('ня', p.x, p.y);
     }
     if(p.y > H+8) eggParticles.splice(i,1);
   }
@@ -3106,7 +3108,7 @@ function drawKitanaScene(){
   if(endX < W+16){
     drawPerson(endX, H-14, 'katya', 0, 1, false);
     drawPerson(endX+20, H-14, 'dima', 0, -1, false);
-    ctx.fillStyle = COL.rose; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillStyle = COL.rose; ctx.font='9px monospace'; ctx.textAlign='center';
     ctx.fillText('кс-кс-кс', endX+10, H-52+((game.t>>3)&1));
   }
   // Кітана
@@ -3121,7 +3123,7 @@ function drawKitanaScene(){
   // прогрес-смуга «додому»
   ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(40,8,240,8);
   ctx.fillStyle = COL.rose; ctx.fillRect(40,8,240*Math.min(1,k.dist/k.goal),8);
-  ctx.fillStyle = '#fff'; ctx.font='7px monospace'; ctx.textAlign='center';
+  ctx.fillStyle = '#fff'; ctx.font='9px monospace'; ctx.textAlign='center';
   ctx.fillText('🏠 додому', W/2, 14);
   // індикатор гучності + підказка
   if(!k.reached){
