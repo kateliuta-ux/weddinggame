@@ -396,6 +396,22 @@ function tetrisOutroScript(pov){
     {who:null, emo:null, text:'Вернулась раніше — на місяць, на щастя.\n«Це не через мене» (це через нас, ясно).'},
   ];
 }
+function runIntroScript(pov){
+  return pov==='katya' ? [
+    {who:'katya', emo:'normal',text:'Місяць у Лондоні — заради візи.'},
+    {who:null,    emo:null,   text:'Та серце — в Києві. Біжи дахами,\nстрибай пропуски — і на потяг, до нестями!'},
+  ] : [
+    {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
+    {who:null,   emo:null,   text:'А в Лондоні вона вже мчить дахами —\nскоріш на потяг, знову бути з нами.'},
+  ];
+}
+function runOutroScript(pov){
+  return pov==='katya' ? [
+    {who:null, emo:null, text:'Встигла на потяг — місяць не добутий:\nлюбов не вміє довго в візах бути.'},
+  ] : [
+    {who:null, emo:null, text:'Вернулась раніше — на місяць, на щастя.\n«Це не через мене» (це через нас, ясно).'},
+  ];
+}
 function svatIntroScript(pov){
   return [
     {who:null, emo:null, text:'— У вас куниця, у нас мисливець!'},
@@ -448,6 +464,7 @@ const game = {
   diia:null,                // стан подачі заяви в Дії
   montage:null,             // ексклюзив Каті — монтаж
   band:null,                // ексклюзив Діми — Space Spice Boy
+  run:null,                 // лондонський платформер
   _tapPos:null,             // остання точка тапу по канві (для вибору ходу/пальця)
   _holdPtr:false,           // палець утримується на канві (для кнопки Дії)
 };
@@ -1092,7 +1109,7 @@ function startTetris(){
     flashRows:[], flashT:0, msgs:9000, ai:null,
   };
   setPhase('tetris');
-  startDialog(tetrisIntroScript(game.pov), ()=>{ game.tetris.started = true; startMusic(); });
+  startDialog(tetrisIntroScript(game.pov), ()=>{ game.tetris.started = true; });  // без музики (Катя просила прибрати)
 }
 function toggleTetrisPause(){
   const t = game.tetris;
@@ -1953,6 +1970,94 @@ function drawWed(){
   ctx.fillText('06 · 09 · 2026', W/2, 26);
 }
 
+/* ================= ЛОНДОНСЬКИЙ ПЛАТФОРМЕР (замість тетрісу) =================
+   Катя біжить дахами Лондона до вокзалу — додому раніше. */
+function startRun(){
+  game.run = {dist:0, goal:1000, py:0, vy:0, onGround:true,
+    obs:[], hearts:[], stumbleT:0, done:false, doneT:0, started:false, spawnD:200};
+  setPhase('run');
+  startDialog(runIntroScript(game.pov), ()=>{ game.run.started = true; });
+}
+function runJump(){
+  const r = game.run; if(!r || !r.started || r.done) return;
+  if(r.onGround){ r.vy = -5.6; r.onGround = false; }
+}
+function updateRun(){
+  const r = game.run; if(!r || !r.started) return;
+  if(r.done){ r.doneT++; if(r.doneT===60) startDialog(runOutroScript(game.pov), ()=> setPhase('capK')); return; }
+  // біг
+  r.dist += 2.2;
+  // гравітація/стрибок
+  if(!r.onGround){ r.vy += 0.34; r.py += r.vy; if(r.py >= 0){ r.py = 0; r.vy = 0; r.onGround = true; } }
+  if(input.actionEdge && !game.dialog){ input.actionEdge=false; runJump(); }
+  if(game.watch){ // автопілот стрибає перед перешкодою
+    for(const o of r.obs){ const d=o.at-r.dist; if(d>18 && d<40 && r.onGround){ runJump(); break; } }
+  }
+  // спавн перешкод (комини) і сердечок
+  if(r.dist > r.spawnD && r.dist < r.goal-120){
+    r.spawnD += 110 + Math.random()*80;
+    r.obs.push({at:r.dist+120, w:14});
+    if(Math.random()<0.6) r.hearts.push({at:r.dist+120+40, y:-30-Math.random()*40, got:false});
+  }
+  // зіткнення з комином (низько → спотик)
+  if(r.stumbleT>0) r.stumbleT--;
+  for(const o of r.obs){
+    const d = o.at - r.dist;
+    if(d>-6 && d<8 && r.py > -20 && r.stumbleT===0){ r.stumbleT=18; r.dist = Math.max(0, r.dist-30); break; }
+  }
+  // збір сердечок
+  const heartScreenY = ()=> FLOOR_Y+2+r.py-26;
+  r.hearts.forEach(h=>{ if(!h.got){ const d=h.at-r.dist; if(Math.abs(d)<12 && Math.abs((FLOOR_Y+h.y)-(FLOOR_Y+2+r.py-24))<20){ h.got=true; } } });
+  r.obs = r.obs.filter(o=> o.at-r.dist > -30);
+  r.hearts = r.hearts.filter(h=> h.at-r.dist > -30 && !h.got);
+  if(r.dist >= r.goal){ r.done = true; r.doneT = 0; }
+}
+function drawRun(){
+  const r = game.run; if(!r) return;
+  // сутінкове небо Лондона
+  const g = ctx.createLinearGradient(0,0,0,FLOOR_Y);
+  g.addColorStop(0,'#2a2438'); g.addColorStop(1,'#7a5a68'); ctx.fillStyle=g; ctx.fillRect(0,0,W,FLOOR_Y);
+  // Біг-Бен (паралакс)
+  const bbx = Math.round(230 - r.dist*0.2)%(W+200); const bx = ((bbx%(W+200))+(W+200))%(W+200)-100;
+  ctx.fillStyle='#3c3450'; ctx.fillRect(bx,FLOOR_Y-160,26,160); ctx.fillRect(bx+4,FLOOR_Y-176,18,16);
+  ctx.fillStyle='#f4e8c8'; ctx.fillRect(bx+7,FLOOR_Y-150,12,12);   // циферблат
+  ctx.fillStyle='#3c3450'; ctx.fillRect(bx+12,FLOOR_Y-146,2,5);
+  // дахи-паралакс
+  ctx.fillStyle='#3a3348';
+  for(let i=0;i<8;i++){ const rx=Math.round((i*80 - r.dist*0.5)%(W+160)); const sx=((rx%(W+160))+(W+160))%(W+160)-80;
+    ctx.fillRect(sx,FLOOR_Y-70,60,70); ctx.fillRect(sx+12,FLOOR_Y-84,10,14); }
+  // дощ
+  ctx.fillStyle='rgba(160,190,230,.3)';
+  for(let i=0;i<16;i++){ const rx=(i*37+(game.t*4))%W; const ry=(i*53+game.t*6)%FLOOR_Y; ctx.fillRect(rx,ry,1,6); }
+  // земля (дах, по якому біжить)
+  ctx.fillStyle='#4a4456'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle='#3c3648'; for(let x=0;x<W;x+=16){ const sx=(x-r.dist*2.2)%16; ctx.fillRect(((sx%16)+16)%16+x-((x)%16),FLOOR_Y,2,8); }
+  ctx.fillStyle='#5a5468'; ctx.fillRect(0,FLOOR_Y,W,3);
+  // перешкоди-комини
+  const PX=70;
+  r.obs.forEach(o=>{ const sx=Math.round(PX+(o.at-r.dist)); if(sx<-20||sx>W+20) return;
+    ctx.fillStyle='#3a2e2a'; ctx.fillRect(sx-o.w/2,FLOOR_Y-22,o.w,22);
+    ctx.fillStyle='#5a4a42'; ctx.fillRect(sx-o.w/2-2,FLOOR_Y-24,o.w+4,4); });
+  // сердечка
+  r.hearts.forEach(h=>{ if(h.got) return; const sx=Math.round(PX+(h.at-r.dist)); if(sx<-10||sx>W+10) return;
+    const hy=FLOOR_Y+h.y; ctx.fillStyle=COL.rose; ctx.fillRect(sx-3,hy,2,2); ctx.fillRect(sx+1,hy,2,2); ctx.fillRect(sx-3,hy+2,6,2); ctx.fillRect(sx-1,hy+4,2,1); });
+  // Катя біжить
+  drawPerson(PX, FLOOR_Y+2+r.py, 'katya', (game.t>>2), r.stumbleT>0?-1:1, true, {top:'#c8f032', topD:'#9fbf1f'});
+  // прогрес-смуга «до потяга»
+  ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(40,8,240,8);
+  ctx.fillStyle=COL.rose; ctx.fillRect(40,8,240*Math.min(1,r.dist/r.goal),8);
+  ctx.fillStyle='#fff'; ctx.font='7px monospace'; ctx.textAlign='center'; ctx.fillText('🚂 на потяг', W/2, 14);
+  // вокзал наприкінці
+  const stx = Math.round(PX+(r.goal-r.dist));
+  if(stx<W+40){ ctx.fillStyle='#5a4a3a'; ctx.fillRect(stx,FLOOR_Y-60,60,60);
+    ctx.fillStyle='#f4c430'; ctx.fillRect(stx+8,FLOOR_Y-40,44,10);
+    ctx.fillStyle='#1a1a24'; ctx.font='7px monospace'; ctx.fillText('STATION', stx+30, FLOOR_Y-32); }
+  if(!r.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
+    ctx.fillText(game.watch?'':(isTouch?'тап — стрибок':'ПРОБІЛ — стрибок'), W/2, H-8); }
+  else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ДОДОМУ! 🚂', W/2, H/2); }
+  ctx.textAlign='left';
+}
+
 /* ================= ЕКСКЛЮЗИВ КАТІ: МОНТАЖ ================= */
 function montageIntroScript(){
   return [
@@ -2239,7 +2344,7 @@ cv.addEventListener('pointerdown', e=>{
     const lane = canvasPos(e).x < W/2-25 ? 0 : canvasPos(e).x > W/2+25 ? 2 : 1;
     bandHit(lane);
   }
-  else if(game.phase==='montage'){ input.actionEdge = true; }
+  else if(game.phase==='montage' || game.phase==='run'){ input.actionEdge = true; }
   else if(game.phase==='diia'){
     const pos = canvasPos(e);
     if(diiaTap(pos)){ /* обрано прізвище */ }
@@ -2291,7 +2396,7 @@ const elHud = document.getElementById('hud');
 function updateHudAndControls(){
   elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name;
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
-  const padPhase = walkPhase || (game.state==='play' && game.phase==='tetris');
+  const padPhase = walkPhase || (game.state==='play' && game.phase==='run');
   document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase);
   document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
   document.getElementById('pause-btn').classList.toggle('hidden', game.phase!=='tetris' || game.watch || game.state!=='play');
@@ -2312,7 +2417,7 @@ function startGame(pov, watch){
   game.npc = {x:430, dir:-1, phase:0};
   initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
-  game.battle = null; game.tetris = null; game.svat = null; game.prop = null;
+  game.battle = null; game.tetris = null; game.run = null; game.svat = null; game.prop = null;
   game.diia = null; game.kitana = null; game.montage = null; game.band = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null;
   dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic();
   elTitle.classList.add('hidden');
@@ -2511,11 +2616,11 @@ function update(){
       break;
 
     case 'cap4':
-      if(game.phaseT > 70 || input.actionEdge) startTetris();
+      if(game.phaseT > 70 || input.actionEdge) startRun();
       break;
 
-    case 'tetris':
-      updateTetris();
+    case 'run':
+      updateRun();
       break;
 
     case 'capK':
@@ -2673,10 +2778,10 @@ function render(){
       drawBattle();
       break;
     case 'cap4':
-      drawCaption('ЖОВТЕНЬ 2022 · ЛОНДОН', 'місяць, який треба висидіти');
+      drawCaption('ЖОВТЕНЬ 2022 · ЛОНДОН', 'біжи додому — дахами!');
       break;
-    case 'tetris':
-      drawTetris();
+    case 'run':
+      drawRun();
       break;
     case 'capK':
       drawCaption('ОСІНЬ 2023 · ДВІР ДАНА', 'тут вас знайшла Кітана');
