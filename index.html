@@ -212,7 +212,6 @@
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
       <button class="btn" id="btn-sampler">🎹 Семплер</button>
-      <button class="btn" id="btn-bonus">🕹️ Літаюча Кітана</button>
     </div>
     <div class="hint">— «Зйомка» → «Тіндер» → «Пейзажка» → «Лондон» → «Сватання» → «Мінімаліст» —</div>
     <div id="ach-btn" style="color:#B58A2E;cursor:pointer;font-size:clamp(10px,2.2cqw,14px);letter-spacing:1px">🏆 0/8</div>
@@ -314,7 +313,7 @@ const ACHS = [
   {id:'ring',   icon:'💍', title:'Той самий палець', desc:'обрати підмізинний одразу'},
   {id:'both',   icon:'👀', title:'Обидві сторони',   desc:'пройти за Катю і за Діму'},
   {id:'konami', icon:'🎮', title:'↑↑↓↓←→←→BA',      desc:'згадати старий код'},
-  {id:'flappy', icon:'🐈', title:'Літаюча Кітана',   desc:'набрати 12 у бонусі'},
+  {id:'flappy', icon:'🐈', title:'Котолов',          desc:'покликати Кітану нявканням'},
   {id:'egg',    icon:'🥚', title:'Слідопит',         desc:'знайти приховану пасхалку'},
 ];
 let achDone = new Set(JSON.parse(localStorage.getItem('wed-ach')||'[]'));
@@ -812,6 +811,11 @@ function drawPhone(){
     ctx.strokeRect(4,4,36,14);
     ctx.fillStyle = COL.sage; ctx.font='bold 8px monospace'; ctx.textAlign='left';
     ctx.fillText('LIKE', 8, 14);
+  } else if(sx<-10){
+    ctx.strokeStyle = '#c23b3b'; ctx.lineWidth = 2;
+    ctx.strokeRect(pw-52,4,36,14);
+    ctx.fillStyle = '#c23b3b'; ctx.font='bold 8px monospace'; ctx.textAlign='left';
+    ctx.fillText('NOPE', pw-48, 14);
   }
   ctx.restore();
 
@@ -826,7 +830,7 @@ function drawPhone(){
   if(game.phase==='tinder' && !game.watch){
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0,H-16,W,16);
     ctx.fillStyle = '#ffd'; ctx.font='8px monospace'; ctx.textAlign='center';
-    ctx.fillText(isTouch ? 'Тисни  A  — свайп вправо ➜' : 'ПРОБІЛ — свайп вправо ➜', W/2, H-5);
+    ctx.fillText('👉 потягни картку вправо, щоб лайкнути', W/2, H-5);
   }
 }
 
@@ -1115,7 +1119,7 @@ function updateTetris(){
     if(t.winT===80 && !t.outroStarted){
       t.outroStarted = true;
       stopMusic();
-      startDialog(tetrisOutroScript(game.pov), ()=> setPhase('cap5'));
+      startDialog(tetrisOutroScript(game.pov), ()=> setPhase('capK'));
     }
     return;
   }
@@ -1742,27 +1746,53 @@ function drawProp(){
 
 /* ================= Дія: шлюб онлайн ================= */
 const DIIA_STATUSES = ['Перевіряємо, чи це ви…','Дія.Підпис…','Узгоджуємо зірки…','Майже…'];
+const SURNAMES = [
+  {label:'Люті',            note:'обоє — Лютий'},
+  {label:'Синявська + Лютий', note:'кожен лишає своє'},
+  {label:'Синявська-Люта',  note:'подвійне'},
+];
 function startDiia(){
-  game.diia = {hold:0, sent:false, sentT:0, confetti:[]};
+  game.diia = {step:'surname', choice:-1, hold:0, sent:false, sentT:0, confetti:[], optRects:[]};
   setPhase('diia');
 }
 function updateDiia(){
   const d = game.diia; if(!d) return;
-  if(d.sent){
-    d.sentT++;
-    if(d.sentT===40){
-      for(let i=0;i<40;i++) d.confetti.push({
-        x:Math.random()*W, y:-10-Math.random()*60,
-        v:0.6+Math.random()*1.2, c:['#A8505F','#B58A2E','#3F7C77','#1E4E8A','#f4f0e4'][i%5],
-      });
-    }
-    d.confetti.forEach(q=>{ q.y+=q.v; });
-    if(d.sentT===170) setPhase('cap8');
+
+  if(d.step==='surname'){
+    if(game.watch && game.phaseT > 70 && d.choice<0){ d.choice = 0; }
+    if(game.watch && d.choice>=0 && game.phaseT > 110){ d.step='submit'; game.diiaSurname = SURNAMES[d.choice].label; }
     return;
   }
-  const holding = game.watch || input.action || game._holdPtr || keys[' '] || keys['Enter'];
-  d.hold = holding ? Math.min(100, d.hold+1.1) : Math.max(0, d.hold-2.5);
-  if(d.hold>=100){ d.sent = true; d.sentT = 0; }
+
+  if(d.step==='submit'){
+    const holding = game.watch || input.action || game._holdPtr || keys[' '] || keys['Enter'];
+    d.hold = holding ? Math.min(100, d.hold+1.1) : Math.max(0, d.hold-2.5);
+    if(d.hold>=100){ d.step='sent'; d.sentT=0; }
+    return;
+  }
+
+  // sent
+  d.sentT++;
+  if(d.sentT===40){
+    for(let i=0;i<40;i++) d.confetti.push({
+      x:Math.random()*W, y:-10-Math.random()*60,
+      v:0.6+Math.random()*1.2, c:['#A8505F','#B58A2E','#3F7C77','#1E4E8A','#f4f0e4'][i%5],
+    });
+  }
+  d.confetti.forEach(q=>{ q.y+=q.v; });
+  if(d.sentT===170) setPhase('cap8');
+}
+function diiaTap(pos){
+  const d = game.diia; if(!d || d.step!=='surname') return false;
+  for(let i=0;i<d.optRects.length;i++){
+    const r = d.optRects[i];
+    if(pos.x>r.x && pos.x<r.x+r.w && pos.y>r.y && pos.y<r.y+r.h){
+      d.choice = i; d.step='submit'; d.hold=0;
+      game.diiaSurname = SURNAMES[i].label;
+      return true;
+    }
+  }
+  return false;
 }
 function drawDiia(){
   const d = game.diia; if(!d) return;
@@ -1777,15 +1807,30 @@ function drawDiia(){
   ctx.fillText('дія', px+pw/2, py+18);
   ctx.fillStyle = '#B58A2E'; ctx.fillRect(px+pw/2-10, py+23, 20, 2);
 
-  if(!d.sent){
-    ctx.fillStyle = '#fff'; ctx.fillRect(px+8, py+34, pw-16, 62);
-    ctx.strokeStyle = '#e3e1da'; ctx.strokeRect(px+8, py+34, pw-16, 62);
-    ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24';
-    ctx.fillText('💍', px+pw/2, py+56);
+  if(d.step==='surname'){
+    ctx.fillStyle = '#1a1a24'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    ctx.fillText('Яке прізвище?', px+pw/2, py+40);
+    d.optRects = [];
+    SURNAMES.forEach((s,i)=>{
+      const oy = py+48+i*30, ox = px+8, ow = pw-16, oh = 26;
+      d.optRects.push({x:ox, y:oy, w:ow, h:oh});
+      const on = d.choice===i;
+      ctx.fillStyle = on ? '#1E4E8A' : '#eef0f2';
+      ctx.fillRect(ox, oy, ow, oh);
+      ctx.fillStyle = on ? '#fff' : '#1a1a24'; ctx.font='bold 8px monospace';
+      ctx.fillText(s.label, px+pw/2, oy+11);
+      ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888'; ctx.font='6px monospace';
+      ctx.fillText(s.note, px+pw/2, oy+20);
+    });
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='7px monospace';
+    ctx.fillText(game.watch?'':'обери прізвище після весілля', W/2, H-6);
+  } else if(d.step==='submit'){
+    ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24'; ctx.textAlign='center';
+    ctx.fillText('💍', px+pw/2, py+50);
     ctx.font='bold 8px monospace';
-    ctx.fillText('Шлюб онлайн', px+pw/2, py+70);
+    ctx.fillText('Шлюб онлайн', px+pw/2, py+66);
     ctx.font='7px monospace'; ctx.fillStyle='#777';
-    ctx.fillText('заява про реєстрацію', px+pw/2, py+82);
+    ctx.fillText('прізвище: '+(game.diiaSurname||''), px+pw/2, py+80);
     // кнопка з прогресом утримання
     ctx.fillStyle = '#dcd9d0'; ctx.fillRect(px+10, py+110, pw-20, 22);
     ctx.fillStyle = '#1E4E8A'; ctx.fillRect(px+10, py+110, (pw-20)*d.hold/100, 22);
@@ -1987,11 +2032,6 @@ addEventListener('keydown', e=>{
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
   if(e.repeat) return;
   keys[e.key] = true;
-  if(game.state==='flappy'){
-    if(e.key===' '||e.key==='Enter'||e.key==='ArrowUp') flappyFlap();
-    if(e.key==='Escape'){ flappy=null; game.state='title'; elTitle.classList.remove('hidden'); }
-    return;
-  }
   if(e.key===' '||e.key==='Enter'||e.key==='z'||e.key==='Z') input.actionEdge = true;
   if(e.key==='ArrowUp' && game.phase==='tetris') input.actionEdge = true;   // поворот фігури
   if((e.key==='p'||e.key==='P'||e.key==='Escape') && game.phase==='tetris'){ toggleTetrisPause(); return; }
@@ -2021,18 +2061,18 @@ function canvasPos(e){
 }
 cv.addEventListener('pointerdown', e=>{
   e.preventDefault();
-  if(game.state==='flappy'){
-    const pos = canvasPos(e);
-    if(pos.x < 26 && pos.y < 22){ flappy=null; game.state='title'; elTitle.classList.remove('hidden'); updateAchButton(); return; }
-    flappyFlap(); return;
-  }
   if(game.state==='title'){ tryEgg(canvasPos(e)); return; }
   if(game.watch){ if(game.state==='play') tryEgg(canvasPos(e)); return; }  // у перегляді — лише пасхалки
   if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
+  else if(game.phase==='tinder'){ game._swipeDrag = canvasPos(e).x; game._swipeReleased = false; }
   else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
     game._tapPos = canvasPos(e);
   }
-  else if(game.phase==='diia'){ if(!tryEgg(canvasPos(e))) game._holdPtr = true; }
+  else if(game.phase==='diia'){
+    const pos = canvasPos(e);
+    if(diiaTap(pos)){ /* обрано прізвище */ }
+    else if(!tryEgg(pos)) game._holdPtr = true;
+  }
   else if(game.phase==='svat' && game.svat){
     const pos = canvasPos(e);
     if(Math.abs(pos.x-112) < 18 && pos.y > 118){    // тап по Кітані біля печі
@@ -2045,8 +2085,18 @@ cv.addEventListener('pointerdown', e=>{
 });
 cv.addEventListener('pointermove', e=>{
   if(dragTarget) dragTarget = canvasPos(e);
+  if(game._swipeDrag != null && game.phase==='tinder'){
+    game.swipeX = canvasPos(e).x - game._swipeDrag;      // картка їде за пальцем
+  }
 });
-addEventListener('pointerup', ()=>{ dragTarget = null; game._holdPtr = false; });
+addEventListener('pointerup', ()=>{
+  dragTarget = null; game._holdPtr = false;
+  if(game._swipeDrag != null){
+    game._swipeDrag = null;
+    if(game.swipeX > 55) setPhase('swipe');              // дотягнув вправо — метч
+    // інакше картка сама повернеться (updateTinder)
+  }
+});
 
 const isTouch = matchMedia('(pointer:coarse)').matches;
 
@@ -2089,9 +2139,9 @@ function startGame(pov, watch){
   game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
   game.npc = {x:430, dir:-1, phase:0};
   initWalkScene('idea');
-  game.camX = 0; game.swipeX = 0; game._setDone = false; game._dateDone = false;
+  game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.svat = null; game.prop = null;
-  game.diia = null; game._tapPos = null; game._holdPtr = false; dragTarget = null; stopMusic();
+  game.diia = null; game.kitana = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; dragTarget = null; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
   elHud.classList.remove('hidden');
@@ -2110,17 +2160,18 @@ function finishGame(){
   // персональне запрошення
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
+  const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
     body.innerHTML = 'Катя ♥ Діма запрошують тебе на весілля.<br>' +
-      `<b>${s.what}</b><br>${s.when}<br>${s.where}<br><br>` +
+      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}<br><br>` +
       'Деталі оновляться за цим самим посиланням.';
   } else {
     title.textContent = 'ЗАПРОШЕННЯ';
     body.innerHTML = 'Катя ♥ Діма запрошують на весілля.<br>' +
       'Час і місце підтягнуться з твого персонального посилання —<br>' +
-      'а поки збережи дату: 6 вересня 2026, Київ.';
+      'а поки збережи дату: 6 вересня 2026, Київ.' + surn;
   }
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
@@ -2162,7 +2213,6 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
 /* ================= головний цикл ================= */
 function update(){
   game.t++; game.phaseT++;
-  if(game.state==='flappy'){ updateFlappy(); return; }
   if(game.state!=='play') return;
 
   const p = game.player, npc = game.npc;
@@ -2206,8 +2256,15 @@ function update(){
       break;
 
     case 'tinder':
-      if((game.watch && game.phaseT > 110) || (!game.watch && input.actionEdge)){
-        setPhase('swipe');
+      if(game.watch){
+        if(game.phaseT > 90) setPhase('swipe');
+      } else if(game._swipeDrag != null){
+        // тягнемо картку пальцем — обробляється в pointermove/up
+      } else if(input.actionEdge){
+        setPhase('swipe');                 // фолбек: пробіл = автосвайп
+      } else if(game.swipeX !== 0){
+        game.swipeX *= 0.75;               // відпустив, не долетів — картка вертається
+        if(Math.abs(game.swipeX) < 1) game.swipeX = 0;
       }
       break;
 
@@ -2273,6 +2330,15 @@ function update(){
       updateTetris();
       break;
 
+    case 'capK':
+      if(game.phaseT > 70 || input.actionEdge) startKitana();
+      break;
+
+    case 'kitana':
+      if(input.actionEdge && !game.dialog) kitanaFlap();   // тап/пробіл — стрибок (діалог гортає глобальний обробник)
+      updateKitana();
+      break;
+
     case 'cap5':
       if(game.phaseT > 70 || input.actionEdge) startSvat();
       break;
@@ -2313,8 +2379,6 @@ function update(){
 
 function render(){
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
-
-  if(game.state==='flappy'){ drawFlappy(); return; }
 
   if(game.state==='title'){
     drawSet(120);
@@ -2392,6 +2456,12 @@ function render(){
       break;
     case 'tetris':
       drawTetris();
+      break;
+    case 'capK':
+      drawCaption('ОСІНЬ 2023 · ДВІР ДАНА', 'тут вас знайшла Кітана');
+      break;
+    case 'kitana':
+      drawKitanaScene();
       break;
     case 'cap5':
       drawCaption('СВАТАННЯ', '(робимо вигляд, що було)');
@@ -2541,7 +2611,7 @@ const SCENE_EGGS = {
   // сцена: [{x,y,r,burst}]  (координати у світі 320x180, camX враховується для скрол-сцен)
   title: [{x:160, y:98, r:16, kind:'heart', world:false}],   // серце між ними
   set:   [{x:120, y:100, r:16, kind:'meow', world:true}],    // крісло KAASIN
-  diia:  [{x:160, y:60,  r:20, kind:'heart', world:false}],  // лого дія
+  diia:  [{x:160, y:20,  r:14, kind:'heart', world:false}],  // лого дія
   wed:   [{x:70,  y:52,  r:18, kind:'confetti', world:false}], // сонце
 };
 function tryEgg(pos){
@@ -2579,83 +2649,144 @@ function drawEggParticles(){
   if(eggParticles.length > 200) eggParticles.splice(0, eggParticles.length-200);
 }
 
-/* ================= бонус: Літаюча Кітана (Flappy) ================= */
-let flappy = null;
-function startFlappy(){
-  flappy = {y:90, vy:0, pipes:[], t:0, score:0, dead:false, deadT:0, best:+(localStorage.getItem('wed-flappy')||0)};
-  game.state = 'flappy';
-  elTitle.classList.add('hidden');
-  ['hud','watch-hint','watch-play','pause-btn','controls','kbd-hint','dialog']
-    .forEach(id=> document.getElementById(id).classList.add('hidden'));
+/* ================= Кітана: осінь 2023, двір Дана (керування нявканням) ================= */
+/* мікрофон */
+let micAnalyser = null, micData = null, micReq = false;
+function setupMic(){
+  if(micReq) return; micReq = true;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    ensureAudio();
+    const src = audioCtx.createMediaStreamSource(stream);
+    micAnalyser = audioCtx.createAnalyser();
+    micAnalyser.fftSize = 256;
+    micData = new Uint8Array(micAnalyser.frequencyBinCount);
+    src.connect(micAnalyser);
+  }).catch(()=>{ micAnalyser = null; });
 }
-function flappyFlap(){
-  if(!flappy) return;
-  if(flappy.dead){ if(flappy.deadT>30) startFlappy(); return; }
-  flappy.vy = -3.1;
+function micLevel(){
+  if(!micAnalyser) return 0;
+  micAnalyser.getByteTimeDomainData(micData);
+  let sum = 0;
+  for(let i=0;i<micData.length;i++){ const v=(micData[i]-128)/128; sum += v*v; }
+  return Math.sqrt(sum/micData.length);   // 0..~1
 }
-function updateFlappy(){
-  const f = flappy; if(!f) return;
-  if(f.dead){ f.deadT++; return; }
-  f.t++;
-  f.vy += 0.28; f.y += f.vy;
-  if(f.t % 90 === 0){
-    const gap = 52, top = 24 + Math.random()*(H-24-gap-40);
-    f.pipes.push({x:W+10, top, gap, scored:false});
+
+function startKitana(){
+  game.kitana = {y:100, vy:0, fences:[], dist:0, goal:1000, t:0,
+    reached:false, reachedT:0, bumpT:0, meowCd:0, gotMeow:false};
+  setupMic();
+  setPhase('kitana');
+  startDialog(kitanaIntroScript(game.pov), ()=>{ game.kitana.started = true; });
+}
+function kitanaIntroScript(pov){
+  return [
+    {who:null, emo:null, text:'Осінь 2023. Двір друга Дана.\nМале сіре кошеня.'},
+    {who:null, emo:null, text:'🎤 Нявкай у мікрофон, щоб кликати Кітану!\n(або тапай / ПРОБІЛ)'},
+  ];
+}
+function kitanaFlap(){
+  const k = game.kitana; if(!k || !k.started || k.reached) return;
+  k.vy = -3.0;
+  if(game.t%4===0) eggParticles.push({x:58, y:k.y-8, vy:-0.5, kind:'meow'});
+}
+function updateKitana(){
+  const k = game.kitana; if(!k || !k.started) return;
+  if(k.reached){ k.reachedT++;
+    if(k.reachedT===70) startDialog(kitanaOutroScript(game.pov), ()=> setPhase('cap5'));
+    return;
   }
-  f.pipes.forEach(p=>{ p.x -= 1.8; });
-  f.pipes = f.pipes.filter(p=> p.x > -18);
-  // рахунок і зіткнення
-  const cx = 60, cr = 7;
-  for(const p of f.pipes){
-    if(!p.scored && p.x+16 < cx){ p.scored = true; f.score++; if(f.score>=12) achUnlock('flappy'); }
-    if(p.x < cx+cr && p.x+16 > cx-cr && (f.y-cr < p.top || f.y+cr > p.top+p.gap)) f.dead = true;
+  k.t++;
+  // нявкання → злетіти
+  if(k.meowCd>0) k.meowCd--;
+  const lvl = micLevel();
+  if(lvl > 0.12 && k.meowCd===0){ kitanaFlap(); k.meowCd = 10; k.gotMeow = true; if(k.gotMeow) achUnlock('flappy'); }
+  if(game.watch && k.t%46===0) kitanaFlap();
+
+  k.vy += 0.26; k.y += k.vy;
+  k.dist += 1.8;
+  // паркан-перешкоди з проходом
+  if(k.t % 100 === 0 && k.dist < k.goal-120){
+    const gap = 58, top = 22 + Math.random()*(H-22-gap-38);
+    k.fences.push({x:W+10, top, gap});
   }
-  if(f.y > H-4 || f.y < 0){ f.y = Math.max(0, Math.min(H-4, f.y)); f.dead = true; }
-  if(f.dead){ f.deadT = 0; if(f.score > f.best){ f.best = f.score; localStorage.setItem('wed-flappy', f.score); } }
+  k.fences.forEach(f=>{ f.x -= 1.8; });
+  k.fences = k.fences.filter(f=> f.x > -20);
+  // м'яке зіткнення — не програш, просто «підстрибнула» назад
+  const cx=58, cr=7;
+  for(const f of k.fences){
+    if(f.x < cx+cr && f.x+16 > cx-cr && (k.y-cr < f.top || k.y+cr > f.top+f.gap)){
+      k.vy = -1.5; k.dist = Math.max(0, k.dist-40); k.bumpT = 12; f.x -= 30; break;
+    }
+  }
+  if(k.bumpT>0) k.bumpT--;
+  if(k.y > H-6){ k.y = H-6; k.vy = -1.2; }
+  if(k.y < 4){ k.y = 4; k.vy = 0.5; }
+  if(k.dist >= k.goal){ k.reached = true; k.reachedT = 0; }
 }
-function drawFlappy(){
-  const f = flappy; if(!f) return;
+function drawKitanaScene(){
+  const k = game.kitana; if(!k) return;
+  // двір: небо + паркан-тло + земля
   const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#bfe0e8'); g.addColorStop(1,'#e8dcc8'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // труби-будинки
-  f.pipes.forEach(p=>{
-    ctx.fillStyle = '#3F7C77';
-    ctx.fillRect(p.x, 0, 16, p.top);
-    ctx.fillRect(p.x, p.top+p.gap, 16, H-p.top-p.gap);
-    ctx.fillStyle = '#2c5a56';
-    ctx.fillRect(p.x-1, p.top-5, 18, 5); ctx.fillRect(p.x-1, p.top+p.gap, 18, 5);
+  g.addColorStop(0,'#c9b78a'); g.addColorStop(1,'#e8dcc0'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#a8935e'; ctx.fillRect(0,H-14,W,14);           // земля
+  // осіннє листя
+  for(let i=0;i<10;i++){
+    const lx=(i*61 + game.t)%(W+20)-10, ly=40+(i*29+game.t*0.6)%(H-50);
+    ctx.fillStyle = ['#b5652e','#c98a3e','#8a6b2e'][i%3]; ctx.fillRect(lx,ly,3,3);
+  }
+  // паркани-перешкоди (вертикальні дошки)
+  k.fences.forEach(f=>{
+    for(const seg of [[0,f.top],[f.top+f.gap,H-14-(f.top+f.gap)]]){
+      ctx.fillStyle = '#6e4a2e'; ctx.fillRect(f.x, seg[0], 16, seg[1]);
+      ctx.fillStyle = '#5a3a22';
+      ctx.fillRect(f.x+3, seg[0], 2, seg[1]); ctx.fillRect(f.x+9, seg[0], 2, seg[1]);
+    }
   });
+  // Катя і Діма чекають наприкінці — виїжджають з-за правого краю під фініш
+  const endX = 150 + (1 - Math.min(1,k.dist/k.goal))*220;
+  if(endX < W+16){
+    drawPerson(endX, H-14, 'katya', 0, 1, false);
+    drawPerson(endX+20, H-14, 'dima', 0, -1, false);
+    ctx.fillStyle = COL.rose; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillText('кс-кс-кс', endX+10, H-52+((game.t>>3)&1));
+  }
   // Кітана
-  const rot = Math.max(-0.5, Math.min(0.8, f.vy*0.08));
-  ctx.save(); ctx.translate(60, f.y); ctx.rotate(rot);
-  ctx.fillStyle = '#7d7888'; ctx.fillRect(-7,-6,14,12);
+  const rot = Math.max(-0.5, Math.min(0.8, k.vy*0.08));
+  ctx.save(); ctx.translate(58, k.y); ctx.rotate(rot);
+  ctx.fillStyle = k.bumpT>0?'#9a5a5a':'#7d7888'; ctx.fillRect(-7,-6,14,12);
   ctx.fillStyle = '#c9967a'; ctx.fillRect(-5,-4,4,4);
-  ctx.fillStyle = '#7d7888'; ctx.fillRect(-9,-8,4,4); ctx.fillRect(3,-8,4,4);  // вушка
-  ctx.fillStyle = '#5a8c4e'; ctx.fillRect(-4,-3,2,2); ctx.fillRect(2,-3,2,2);   // очі
-  const wing = (game.t>>2)&1;
-  ctx.fillStyle = '#615c6e'; ctx.fillRect(-2, wing?2:-8, 6, 4);                 // крило
+  ctx.fillStyle = '#7d7888'; ctx.fillRect(-9,-8,4,4); ctx.fillRect(3,-8,4,4);
+  ctx.fillStyle = '#5a8c4e'; ctx.fillRect(-4,-3,2,2); ctx.fillRect(2,-3,2,2);
+  const wing=(game.t>>2)&1; ctx.fillStyle = '#615c6e'; ctx.fillRect(-2, wing?2:-8, 6, 4);
   ctx.restore();
-  // кнопка виходу
-  ctx.fillStyle = 'rgba(26,26,36,.55)'; ctx.fillRect(4,4,18,14);
-  ctx.fillStyle = '#fff'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-  ctx.fillText('✕', 13, 14);
-  // рахунок
-  ctx.fillStyle = '#1a1a24'; ctx.font='bold 16px monospace'; ctx.textAlign='center';
-  ctx.fillText(f.score, W/2, 28);
-  if(f.dead){
-    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#fff'; ctx.font='bold 13px monospace';
-    ctx.fillText('КІТАНА ПРИЗЕМЛИЛАСЬ', W/2, 78);
-    ctx.font='9px monospace';
-    ctx.fillText('рахунок '+f.score+'  ·  рекорд '+f.best, W/2, 96);
-    ctx.fillStyle = '#ffd'; ctx.fillText(isTouch?'тап — ще раз':'ПРОБІЛ — ще раз', W/2, 116);
+  // прогрес-смуга «додому»
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(40,8,240,8);
+  ctx.fillStyle = COL.rose; ctx.fillRect(40,8,240*Math.min(1,k.dist/k.goal),8);
+  ctx.fillStyle = '#fff'; ctx.font='7px monospace'; ctx.textAlign='center';
+  ctx.fillText('🏠 додому', W/2, 14);
+  // індикатор гучності + підказка
+  if(!k.reached){
+    const lvl = micLevel();
+    if(micAnalyser){
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(W-44,20,40,8);
+      ctx.fillStyle = lvl>0.12?'#3fae54':'#B58A2E'; ctx.fillRect(W-44,20,40*Math.min(1,lvl*4),8);
+      ctx.fillStyle='#fff'; ctx.font='6px monospace'; ctx.textAlign='right'; ctx.fillText('🎤', W-46, 27);
+    }
+    ctx.fillStyle = 'rgba(26,26,36,.5)'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(micAnalyser ? '🐈 нявкай, щоб Кітана летіла!' :
+      (isTouch?'тап — стрибок':'ПРОБІЛ — стрибок'), W/2, H-4);
   } else {
-    ctx.fillStyle = 'rgba(26,26,36,.5)'; ctx.font='8px monospace';
-    ctx.fillText(isTouch?'тап — махати крилами':'ПРОБІЛ / тап — махати', W/2, H-8);
+    ctx.fillStyle = COL.rose; ctx.font='bold 12px monospace'; ctx.textAlign='center';
+    ctx.fillText('КІТАНА ВДОМА ♥', W/2, 40);
   }
   ctx.textAlign='left';
 }
-document.getElementById('btn-bonus')?.addEventListener?.('click', startFlappy);
+function kitanaOutroScript(pov){
+  return [
+    {who:null, emo:null, text:'Кітана обрала вас.\nЗ того дня — вона вдома. 🐈'},
+  ];
+}
 
 /* ================= мобільність ================= */
 /* заборона будь-якого зуму: подвійний тап, піінч, жести iOS */
