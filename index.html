@@ -156,7 +156,7 @@
 
   <div id="dialog" class="hidden">
     <div id="portrait-wrap">
-      <canvas id="portrait" width="32" height="32"></canvas>
+      <canvas id="portrait" width="48" height="48"></canvas>
       <div id="dname"></div>
     </div>
     <div id="dtext"></div>
@@ -577,63 +577,102 @@ function drawCollect(camX){
 
 /* ================= персонаж (кежуал) ================= */
 function drawPerson(x, y, who, phase, dir, walking, skin){
+  /* Детальні спрайти: контур-силует, тіні/відблиски, складки одягу,
+     взуття з підошвою, 4-фазна хода, обличчя з білками очей. */
   const c = skin ? Object.assign({}, CHARS[who], skin) : CHARS[who];
-  const px = (dx,dy,w,h,col)=>{ ctx.fillStyle=col; ctx.fillRect(Math.round(dx),Math.round(dy),w,h); };
+  const SK='#eebc96', SKS='#d49a72', o='#221c26';
+  const hairSh = c.style==='bob' ? '#a8854e' : '#33241a';
+  const hairHi = c.style==='bob' ? '#e8cf9a' : (c.hi || null);
+  const R = [];                                    // [x,y,w,h,col,деталь(без контуру)]
+  const add = (x,y,w,h,col,fine)=>R.push([x,y,w,h,col,fine]);
+
+  const ph = walking ? (phase%4) : -1;
+  const bob = (ph===1||ph===3) ? 1 : 0;            // тіло трохи вище на «проході»
+  const stride = ph===0 ? 1 : ph===2 ? -1 : 0;     // розмах кроку
+  const fx = 1 + stride*3, bx = -6 - stride*2;     // передня/задня нога
+  const liftF = (ph===3) ? 2 : 0, liftB = (ph===1) ? 2 : 0;   // підтягування стопи
+
+  // ЗАДНЯ нога (темніша) + кед
+  add(bx, -14+bob, 5, 14-bob-liftB, COL.jeansD);
+  add(bx-1, -4-liftB, 7, 4, '#2e2a36');
+  add(bx-1, -1-liftB, 7, 1, '#9a96a4', true);      // підошва
+  // ПЕРЕДНЯ нога + кед
+  add(fx, -14+bob, 5, 14-bob-liftF, COL.jeans);
+  add(fx-1, -4-liftF, 7, 4, '#3a3646');
+  add(fx-1, -1-liftF, 7, 1, '#b8b4c2', true);
+
+  // КОРПУС: одяг з боковою тінню, кантом і складками
+  add(-8, -35+bob, 16, 22, c.top);
+  add(-8, -35+bob, 4, 22, c.topD);                 // тінь з боку спини
+  add(-8, -15+bob, 16, 2, c.topD, true);           // низ/кант
+  add(-1, -28+bob, 1, 7, c.topD, true);            // складка
+  add(4, -24+bob, 1, 5, c.topD, true);
+  add(2, -34+bob, 4, 1, '#ffffff22', true);        // відблиск плеча
+  add(0, -34+bob, 3, 3, SK);                       // виріз/шия
+
+  // ЗАДНЯ рука (махає протилежно до ніг)
+  const sw = -stride*3;
+  add(-11, -34+bob, 4, 10, c.topD);
+  add(-11, -25+bob+sw, 4, 6, c.topD);              // передпліччя
+  add(-11, -20+bob+sw, 4, 4, SK);                  // долоня
+  // ПЕРЕДНЯ рука
+  add(7, -34+bob, 4, 10, c.top);
+  add(7, -25+bob-sw, 4, 6, c.top);
+  add(7, -20+bob-sw, 4, 4, SK);
+  add(7, -25+bob-sw, 4, 1, c.topD, true);          // згин ліктя
+
+  // ГОЛОВА
+  add(-6, -47+bob, 12, 13, SK);
+  add(-6, -36+bob, 12, 1, SKS, true);              // тінь щелепи
+  add(-6, -43+bob, 2, 4, SKS, true);               // вушко (ззаду)
+
+  // ВОЛОССЯ
+  if(c.style==='bob'){
+    const swing = walking ? (ph===0?1:0) : 0;
+    add(-7, -50+bob, 14, 5, c.hair);
+    add(-8, -48+bob+swing, 3, 13, c.hair);         // штора ззаду
+    add(6, -48+bob+swing, 3, 13, c.hair);          // штора спереду
+    add(-8, -37+bob+swing, 3, 2, hairSh, true);    // кінчики темніші
+    add(6, -37+bob+swing, 3, 2, hairSh, true);
+    add(-5, -50+bob, 8, 1, hairHi, true);          // відблиск
+    add(1, -50+bob, 1, 3, hairSh, true);           // проділ
+  } else if(c.style==='curly'){
+    add(-7, -50+bob, 14, 5, c.hair);
+    add(-8, -48+bob, 2, 4, c.hair); add(7, -48+bob, 2, 4, c.hair);
+    add(-6, -52+bob, 3, 2, c.hair); add(-1, -53+bob, 3, 3, c.hair); add(4, -52+bob, 3, 2, c.hair);
+    add(-7, -46+bob, 2, 4, c.hair); add(6, -46+bob, 2, 4, c.hair);
+    add(-4, -52+bob, 2, 1, '#6a5040', true); add(2, -51+bob, 2, 1, '#6a5040', true); // виток кучерів
+  } else {
+    add(-7, -49+bob, 14, 4, c.hair);
+    add(-6, -46+bob, 11, 2, c.hair);               // гривка-шторка
+    add(-7, -46+bob, 2, 6, c.hair);                // скроня
+    add(6, -46+bob, 1, 5, c.hair);
+    add(-6, -44+bob, 11, 1, hairSh, true);         // тінь під гривкою
+  }
+  if(c.hi){
+    add(-5, -49+bob, 2, 3, c.hi, true); add(0, -50+bob, 2, 3, c.hi, true);
+    add(3, -49+bob, 2, 3, c.hi, true);
+  }
+
+  // ОБЛИЧЧЯ: очі з білками, брови, рот
+  add(1, -43+bob, 3, 2, '#fbfbf6', true); add(3, -43+bob, 1, 2, o, true);
+  add(-3, -43+bob, 3, 2, '#fbfbf6', true); add(-1, -43+bob, 1, 2, o, true);
+  add(1, -45+bob, 3, 1, hairSh, true); add(-3, -45+bob, 3, 1, hairSh, true);  // брови
+  add(0, -38+bob, 3, 1, '#b3555f', true);          // рот
+  add(2, -41+bob, 2, 1, '#f2a68a', true);          // румʼянець
+
+  // МАЛЮВАННЯ: контурний прохід (силует +1px), потім кольори
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   if(dir<0) ctx.scale(-1,1);
-
-  const bob = walking ? (phase&1) : 0;
-  const legSpread = walking ? (phase&1 ? 2 : -1.2) : 0;
-
-  // ноги (джинси)
-  px(-6, -14+bob, 5, 14-bob, COL.jeansD);
-  px(-6, -3, 6, 3, COL.ink);
-  px(1+legSpread, -14+bob, 5, 14-bob, COL.jeans);
-  px(1+legSpread, -3, 6, 3, COL.ink);
-  // корпус (футболка/светр кольору персонажа)
-  px(-8, -34+bob, 16, 21, c.top);
-  px(-8, -34+bob, 4, 21, c.topD);
-  px(0, -33+bob, 3, 3, COL.skin);              // виріз
-  // руки
-  const armSwing = walking ? (phase&1 ? 3 : -3) : 0;
-  px(-11, -33+bob, 4, 12+armSwing, c.topD);
-  px(-11, -21+bob+armSwing, 4, 4, COL.skin);
-  px(7, -33+bob, 4, 12-armSwing, c.top);
-  px(7, -21+bob-armSwing, 4, 4, COL.skin);
-  // голова
-  px(-6, -46+bob, 12, 12, COL.skin);
-  px(-6, -37+bob, 12, 1, COL.skinSh);
-  // волосся
-  if(c.style==='bob'){
-    // каре: верх + «штори» з обох боків до підборіддя
-    const swing = walking ? (phase&1?1:0) : 0;
-    px(-7, -49+bob, 14, 4, c.hair);
-    px(-8, -47+bob+swing, 3, 12, c.hair);
-    px(6, -47+bob+swing, 3, 12, c.hair);
-    px(-6, -46+bob, 2, 3, c.hair);              // пасмо біля проділу
-  } else if(c.style==='curly'){
-    // кучері (Діма зразка лютого 2026)
-    px(-7, -49+bob, 14, 5, c.hair);
-    px(-8, -47+bob, 2, 3, c.hair); px(7, -47+bob, 2, 3, c.hair);
-    px(-6, -51+bob, 3, 2, c.hair); px(-1, -52+bob, 3, 3, c.hair); px(4, -51+bob, 3, 2, c.hair);
-    px(-7, -45+bob, 2, 4, c.hair); px(6, -45+bob, 2, 4, c.hair);
-  } else {
-    // чубчик-шторка на лоба
-    px(-7, -48+bob, 14, 4, c.hair);
-    px(-6, -45+bob, 11, 2, c.hair);             // гривка над очима
-    px(-7, -45+bob, 2, 5, c.hair);              // скроня
-    px(6, -45+bob, 1, 4, c.hair);
+  ctx.fillStyle = o;
+  for(const [rx,ry,w,h,,fine] of R){
+    if(!fine) ctx.fillRect(Math.round(rx)-1, Math.round(ry)-1, w+2, h+2);
   }
-  // мілірування (світлі пасма) — Діма зразка Штормнадо 2021
-  if(c.hi){
-    px(-5, -48+bob, 2, 4, c.hi); px(0, -49+bob, 2, 3, c.hi);
-    px(3, -48+bob, 2, 4, c.hi); px(-7, -46+bob, 1, 3, c.hi);
+  for(const [rx,ry,w,h,col] of R){
+    ctx.fillStyle = col;
+    ctx.fillRect(Math.round(rx), Math.round(ry), w, h);
   }
-  // обличчя
-  px(1, -42+bob, 2, 2, COL.ink);
-  px(-3, -42+bob, 2, 2, COL.ink);
-  px(0, -38+bob, 3, 1, COL.skinSh);
   ctx.restore();
 }
 
@@ -665,57 +704,124 @@ function drawKitana(x, y, dir){
 
 /* ================= портрети (32x32) ================= */
 function drawPortraitInto(g, who, emo){
+  /* Детальні портрети 48×48: контур, тіні, очі з райдужкою, ніс, губи, вушка.
+     Катя — блондинисте каре, зелено-сірі очі, сережка в носі.
+     Діма — шатен із чубчиком-шторкою, карі очі. */
   const c = CHARS[who];
   const P = (x,y,w,h,col)=>{ g.fillStyle=col; g.fillRect(x,y,w,h); };
-  P(0,0,32,32,'#cfd6dd');
-  P(0,22,32,10,c.top);                             // плечі
-  P(13,20,6,6,COL.skin);                           // шия
-  P(7,4,18,18,COL.skin);                           // обличчя
-  P(7,20,18,2,COL.skinSh);
+  const K = who==='katya';
+  const skin='#eebc96', skinSh='#d49a72', skinHi='#f8d4b4';
+  const hair = c.hair, hairSh = K ? '#a8854e' : '#33241a', hairHi = K ? '#e8cf9a' : (c.hi||'#5e442e');
+  const iris = K ? '#7a8f6a' : '#6a4f38';
+  const o = '#221c26';
+
+  // фон-віньєтка
+  P(0,0,48,48,'#cbd3da'); P(0,0,48,3,'#bcc6cf'); P(0,45,48,3,'#bcc6cf');
+
+  // плечі/одяг
+  P(4,39,40,9,c.topD); P(6,38,36,10,c.top);
+  P(22,37,4,2,skinSh);                              // ямка ключиць
+  P(6,38,36,1,c.topD);                              // край коміра
+  // шия з тінню від щелепи
+  P(19,32,10,7,skin); P(19,32,10,2,skinSh);
+
+  // ВУХА
+  P(9,20,3,6,skin); P(36,20,3,6,skin);
+  P(9,22,1,3,skinSh); P(38,22,1,3,skinSh);
+  P(8,20,1,6,o); P(39,20,1,6,o);
+
+  // ОБЛИЧЧЯ (з підборіддям, що звужується)
+  P(11,8,26,22,skin);
+  P(12,30,24,3,skin); P(14,33,20,2,skin);           // щелепа
+  P(11,8,26,2,skinHi);                              // чоло світліше
+  P(12,28,24,2,skinSh); P(14,33,20,2,skinSh);       // тінь щелепи
+  // контур обличчя
+  P(10,9,1,20,o); P(37,9,1,20,o);
+  P(11,29,1,3,o); P(36,29,1,3,o);
+  P(12,32,2,1,o); P(34,32,2,1,o);
+  P(14,34,20,1,o);
+
+  // НІС
+  P(23,19,2,6,skinSh);
+  P(22,25,4,1,skinSh); P(21,24,1,1,skinSh); P(26,24,1,1,skinSh);
+  if(K) P(26,25,2,2,'#cfd4d8');                     // сережка в носі ✨
+
+  // ВОЛОССЯ
   if(c.style==='bob'){
-    // блондинисте каре з проділом
-    P(5,2,22,5,c.hair);
-    P(4,4,4,18,c.hair); P(24,4,4,18,c.hair);       // штори до підборіддя
-    P(8,5,3,3,c.hair); P(21,5,3,3,c.hair);         // від проділу вбік
-    P(15,2,2,2,'#b8905a');                         // проділ (тінь)
-    P(18,15,1,1,'#c9c4b4');                        // сережка в носі
+    // каре з прямим проділом (за фото)
+    P(7,2,34,7,hair);
+    P(6,4,6,30,hair); P(36,4,6,30,hair);            // штори до щелепи
+    P(9,7,6,5,hair); P(33,7,6,5,hair);              // від проділу вниз
+    P(23,2,2,6,hairSh);                             // проділ
+    P(8,3,14,2,hairHi); P(26,3,13,2,hairHi);        // відблиск
+    P(6,30,6,3,hairSh); P(36,30,6,3,hairSh);        // кінчики темніші
+    P(7,10,4,20,hairSh);                            // тінь у шторі зліва
+    // контур волосся
+    P(6,1,36,1,o); P(5,3,1,30,o); P(42,3,1,30,o);
+    P(6,33,6,1,o); P(36,33,6,1,o);
   } else {
-    // шатен: гривка-шторка над бровами
-    P(5,2,22,5,c.hair);
-    P(6,6,20,3,c.hair);                            // гривка
-    P(7,9,4,1,c.hair); P(21,9,4,1,c.hair);         // кінчики шторки
-    P(5,4,3,10,c.hair); P(24,4,3,10,c.hair);       // скроні
+    // шатен: обʼємна гривка-шторка
+    P(7,2,34,7,hair);
+    P(8,8,32,4,hair);                               // гривка
+    P(9,12,12,3,hair); P(27,12,12,3,hair);          // «шторка» розходиться
+    P(11,15,6,2,hair); P(31,15,6,2,hair);           // кінчики
+    P(7,8,4,14,hair); P(37,8,4,14,hair);            // скроні
+    P(9,3,14,2,hairHi); P(26,3,12,2,hairHi);        // відблиск
+    P(9,12,12,1,hairSh); P(27,12,12,1,hairSh);      // тінь під гривкою
+    P(7,19,4,3,hairSh); P(37,19,4,3,hairSh);
+    if(c.hi){ P(12,4,3,4,c.hi); P(20,3,3,5,c.hi); P(30,4,3,4,c.hi); }  // мілірування
+    P(6,1,36,1,o); P(6,2,1,20,o); P(41,2,1,20,o);
   }
-  const eye = COL.ink;
+
+  // ОЧІ (білок + райдужка + зіниця + блік) — базова позиція y16
+  const eyeL=15, eyeR=27, ey=17;
+  function eyeOpen(x){
+    P(x,ey,6,4,'#fbfbf6');
+    P(x+2,ey,3,4,iris);
+    P(x+3,ey+1,2,2,o);
+    P(x+2,ey,1,1,'#fff');
+    P(x-1,ey,1,4,o); P(x+6,ey,1,4,o); P(x,ey-1,6,1,o);
+  }
+  function eyeHappy(x){                              // примружене ^^
+    P(x,ey+1,2,1,o); P(x+2,ey,3,1,o); P(x+5,ey+1,1,1,o);
+  }
+  function eyeTired(x){                              // напівзаплющене
+    P(x,ey+1,6,2,'#fbfbf6'); P(x+2,ey+1,3,2,iris);
+    P(x-1,ey,7,1,o); P(x,ey+3,6,1,o);
+  }
+  const browY=13;
   if(emo==='happy'){
-    P(11,11,3,1,eye); P(10,12,1,1,eye); P(13,12,1,1,eye);
-    P(19,11,3,1,eye); P(18,12,1,1,eye); P(21,12,1,1,eye);
-    P(13,17,6,2,COL.roseD);
-    P(12,16,1,1,COL.roseD); P(19,16,1,1,COL.roseD);
+    eyeHappy(eyeL); eyeHappy(eyeR);
+    P(eyeL,browY,6,1,hairSh); P(eyeR,browY,6,1,hairSh);
+    P(19,27,10,2,'#b3555f'); P(18,26,2,1,'#b3555f'); P(28,26,2,1,'#b3555f');  // усмішка
+    P(20,29,8,1,'#8a3a44');
+    P(12,22,4,2,'#f2a68a'); P(32,22,4,2,'#f2a68a');  // румʼянець
   } else if(emo==='wow'){
-    P(11,10,3,3,eye); P(19,10,3,3,eye);
-    P(10,8,4,1,c.hair); P(18,8,4,1,c.hair);
-    P(14,16,4,4,COL.roseD);
+    eyeOpen(eyeL); eyeOpen(eyeR);
+    P(eyeL,browY-2,6,1,hairSh); P(eyeR,browY-2,6,1,hairSh);  // брови вгору
+    P(21,26,6,5,'#8a3a44'); P(22,27,4,3,'#5e2830');  // відкритий рот
   } else if(emo==='tired'){
-    P(11,12,3,1,eye); P(19,12,3,1,eye);
-    P(11,10,3,1,c.hair); P(19,10,3,1,c.hair);
-    P(13,18,6,1,COL.roseD);
-    P(8,14,3,2,'#e79a9a'); P(21,14,3,2,'#e79a9a');
+    eyeTired(eyeL); eyeTired(eyeR);
+    P(eyeL,browY+1,6,1,hairSh); P(eyeR,browY+1,6,1,hairSh);
+    P(20,28,8,1,'#b3555f');                          // рівний рот
+    P(13,22,3,1,'#e0a0a0'); P(32,22,3,1,'#e0a0a0');
   } else if(emo==='shy'){
-    P(11,11,2,2,eye); P(19,11,2,2,eye);
-    P(13,18,5,1,COL.roseD);
-    P(8,15,4,2,'#ef9aa5'); P(20,15,4,2,'#ef9aa5');
-  } else {
-    P(11,11,2,2,eye); P(19,11,2,2,eye);
-    P(13,17,6,1,COL.roseD);
+    eyeOpen(eyeL); eyeOpen(eyeR);
+    P(eyeL,browY,5,1,hairSh); P(eyeR+1,browY,5,1,hairSh);
+    P(20,27,7,2,'#b3555f');                          // маленька усмішка
+    P(12,21,5,3,'#f29a8a'); P(31,21,5,3,'#f29a8a');  // сильний румʼянець
+  } else { // normal
+    eyeOpen(eyeL); eyeOpen(eyeR);
+    P(eyeL,browY,6,1,hairSh); P(eyeR,browY,6,1,hairSh);
+    P(20,27,8,2,'#b3555f');
   }
 }
 const pctx = document.getElementById('portrait').getContext('2d');
 pctx.imageSmoothingEnabled = false;
 
 // офскрін-портрети для тіндер-картки та метчу
-const offK = document.createElement('canvas'); offK.width=offK.height=32;
-const offD = document.createElement('canvas'); offD.width=offD.height=32;
+const offK = document.createElement('canvas'); offK.width=offK.height=48;
+const offD = document.createElement('canvas'); offD.width=offD.height=48;
 drawPortraitInto(offK.getContext('2d'), 'katya', 'normal');
 drawPortraitInto(offD.getContext('2d'), 'dima', 'normal');
 const offOf = who => who==='katya' ? offK : offD;
@@ -2823,7 +2929,7 @@ function render(){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
           ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-          ctx.fillText('!', nx, 92 - ((game.t>>4)&1)*2);
+          ctx.fillText('!', nx, FLOOR_Y-64 - ((game.t>>4)&1)*2);
         }
       }
       break;
@@ -2866,7 +2972,7 @@ function render(){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
           ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-          ctx.fillText('!', nx, 92 - ((game.t>>4)&1)*2);
+          ctx.fillText('!', nx, FLOOR_Y-64 - ((game.t>>4)&1)*2);
         }
       }
       break;
