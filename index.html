@@ -206,7 +206,6 @@
     <p id="inv-body"></p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
-      <button class="btn" id="btn-quiz" style="background:var(--terra)">🧠 Квіз про пару</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
@@ -380,6 +379,8 @@ function chatScript(pov){
     {who:'dima',  emo:'happy', text:'Удачки тобі завтра!'},
     {who:'dima',  emo:'shy',   text:'ой'},
     {who:'dima',  emo:'shy',   text:'в сб)'},
+    {who:'katya', emo:'normal',text:'Навіщо люди в тіндері пишуть,\nщо в них хороше почуття гумору?'},
+    {who:'dima',  emo:'happy', text:'Не знаю. Але тіндер голд\nзмінив моє життя'},
   ];
   const outro = pov==='katya' ? [
     {who:null, emo:null, text:'11 серпня 2022. (Не пам’ятав.)'},
@@ -994,12 +995,33 @@ function drawCassette(cx, cy, w){
   ctx.textAlign='left';
 }
 
-function drawBrain(x,y){                                // логотип Штормнадо — рожевий мозок
-  ctx.fillStyle='#e8a0b8';
-  ctx.fillRect(x+1,y+1,10,6); ctx.fillRect(x,y+2,12,4);
-  ctx.fillStyle='#d47a98';
-  ctx.fillRect(x+2,y+2,1,4); ctx.fillRect(x+5,y+1,1,5); ctx.fillRect(x+8,y+2,1,4);
-  ctx.fillRect(x+1,y+7,10,1);
+function drawBrain(cx, cy, r){
+  /* Справжнє лого Штормнадо (Asset 1.png): рожевий мозок із блискавок у колі,
+     центральний стовбур зі стрілкою вгору і штепселем-вилкою внизу. */
+  r = r || 10;
+  const P = '#d976ae';
+  ctx.strokeStyle = P; ctx.lineWidth = Math.max(1, r*0.12);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  ctx.fillStyle = P;
+  const u = r/10;                                    // одиниця масштабу
+  // центральний стовбур
+  ctx.fillRect(cx-u, cy-4*u, 2*u, 9*u);
+  // стрілка вгору
+  ctx.fillRect(cx-2*u, cy-5*u, 4*u, u);
+  ctx.fillRect(cx-u, cy-6.5*u, 2*u, 1.6*u);
+  // вилка-штепсель унизу
+  ctx.fillRect(cx-2*u, cy+5*u, 4*u, u);
+  ctx.fillRect(cx-1.8*u, cy+6*u, u, 1.6*u); ctx.fillRect(cx+0.8*u, cy+6*u, u, 1.6*u);
+  // блискавки-півкулі (зигзаги)
+  [[-1,0],[1,0]].forEach(([s])=>{
+    ctx.fillRect(cx+s*2*u, cy-4*u, 2*u*s||2*u, u);   // від стовбура вбік
+    ctx.fillRect(cx+s*3.6*u-u, cy-4.4*u, 2*u, u);
+    ctx.fillRect(cx+s*4.4*u-u, cy-3*u, u, 2.4*u);    // вниз
+    ctx.fillRect(cx+s*5.4*u-u, cy-1.2*u, u, 2*u);
+    ctx.fillRect(cx+s*4.6*u-u, cy+0.6*u, 2*u, u);    // зигзаг усередину
+    ctx.fillRect(cx+s*3.4*u-u, cy+1.8*u, u, 2*u);
+    ctx.fillRect(cx+s*4.2*u-u, cy+3.4*u, 1.6*u, u);  // стрілки вниз
+  });
 }
 function drawSet(camX){
   // біла стіна офісу (галерейна, як на реальній зйомці)
@@ -1038,13 +1060,14 @@ function drawSet(camX){
     ctx.beginPath(); ctx.moveTo(fcx+8,FLOOR_Y-118); ctx.lineTo(fcx-4,FLOOR_Y);
     ctx.moveTo(fcx+48,FLOOR_Y-118); ctx.lineTo(fcx+60,FLOOR_Y); ctx.stroke();
     ctx.fillStyle='#fbfaf5'; ctx.fillRect(fcx,FLOOR_Y-150,58,74);
-    drawBrain(fcx+6, FLOOR_Y-146);
+    drawBrain(fcx+13, FLOOR_Y-136, 11);              // справжнє лого: блискавко-мозок
     ctx.fillStyle=COL.ink; ctx.font='bold 6px monospace'; ctx.textAlign='left';
-    ctx.fillText('ШТОРМНАДО', fcx+20, FLOOR_Y-140);
+    ctx.fillText('ШТОРМ-', fcx+28, FLOOR_Y-140);
+    ctx.fillText('НАДО', fcx+28, FLOOR_Y-133);
     ctx.fillStyle='#3F7C77';
-    for(let i=0;i<5;i++) ctx.fillRect(fcx+8, FLOOR_Y-128+i*8, 30, 2);
-    ctx.strokeStyle='#3F7C77'; ctx.beginPath(); ctx.arc(fcx+48,FLOOR_Y-124,6,0,7); ctx.stroke();
-    ctx.fillStyle='#e33'; ctx.font='5px monospace'; ctx.fillText('49', fcx+44, FLOOR_Y-121);
+    for(let i=0;i<4;i++) ctx.fillRect(fcx+8, FLOOR_Y-118+i*8, 30, 2);
+    ctx.strokeStyle='#3F7C77'; ctx.beginPath(); ctx.arc(fcx+48,FLOOR_Y-112,6,0,7); ctx.stroke();
+    ctx.fillStyle='#e33'; ctx.font='5px monospace'; ctx.fillText('49', fcx+44, FLOOR_Y-109);
   }
 
   // картина 2: барвисте графіті
@@ -1668,9 +1691,27 @@ function updateSvat(){
         sl.stopped = true;
         sl.verdict = inRush ? 'рушник' : 'гарбуз';
         if(sl.verdict==='гарбуз'){ sl.msgT = 80; achUnlock('harbuz'); shake(3,12); localStorage.setItem('wed-harbuz','1'); }  // жарт і ще спроба
-        else { s.step='tied'; s.tiedT=0; }
+        else { s.step='exam'; s.exam={qi:0, sel:0, wrongT:0, misses:0}; }
       }
     }
+    return;
+  }
+
+  // ІСПИТ СТАРОСТІВ: питання по вашій-таки переписці
+  if(s.step==='exam'){
+    const e = s.exam;
+    if(e.wrongT>0){ e.wrongT--; return; }
+    if(game.watch){
+      if(game.phaseT % 130 === 0){ e.sel = SVAT_EXAM[e.qi].ok; examConfirm(s); }
+      return;
+    }
+    if(keys['ArrowLeft'] && !e._l){ e.sel = (e.sel+2)%3; } e._l = keys['ArrowLeft'];
+    if(keys['ArrowRight'] && !e._r){ e.sel = (e.sel+1)%3; } e._r = keys['ArrowRight'];
+    if(game._tapPos){
+      e.sel = Math.max(0, Math.min(2, Math.floor((game._tapPos.y - (H/2-22)) / 26)));
+      game._tapPos = null; input.actionEdge = true;
+    }
+    if(input.actionEdge){ input.actionEdge = false; examConfirm(s); }
     return;
   }
 
@@ -1679,6 +1720,27 @@ function updateSvat(){
     if(s.tiedT===90){
       startDialog(svatOutroScript(game.pov), ()=> setPhase('capS'));
     }
+  }
+}
+/* іспит старостів — питання зі справжньої переписки */
+const SVAT_EXAM = [
+  {q:'ІСПИТ СТАРОСТІВ!\nЯке було перше повідомлення Діми?',
+   opts:['«Йоу! Як трєня?)»','«Привіт, я Діма»','«Віриш у кохання з першого свайпу?»'], ok:0,
+   no:'«Куниця б памʼятала!» — хитають головами старости.'},
+  {q:'Як Діма найчастіше кличе Катю в чаті?',
+   opts:['«пані режисерко»','«Катерино Батьківно»','«киць»'], ok:2,
+   no:'«Не чули такого в цій хаті.»'},
+  {q:'Скільки повідомлень вони написали\nза жовтень 2022 (місяць Лондона)?',
+   opts:['42','11 223','мільйон'], ok:1,
+   no:'«Відчувалось як мільйон, але ні.»'},
+];
+function examConfirm(s){
+  const e = s.exam, q = SVAT_EXAM[e.qi];
+  if(e.sel !== q.ok){ e.wrongT = 80; e.misses++; shake(2,8); return; }
+  e.qi++;
+  if(e.qi >= SVAT_EXAM.length){
+    if(e.misses===0) achUnlock('quiz');
+    s.step='tied'; s.tiedT=0;
   }
 }
 function drawHata(){
@@ -1817,10 +1879,29 @@ function drawSvat(){
     }
   }
 
+  if(s.step==='exam'){
+    const e = s.exam, q = SVAT_EXAM[e.qi];
+    const py = H/2-72;
+    ctx.fillStyle = 'rgba(10,10,20,.85)'; ctx.fillRect(16,py,W-32,132);
+    ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+    q.q.split('\n').forEach((l,i)=> ctx.fillText(l, W/2, py+18+i*13));
+    q.opts.forEach((opt,i)=>{
+      const oy = py+50+i*26;
+      ctx.fillStyle = i===e.sel ? (e.wrongT>0 ? '#7d3a46' : COL.rose) : '#2b2b38';
+      ctx.fillRect(28, oy, W-56, 20);
+      ctx.fillStyle = '#fff'; ctx.font='9px monospace';
+      ctx.fillText(opt, W/2, oy+13);
+    });
+    ctx.fillStyle = e.wrongT>0 ? '#f4c46a' : 'rgba(255,255,255,.6)';
+    ctx.font='9px monospace';
+    ctx.fillText(e.wrongT>0 ? q.no : (game.watch?'':(isTouch?'тапни відповідь':'← → і ПРОБІЛ')), W/2, py+146);
+    ctx.textAlign='left';
+  }
+
   if(s.step==='tied'){
     ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0,60,W,26);
     ctx.fillStyle = COL.gold; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-    ctx.fillText('ЗГОДА! РУШНИКИ ПОДАНО', W/2, 76);
+    ctx.fillText('ІСПИТ СКЛАДЕНО! РУШНИКИ ПОДАНО', W/2, 76);
   }
 }
 
@@ -2500,7 +2581,18 @@ function bandHit(lane){
 }
 function updateBand(){
   const b = game.band; if(!b || !b.started) return;
-  if(b.done){ b.doneT++; if(b.doneT===60) startDialog(bandOutroScript(), ()=> setPhase('cap2')); return; }
+  if(b.done){ b.doneT++;
+    if(b.doneT===60){
+      startDialog(bandOutroScript(), ()=>{
+        if(game.watch){ setPhase('cap2'); return; }
+        // семплер прямо в історії: запиши власний рифф SPACE SPICE BOY
+        samplerStory = true;
+        document.getElementById('s-back').textContent = '🎙 ЗАПИСАНО — ДАЛІ';
+        document.getElementById('sampler-screen').classList.remove('hidden');
+      });
+    }
+    return;
+  }
   b.t++;
   for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
   if(b.t%28===0 && b.notes.length<40) b.notes.push({lane:(Math.random()*3|0), y:-10, hit:false});
@@ -2607,6 +2699,7 @@ function startDialog(lines, onEnd){
   game.dialog = {lines, idx:0, shown:0, timer:0, waitTimer:0};
   game.onDialogEnd = onEnd || null;
   elDialog.classList.remove('hidden');
+  updateHudAndControls();                 // ховаємо кнопки, щоб не перекривали діалог
   showLine();
 }
 function showLine(){
@@ -2637,6 +2730,7 @@ function advanceDialog(){
     elDialog.classList.add('hidden');
     const cb = game.onDialogEnd; game.onDialogEnd = null;
     if(cb) cb();
+    updateHudAndControls();               // повертаємо кнопки після діалогу
   } else showLine();
 }
 function updateDialog(){
@@ -2717,7 +2811,8 @@ cv.addEventListener('pointerdown', e=>{
   }
   else if(game.phase==='svat' && game.svat){
     const pos = canvasPos(e);
-    if(Math.abs(pos.x-112) < 18 && pos.y > FLOOR_Y-50){  // тап по Кітані біля печі
+    if(game.svat.step==='exam'){ game._tapPos = pos; }
+    else if(Math.abs(pos.x-112) < 18 && pos.y > FLOOR_Y-50){  // тап по Кітані біля печі
       game.svat.purrT = 70;
       achUnlock('purr');
     } else input.actionEdge = true;
@@ -2762,7 +2857,8 @@ function updateHudAndControls(){
   elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name;
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
   const padPhase = walkPhase || (game.state==='play' && game.phase==='run');
-  document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase);
+  // під час діалогу кнопки ховаються, щоб не перекривати вікно
+  document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase || !!game.dialog);
   document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
   document.getElementById('pause-btn').classList.toggle('hidden', game.phase!=='tetris' || game.watch || game.state!=='play');
   document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
@@ -3284,10 +3380,17 @@ document.getElementById('s-code').addEventListener('click', ()=>{
   if(navigator.clipboard) navigator.clipboard.writeText(msg).catch(()=>{});
   alert(msg + '\n\n(скопійовано — надішли цей код Клоду, і мелодія потрапить у гру)');
 });
+let samplerStory = false;                 // семплер відкрито зсередини історії (сцена гурту)
 document.getElementById('s-back').addEventListener('click', ()=>{
   samplerStop();
   document.getElementById('sampler-screen').classList.add('hidden');
-  elTitle.classList.remove('hidden');
+  if(samplerStory){
+    samplerStory = false;
+    document.getElementById('s-back').textContent = 'НАЗАД';
+    setPhase('cap2');                     // рифф записано — історія їде далі
+  } else {
+    elTitle.classList.remove('hidden');
+  }
 });
 document.getElementById('btn-sampler').addEventListener('click', ()=>{
   elTitle.classList.add('hidden');
@@ -3389,26 +3492,34 @@ function drawEggParticles(){
 }
 
 /* ================= Кітана: осінь 2023, двір Дана (керування нявканням) ================= */
-/* мікрофон */
-let micAnalyser = null, micData = null, micReq = false;
+/* мікрофон: без шумозаглушення (воно «зʼїдає» нявкання), частотний аналіз,
+   автокалібрування фонового шуму */
+let micAnalyser = null, micData = null, micReq = false, micFloor = 0.03;
 function setupMic(){
   if(micReq) return; micReq = true;
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+  navigator.mediaDevices.getUserMedia({audio:{
+    echoCancellation:false, noiseSuppression:false, autoGainControl:true,
+  }}).then(stream=>{
     ensureAudio();
     const src = audioCtx.createMediaStreamSource(stream);
     micAnalyser = audioCtx.createAnalyser();
-    micAnalyser.fftSize = 256;
+    micAnalyser.fftSize = 512;
+    micAnalyser.smoothingTimeConstant = 0.5;
     micData = new Uint8Array(micAnalyser.frequencyBinCount);
     src.connect(micAnalyser);
   }).catch(()=>{ micAnalyser = null; });
 }
 function micLevel(){
   if(!micAnalyser) return 0;
-  micAnalyser.getByteTimeDomainData(micData);
-  let sum = 0;
-  for(let i=0;i<micData.length;i++){ const v=(micData[i]-128)/128; sum += v*v; }
-  return Math.sqrt(sum/micData.length);   // 0..~1
+  micAnalyser.getByteFrequencyData(micData);
+  // смуга голосу/нявкання ~150–3000 Гц (біни 2..70 при 44.1кГц/512)
+  let sum = 0, n = 0;
+  for(let i=2;i<70 && i<micData.length;i++){ sum += micData[i]; n++; }
+  const lvl = (sum/n)/255;
+  // фоновий шум повільно калібрується вниз
+  micFloor = Math.min(micFloor*0.998 + lvl*0.002, 0.35);
+  return Math.max(0, lvl - micFloor);
 }
 
 function startKitana(){
@@ -3436,10 +3547,14 @@ function updateKitana(){
     return;
   }
   k.t++;
-  // нявкання → злетіти
+  // нявкання → плавний підйом, поки звучиш (чутливіше)
   if(k.meowCd>0) k.meowCd--;
   const lvl = micLevel();
-  if(lvl > 0.12 && k.meowCd===0){ kitanaFlap(); k.meowCd = 10; k.gotMeow = true; if(k.gotMeow) achUnlock('flappy'); }
+  if(lvl > 0.05){
+    k.vy = Math.min(k.vy, -2.6);                     // тримає в повітрі, поки няв триває
+    if(k.meowCd===0){ kitanaFlap(); k.meowCd = 6; }
+    if(!k.gotMeow){ k.gotMeow = true; achUnlock('flappy'); }
+  }
   if(game.watch && k.t%46===0) kitanaFlap();
 
   k.vy += 0.26; k.y += k.vy;
@@ -3509,7 +3624,7 @@ function drawKitanaScene(){
     const lvl = micLevel();
     if(micAnalyser){
       ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(W-44,20,40,8);
-      ctx.fillStyle = lvl>0.12?'#3fae54':'#B58A2E'; ctx.fillRect(W-44,20,40*Math.min(1,lvl*4),8);
+      ctx.fillStyle = lvl>0.05?'#3fae54':'#B58A2E'; ctx.fillRect(W-44,20,40*Math.min(1,lvl*8),8);
       ctx.fillStyle='#fff'; ctx.font='6px monospace'; ctx.textAlign='right'; ctx.fillText('🎤', W-46, 27);
     }
     ctx.fillStyle = 'rgba(26,26,36,.5)'; ctx.font='8px monospace'; ctx.textAlign='center';
@@ -3694,12 +3809,7 @@ function quizFinish(){
   back.addEventListener('click', ()=>{ elQuiz.classList.add('hidden'); elEnd.classList.remove('hidden'); });
   opts.appendChild(back);
 }
-document.getElementById('btn-quiz').addEventListener('click', ()=>{
-  quiz.idx = 0; quiz.score = 0;
-  elEnd.classList.add('hidden');
-  elQuiz.classList.remove('hidden');
-  quizShow();
-});
+// квіз переїхав усередину гри — іспит старостів на сватанні (SVAT_EXAM)
 
 function loop(){ update(); render(); requestAnimationFrame(loop); }
 loop();
