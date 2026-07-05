@@ -358,6 +358,12 @@ const SLOTS = {
 };
 const DRESS_CODE = '—';                  // Катя дасть формулювання — поки прочерк
 const FLOWERS_NOTE = 'Замість букета — принеси квітку-дві:\nз них зберемо декор свята 🌸';
+/* «що дарувати»: вони збирають гроші — формулюємо делікатно.
+   Катя може переписати; ось три готові варіанти на вибір:
+   1) 'Ваша присутність — найкращий подарунок.\nА хто хоче потішити — будемо вдячні за конвертик\nна наші спільні мрії 💛'
+   2) 'Подарунки не потрібні — приходьте самі 🤍\nЯкщо ж дуже хочеться — ми збираємо\nна наше спільне майбутнє.'
+   3) 'Головне — ви поруч. Ніяких списків подарунків:\nхто захоче, той підтримає наш новий розділ 💌' */
+const GIFT_NOTE = 'Ваша присутність — найкращий подарунок.\nА хто хоче потішити — будемо вдячні за конвертик\nна наші спільні мрії 💛';
 
 /* ---------------- досягнення 🏆 ---------------- */
 const ACHS = [
@@ -2614,20 +2620,35 @@ function drawCouple(kx, dx, baseY){
   ctx.fillStyle = '#f4f0e4'; ctx.fillRect(dx-4, baseY-48+(1-bob), 4, 6);  // сорочка
 }
 /* Гість за столом / у дворику: маленька піксельна фігурка з келихом */
-function drawGuest(x, y, col, seated, t){
+function drawGuest(x, y, col, seated, t, faceImg){
   const b = ((t>>4)+x)&1;
   ctx.fillStyle = '#221c26';
   ctx.fillRect(x-5, y-(seated?26:34)-b, 12, seated?20:28);       // контур тіла
   ctx.fillStyle = col;
   ctx.fillRect(x-4, y-(seated?25:33)-b, 10, seated?18:26);       // тіло
-  ctx.fillStyle = '#e8c49c';
-  ctx.fillRect(x-3, y-(seated?33:41)-b, 8, 9);                   // голова
-  ctx.fillStyle = '#221c26';
-  ctx.fillRect(x-3, y-(seated?33:41)-b, 8, 3);                   // волосся
+  const hy = y-(seated?33:41)-b;
+  if(faceImg && faceImg.complete && faceImg.naturalWidth>0){
+    // голова гостя — його справжнє фото (квадрат у кружечку)
+    const cx = x+1, cy = hy+4, r = 6;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.closePath(); ctx.clip();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(faceImg, cx-r, cy-r, r*2, r*2);
+    ctx.restore();
+    ctx.strokeStyle = '#221c26'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  } else {
+    ctx.fillStyle = '#e8c49c'; ctx.fillRect(x-3, hy, 8, 9);      // піксельна голова
+    ctx.fillStyle = '#221c26'; ctx.fillRect(x-3, hy, 8, 3);      // волосся
+  }
   // келих вгору (цокається в такт)
   ctx.fillStyle = '#f4e8c8';
   ctx.fillRect(x+6, y-(seated?31:39)-b*2, 3, 5);
   ctx.fillStyle = '#d8b25a'; ctx.fillRect(x+6, y-(seated?29:37)-b*2, 3, 2);
+}
+/* обличчя гостя за індексом (циклічно), або null поки фото не завантажені */
+function guestFace(i){
+  return GUEST_FACES.length ? GUEST_FACES[i % GUEST_FACES.length].img : null;
 }
 /* Ноти, що злітають над гостем (спів) */
 function drawSongNote(x, headY, seed){
@@ -2732,7 +2753,7 @@ function drawWedSofi(){
   const sofiGuests = [[tx+16,'#5a7ea6',0],[tx+42,'#a8505f',8],[tx+88,'#3F7C77',4]];
   const SHOUTS = ['ГІРКО!', 'ГІРКО!!!', 'За молодят!', 'многая літа!'];
   sofiGuests.forEach(([gx,col,off],i)=>{
-    drawGuest(gx, ty-24, col, true, game.t+off);
+    drawGuest(gx, ty-24, col, true, game.t+off, guestFace(i));
     // по черзі один кричить, решта наспівують ноти
     const active = ((game.t>>6) % sofiGuests.length) === i;
     if(active) drawShout(gx, ty-32, SHOUTS[(game.t>>6) % SHOUTS.length]);
@@ -2816,8 +2837,8 @@ function drawWedKhv(){
   ctx.fillRect(sx+sw-14, syTop-26, 2, 26); ctx.fillRect(sx+sw-17, syTop-30, 8, 6);
   // гості з келихами у дворику — усі СПІВАЮТЬ «Штольню»
   const khvGuests = [[38,26,'#5a7ea6',0],[74,34,'#a8505f',6],[112,28,'#3F7C77',3],[140,40,'#B58A2E',9]];
-  khvGuests.forEach(([gx,gy,col,off])=>{
-    drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off);
+  khvGuests.forEach(([gx,gy,col,off],i)=>{
+    drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off, guestFace(i));
     drawSongNote(gx, FLOOR_Y+gy-41, off);           // ноти над головою
   });
   // гості тягнуть «Штольню» (без перебріхування слів — тільки настрій)
@@ -3043,7 +3064,7 @@ function bandOutroScript(){
 function startBand(){
   game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false};
   setPhase('band');
-  startDialog(bandIntroScript(), ()=>{ game.band.started = true; });
+  startDialog(bandIntroScript(), ()=>{ game.band.started = true; playBandSong(); });
 }
 function bandHit(lane){
   const b = game.band; if(!b || !b.started || b.done) return;
@@ -3209,6 +3230,20 @@ function playChip(key){
   chipKey = key; startMusic(c.mel, c.bass);
 }
 function stopChip(){ chipKey = null; stopMusic(); }
+
+/* Рівень гурту SPACE SPICE BOY — грає СПРАВЖНІЙ трек SSB (укр. «Позняки»).
+   Єдиний стрім у грі; вантажиться тільки на цьому рівні. */
+let bandAudio = null;
+function playBandSong(){
+  try{
+    if(!bandAudio){
+      bandAudio = new Audio('audio/ssb_band_pozniaky.m4a');
+      bandAudio.loop = true; bandAudio.volume = 0.5;
+    }
+    bandAudio.currentTime = 0; bandAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function stopBandSong(){ if(bandAudio) bandAudio.pause(); }
 
 /* ================= титри сцен ================= */
 function drawOrnament(cy, x0, x1){
@@ -3503,6 +3538,7 @@ function updateHudAndControls(){
 function setPhase(p){
   game.phase = p; game.phaseT = 0;
   // фонова музика Space Spice Boy за фазою (чиптюн сцени має пріоритет)
+  if(p !== 'band') stopBandSong();       // реальний трек SSB — лише на рівні гурту
   const want = chipForPhase(p);
   if(want) playChip(want);
   else if(chipKey) stopChip();
@@ -3530,7 +3566,7 @@ function startGame(pov, watch){
 }
 
 function finishGame(){
-  stopMusic(); chipKey = null;
+  stopMusic(); chipKey = null; stopBandSong();
   game.state = 'end';
   if(!game.watch){
     localStorage.setItem('wed-done-'+game.pov, '1');
@@ -3543,7 +3579,8 @@ function finishGame(){
   const verse = '<i>Від свайпу вправо — до весільних дзвонів.<br>Приходь на свято — без зайвих церемоній!</i><br><br>';
   const extras =
     `<br><b>Дрес-код:</b> ${DRESS_CODE}<br>` +
-    `<span style="opacity:.85">${FLOWERS_NOTE.replace('\n','<br>')}</span>`;
+    `<span style="opacity:.85">${FLOWERS_NOTE.replace(/\n/g,'<br>')}</span><br><br>` +
+    `<span style="opacity:.85">🎁 ${GIFT_NOTE.replace(/\n/g,'<br>')}</span>`;
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
@@ -3697,19 +3734,22 @@ function buildInvitationCard(){
   }
 
   // дрес-код + квіти
-  y = Math.max(y, 950);
+  y = Math.max(y, 928);
   if(DRESS_CODE && DRESS_CODE !== '—'){
     g.fillStyle = '#2b2b38'; g.font = 'bold 24px Georgia, serif';
-    g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 42;
+    g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 40;
   }
   g.fillStyle = '#a8323c'; g.font = '22px Georgia, serif';
   g.fillText('🌸 замість букета — принеси квітку', 360, y); y += 30;
-  g.fillText('з них зберемо декор свята', 360, y);
+  g.fillText('з них зберемо декор свята', 360, y); y += 44;
+  // «що дарувати» (делікатно — вони збирають гроші)
+  g.fillStyle = '#6b6658'; g.font = 'italic 21px Georgia, serif';
+  GIFT_NOTE.split('\n').forEach((ln,i)=>{ g.fillText((i===0?'🎁 ':'') + ln, 360, y); y += 27; });
 
   // вірш унизу
-  g.fillStyle = '#6b6658'; g.font = 'italic 24px Georgia, serif';
-  g.fillText('Від свайпу вправо — до весільних дзвонів.', 360, 1120);
-  g.fillText('Приходь на свято — без зайвих церемоній!', 360, 1152);
+  g.fillStyle = '#8a8470'; g.font = 'italic 22px Georgia, serif';
+  g.fillText('Від свайпу вправо — до весільних дзвонів.', 360, 1148);
+  g.fillText('Приходь на свято — без зайвих церемоній!', 360, 1176);
   return c;
 }
 function saveInvitation(){
@@ -4360,7 +4400,8 @@ document.getElementById('btn-sampler').addEventListener('click', ()=>{
    Овал + лінії очей/рота = обличчя одразу в потрібній позі для вирізання.
    Фото летить у Firestore (колекція selfies, base64 ~30КБ) з імʼям гостя.
    Потрібне правило (Firebase Console → Firestore → Rules):
-     match /selfies/{doc} { allow create: if true; allow read, update, delete: if false; } */
+     match /selfies/{doc} { allow create, read: if true; allow update, delete: if false; }
+     (read дозволено — гра показує обличчя гостей у фіналі весілля) */
 let selfieStream = null, selfieShot = null;
 async function openSelfie(){
   document.getElementById('end-screen').classList.add('hidden');
@@ -4516,6 +4557,23 @@ document.getElementById('memory-file').addEventListener('change', e=>{
   im.src = url;
 });
 loadMemories();   // підвантажити спільні фото гостей на старті
+
+/* обличчя гостей (селфі) для фіналу — голови персонажів-гостей стають фото */
+const GUEST_FACES = [];
+async function loadSelfies(){
+  try{
+    const r = await fetch(FS_BASE+'selfies?key='+FB.apiKey+'&pageSize=100');
+    if(!r.ok) return;
+    const j = await r.json();
+    (j.documents||[]).forEach(d=>{
+      const src = d.fields?.image?.stringValue;
+      if(!src) return;
+      const im = new Image(); im.src = src;
+      GUEST_FACES.push({img:im, name: d.fields?.name?.stringValue || 'гість'});
+    });
+  }catch(e){}
+}
+loadSelfies();    // якщо правила ще не відкриті — просто лишиться порожнім (піксельні голови)
 
 /* ================= панель досягнень ================= */
 /* тайтл памʼятає, чию історію ти вже пройшов */
