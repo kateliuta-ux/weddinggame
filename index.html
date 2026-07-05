@@ -757,25 +757,29 @@ function updateSecret(){
 }
 function drawSecret(){
   const s = game.secret; if(!s) return;
-  // вечірня квартира
-  ctx.fillStyle = '#2e2836'; ctx.fillRect(0,0,W,FLOOR_Y);
-  ctx.fillStyle = '#26202e'; ctx.fillRect(0,0,W,14);
-  // вікно з ніччю
-  ctx.fillStyle = '#181426'; ctx.fillRect(40,FLOOR_Y-170,60,80);
-  ctx.fillStyle = '#f4e8c8'; ctx.fillRect(52,FLOOR_Y-150,3,3); ctx.fillRect(74,FLOOR_Y-132,3,3);
-  ctx.strokeStyle='#3a3446'; ctx.lineWidth=2; ctx.strokeRect(40,FLOOR_Y-170,60,80);
-  // лампа-торшер із теплим світлом
-  ctx.fillStyle = '#4a4456'; ctx.fillRect(300,FLOOR_Y-100,3,100);
-  ctx.fillStyle = '#e8c46a'; ctx.fillRect(292,FLOOR_Y-112,19,14);
-  ctx.fillStyle = 'rgba(232,196,106,.10)';
+  // світла квартира (у них ясна) — уточнити за фото
+  ctx.fillStyle = '#ece4d6'; ctx.fillRect(0,0,W,FLOOR_Y);       // світла тепла стіна
+  ctx.fillStyle = '#f2ebde'; ctx.fillRect(0,0,W,16);            // стеля світліша
+  ctx.fillStyle = '#ddd2c0'; ctx.fillRect(0,16,W,2);           // карниз
+  // вікно (день/вечір за ним, рама світла)
+  ctx.fillStyle = '#bcd4e2'; ctx.fillRect(40,FLOOR_Y-170,60,80);
+  ctx.fillStyle = '#a8c4d6'; ctx.fillRect(40,FLOOR_Y-130,60,40);
+  ctx.fillStyle = '#f6f0e2'; ctx.fillRect(38,FLOOR_Y-172,64,4); // підвіконня-рама
+  ctx.strokeStyle='#cfc4b2'; ctx.lineWidth=2; ctx.strokeRect(40,FLOOR_Y-170,60,80);
+  ctx.fillRect(68,FLOOR_Y-170,2,80); ctx.fillRect(40,FLOOR_Y-132,60,2);
+  // торшер із теплим світлом
+  ctx.fillStyle = '#b8a890'; ctx.fillRect(300,FLOOR_Y-100,3,100);
+  ctx.fillStyle = '#f0d488'; ctx.fillRect(292,FLOOR_Y-112,19,14);
+  ctx.fillStyle = 'rgba(240,212,136,.12)';
   ctx.beginPath(); ctx.moveTo(301,FLOOR_Y-98); ctx.lineTo(270,FLOOR_Y); ctx.lineTo(332,FLOOR_Y); ctx.fill();
-  // диван
-  ctx.fillStyle = '#5a4a5e'; ctx.fillRect(130,FLOOR_Y-38,90,38);
-  ctx.fillStyle = '#6a5a6e'; ctx.fillRect(130,FLOOR_Y-52,90,16);
-  ctx.fillStyle = '#4a3a4e'; ctx.fillRect(130,FLOOR_Y-38,90,4);
-  // підлога
-  ctx.fillStyle = '#6e5a46'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
-  ctx.fillStyle = '#5e4c3a';
+  // диван (світло-бежевий)
+  ctx.fillStyle = '#c9b89c'; ctx.fillRect(130,FLOOR_Y-38,90,38);
+  ctx.fillStyle = '#d8c8ac'; ctx.fillRect(130,FLOOR_Y-52,90,16);
+  ctx.fillStyle = '#b8a688'; ctx.fillRect(130,FLOOR_Y-38,90,4);
+  ctx.fillStyle = '#a8505f'; ctx.fillRect(196,FLOOR_Y-50,14,12); // подушка-акцент
+  // підлога — світлий паркет
+  ctx.fillStyle = '#d8bd94'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle = '#c8ac82';
   for(let fx=0; fx<W; fx+=34) ctx.fillRect(fx,FLOOR_Y,2,H-FLOOR_Y);
 
   const me = game.pov, other = me==='katya' ? 'dima' : 'katya';
