@@ -1057,6 +1057,61 @@ function drawKitana(x, y, dir){
   ctx.restore();
 }
 
+/* ============ гіперреалістичні фото-кати (як у SpongeBob) ============
+   На кульмінаціях екран різко ріже на надреальний зум справжнього фото:
+   зерно плівки, віньєтка, кіно-рамка, тремтіння камери. */
+function flashHyper(who, opts){
+  opts = opts || {};
+  let img;
+  if(who==='kitana') img = HEAD_KIT;
+  else { const fr = headFrames(who); img = fr ? fr[opts.frame!=null?opts.frame:0] : null; }
+  if(!headReady(img)) return;
+  game.hyper = { img, t:0, dur:(opts.dur||66),
+    z0:(opts.z0||0.92), z1:(opts.z1||1.08), tint:(opts.tint||'#20140f'), label:(opts.label||null) };
+}
+function drawHyper(){
+  const h = game.hyper; if(!h) return;
+  const img = h.img;
+  if(!headReady(img)){ game.hyper = null; return; }
+  h.t++;
+  const t = h.t, p = Math.min(1, t/h.dur), ease = 1 - Math.pow(1-p, 3);
+  const zoom = h.z0 + (h.z1-h.z0)*ease;
+  const bar = Math.round(H*0.07);
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  // драматичне тло + прожектор
+  ctx.fillStyle = '#070509'; ctx.fillRect(0,0,W,H);
+  const bg = ctx.createRadialGradient(W/2,H*0.46, 10, W/2,H*0.46, Math.max(W,H)*0.62);
+  bg.addColorStop(0, h.tint); bg.addColorStop(1, '#070509');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  // велике фото по центру (модерне розтягування, не піксель-арт)
+  const shx = Math.sin(t*0.5)*2, shy = Math.cos(t*0.7)*2;
+  const ph = (PORTRAIT_MODE ? H*0.60 : H*0.74) * zoom, pw = ph*img.width/img.height;
+  const px = W/2 - pw/2 + shx, py = H/2 - ph/2 + shy;
+  // м'яка тінь під фото
+  ctx.fillStyle = 'rgba(0,0,0,.5)';
+  ctx.beginPath(); ctx.ellipse(W/2, py+ph*0.98, pw*0.5, ph*0.06, 0,0,7); ctx.fill();
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.filter = 'contrast(1.22) saturate(1.3) brightness(1.04)';
+  ctx.drawImage(img, px, py, pw, ph);
+  ctx.filter = 'none';
+  // віньєтка
+  const g = ctx.createRadialGradient(W/2,H/2, Math.min(W,H)*0.18, W/2,H/2, Math.max(W,H)*0.72);
+  g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.72)');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  // зерно плівки
+  for(let i=0;i<64;i++){ ctx.fillStyle = 'rgba('+(Math.random()<0.5?'255,255,255':'0,0,0')+','+(Math.random()*0.07).toFixed(3)+')';
+    ctx.fillRect((Math.random()*W)|0,(Math.random()*H)|0,1,1); }
+  // кіно-рамка
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,bar); ctx.fillRect(0,H-bar,W,bar);
+  // вхідний спалах-кат
+  if(t<=2){ ctx.fillStyle = 'rgba(255,255,255,'+((1-t/2.4)).toFixed(3)+')'; ctx.fillRect(0,0,W,H); }
+  if(h.label){ ctx.fillStyle='#fff'; ctx.font='bold '+(PORTRAIT_MODE?14:11)+'px monospace'; ctx.textAlign='center';
+    ctx.fillText(h.label, W/2, H-bar-10); ctx.textAlign='left'; }
+  ctx.restore();
+  if(t >= h.dur) game.hyper = null;
+}
+
 /* ================= портрети (32x32) ================= */
 function drawPortraitInto(g, who, emo, jaw){
   /* South Park-режим: справжні кадри фаз говоріння з відео.
@@ -1668,7 +1723,8 @@ function updateBattle(){
   b.floats = b.floats.filter(f=>f.t<50);
   // несерйозність тане й сама — бій неможливо виграти
   b.meter = Math.max(0, b.meter - 0.05);
-  if(b.meter===0 && !b.over){ b.over = true; b.overT = 0; b.bullets = []; b.floats = []; }
+  if(b.meter===0 && !b.over){ b.over = true; b.overT = 0; b.bullets = []; b.floats = [];
+    flashHyper('katya', {dur:60, tint:'#3a1420', label:'…від справжнього не ухилишся'}); }
 }
 function drawBattle(){
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
@@ -2370,6 +2426,8 @@ function confirmChess(){
   const move = CHESS_MOVES[p.sel];
   if(game.pov==='katya' && !move.good){ p.wrongT = 70; p._missed = true; shake(2); return; }
   p.solved = true;
+  if(game.pov==='katya'){ flashHyper('katya', {frame:3, dur:58, tint:'#2a1a3a', label:'МАТ.'}); }
+  else { flashHyper('dima', {frame:0, dur:58, tint:'#1a2438', label:'…шансів не було'}); }
   if(game.pov==='katya' && !p._missed) achUnlock('mate1');
   startDialog(propChessOutroScript(game.pov), ()=>{ game.prop.step='rummage'; game.prop.meter=0; });
 }
@@ -3960,7 +4018,7 @@ function startGame(pov, watch){
   initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.run = null; game.svat = null; game.prop = null;
-  game.diia = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null;
+  game.diia = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null; game.hyper = null;
   dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
@@ -5393,7 +5451,8 @@ function updateKitana(){
   if(k.speed < 0.12) k.speed = 0;
   k.dist += k.speed;
   if(k.boostT>0) k.boostT--;
-  if(k.dist >= k.goal){ k.reached = true; k.reachedT = 0; }
+  if(k.dist >= k.goal){ k.reached = true; k.reachedT = 0;
+    flashHyper('kitana', {dur:64, tint:'#2a2016', label:'вона обрала вас 🐈'}); }
 }
 function drawKitanaScene(){
   const k = game.kitana; if(!k) return;
@@ -5882,6 +5941,7 @@ function loop(now){
   let steps = 0;
   while(_acc >= STEP_MS && steps < 5){ update(); _acc -= STEP_MS; steps++; }
   render();
+  drawHyper();                                     // фото-кат поверх усього
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
