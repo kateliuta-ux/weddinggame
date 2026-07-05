@@ -191,6 +191,7 @@
       <button class="btn katya" data-pov="katya">Грати за Катю</button>
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
+      <button class="btn" id="btn-lazy" style="background:#55515f">⏩ Одразу до запрошення</button>
       <button class="btn" id="btn-sampler">🎹 Семплер</button>
     </div>
     <div class="menu hidden" id="watch-pov-menu">
@@ -3613,6 +3614,24 @@ function startGame(pov, watch){
   setPhase('prolog');            // рамка: це наші запросини на весілля
 }
 
+/* для лінивих: одразу титри → запрошення, без проходження гри */
+function lazyToEnd(){
+  tryFullscreen();
+  game.state = 'play'; game.watch = true; game.pov = 'katya';
+  game.t = 0; game.dialog = null; game.onDialogEnd = null;
+  game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
+  game.wedBoth = !GUEST;
+  dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic(); chipKey = null; stopBandSong();
+  elTitle.classList.add('hidden');
+  document.getElementById('watch-pov-menu').classList.add('hidden');
+  elEnd.classList.add('hidden');
+  elHud.classList.remove('hidden');
+  document.getElementById('watch-hint').classList.add('hidden');
+  document.getElementById('watch-play').classList.add('hidden');
+  startMusic(MELODY_WED, BASS_WED);   // весільна музика під титри
+  setPhase('credits');
+}
+
 function finishGame(){
   stopMusic(); chipKey = null; stopBandSong();
   game.state = 'end';
@@ -3869,6 +3888,7 @@ document.getElementById('watch-pov-back').addEventListener('click', ()=>{
   document.getElementById('watch-pov-menu').classList.add('hidden');
   document.querySelector('#title-screen .menu').classList.remove('hidden');
 });
+document.getElementById('btn-lazy').addEventListener('click', lazyToEnd);
 function nameSubmit(){
   const v = document.getElementById('name-input').value.trim();
   playerName = v || 'Гість';
@@ -4391,7 +4411,7 @@ async function loadTracks(){
       author: d.fields?.author?.stringValue || 'невідомий митець',
       pattern: d.fields?.pattern?.stringValue || '',
       at: +(d.fields?.at?.integerValue || 0),
-    })).sort((a,b)=> b.at-a.at);
+    })).filter(t=> t.author!=='__selftest' && t.pattern).sort((a,b)=> b.at-a.at);
   }catch(e){ return null; }
 }
 document.getElementById('s-save').addEventListener('click', async ()=>{
@@ -4577,9 +4597,10 @@ async function loadMemories(){
     const j = await r.json();
     (j.documents||[]).forEach(d=>{
       const src = d.fields?.image?.stringValue;
-      if(!src) return;
+      const nm = d.fields?.name?.stringValue || 'гостя';
+      if(!src || !src.startsWith('data:') || nm==='__selftest') return;  // тільки справжні фото
       const im = new Image(); im.src = src;
-      SITCOM_EXTRA.push({img:im, name: d.fields?.name?.stringValue || 'гостя'});
+      SITCOM_EXTRA.push({img:im, name: nm});
     });
   }catch(e){}
 }
@@ -4633,9 +4654,10 @@ async function loadSelfies(){
     const j = await r.json();
     (j.documents||[]).forEach(d=>{
       const src = d.fields?.image?.stringValue;
-      if(!src) return;
+      const nm = d.fields?.name?.stringValue || 'гість';
+      if(!src || !src.startsWith('data:') || nm==='__selftest') return;  // тільки справжні фото
       const im = new Image(); im.src = src;
-      GUEST_FACES.push({img:im, name: d.fields?.name?.stringValue || 'гість'});
+      GUEST_FACES.push({img:im, name: nm});
     });
   }catch(e){}
 }
