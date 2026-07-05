@@ -235,10 +235,14 @@
     <p id="inv-body"></p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
+      <button class="btn" id="btn-save-inv" style="background:var(--terra)">💾 Зберегти запрошення</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
       <button class="btn" id="btn-selfie" style="background:var(--sage)">📸 Додай себе в гру</button>
+      <button class="btn" id="btn-memory" style="background:var(--terra)">🖼 Додай наше спільне фото</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
+    <div id="memory-status" style="color:#8a8878;font-size:11px;min-height:14px;max-width:86%;text-align:center"></div>
+    <input id="memory-file" type="file" accept="image/*" class="hidden">
   </div>
 
   <div id="selfie-screen" class="overlay hidden" style="background:#14121c;gap:10px">
@@ -422,6 +426,8 @@ const SITCOM_PH = [
   mkImg('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'),
   mkImg('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'),
 ];
+/* спільні фото гостей (з бекенду) — додаються до сіткому після базових 5 */
+const SITCOM_EXTRA = [];
 const CHARS = {
   // Катя — блондинка з каре, Діма — шатен із чубчиком-шторкою (за фото)
   katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, cls:'name-katya', style:'bob'    },
@@ -2623,6 +2629,25 @@ function drawGuest(x, y, col, seated, t){
   ctx.fillRect(x+6, y-(seated?31:39)-b*2, 3, 5);
   ctx.fillStyle = '#d8b25a'; ctx.fillRect(x+6, y-(seated?29:37)-b*2, 3, 2);
 }
+/* Ноти, що злітають над гостем (спів) */
+function drawSongNote(x, headY, seed){
+  for(let i=0;i<3;i++){
+    const ny = headY - 6 - ((game.t*0.7 + i*20 + seed*11) % 42);
+    const nx = x + Math.sin(game.t*0.05 + seed + i*2)*6;
+    ctx.fillStyle = i%2 ? 'rgba(244,232,200,.95)' : 'rgba(216,178,90,.95)';
+    ctx.font = '9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(i%2 ? '♪' : '♫', nx, ny);
+  }
+}
+/* Бульбашка-вигук над гостем */
+function drawShout(x, headY, text){
+  ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
+  const w = ctx.measureText(text).width + 8;
+  const by = headY - 16;
+  ctx.fillStyle = '#faf6ea'; ctx.fillRect(x-w/2, by-9, w, 12);
+  ctx.fillStyle = '#faf6ea'; ctx.fillRect(x-2, by+2, 4, 3);   // хвостик
+  ctx.fillStyle = '#a8323c'; ctx.fillText(text, x, by);
+}
 /* Летючі сердечка — спільний шар обох фіналів */
 function drawWedHearts(){
   for(let i=0;i<8;i++){
@@ -2703,10 +2728,16 @@ function drawWedSofi(){
   ctx.fillStyle = '#e8e2d0';
   ctx.fillRect(tx+10, ty-28, 12, 3); ctx.fillRect(tx+80, ty-28, 12, 3);
   ctx.fillStyle = '#c9584a'; ctx.fillRect(tx+12, ty-30, 8, 2);   // борщик умовний
-  // гості за столом
-  drawGuest(tx+16, ty-24, '#5a7ea6', true, game.t);
-  drawGuest(tx+42, ty-24, '#a8505f', true, game.t+8);
-  drawGuest(tx+88, ty-24, '#3F7C77', true, game.t+4);
+  // гості за столом — кричать радість і тягнуть народну пісню
+  const sofiGuests = [[tx+16,'#5a7ea6',0],[tx+42,'#a8505f',8],[tx+88,'#3F7C77',4]];
+  const SHOUTS = ['ГІРКО!', 'ГІРКО!!!', 'За молодят!', 'многая літа!'];
+  sofiGuests.forEach(([gx,col,off],i)=>{
+    drawGuest(gx, ty-24, col, true, game.t+off);
+    // по черзі один кричить, решта наспівують ноти
+    const active = ((game.t>>6) % sofiGuests.length) === i;
+    if(active) drawShout(gx, ty-32, SHOUTS[(game.t>>6) % SHOUTS.length]);
+    else drawSongNote(gx, ty-34, off+i);
+  });
   // Кітана під столом
   drawKitana(tx+58, FLOOR_Y+16, -1);
   ctx.fillStyle = COL.rose; ctx.fillRect(tx+61, FLOOR_Y+7, 4, 3);
@@ -2714,7 +2745,7 @@ function drawWedSofi(){
   ctx.fillStyle = '#2a3444'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   ctx.fillText('06 · 09 · 2026', W/2, 26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(42,52,68,.8)';
-  ctx.fillText('тераса «Бути Софі» · Софія Київська', W/2, 38);
+  ctx.fillText('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂', W/2, 38);
 }
 /* ---- ФІНАЛ Б: дворик бару «Хвильовий», вечір, молодята на сцені ---- */
 function drawWedKhv(){
@@ -2783,11 +2814,16 @@ function drawWedKhv(){
   // мікрофон на стійці біля сцени
   ctx.fillStyle = '#221c26';
   ctx.fillRect(sx+sw-14, syTop-26, 2, 26); ctx.fillRect(sx+sw-17, syTop-30, 8, 6);
-  // гості з келихами у дворику
-  drawGuest(38, FLOOR_Y+26, '#5a7ea6', false, game.t);
-  drawGuest(74, FLOOR_Y+34, '#a8505f', false, game.t+6);
-  drawGuest(112, FLOOR_Y+28, '#3F7C77', false, game.t+3);
-  drawGuest(140, FLOOR_Y+40, '#B58A2E', false, game.t+9);
+  // гості з келихами у дворику — усі СПІВАЮТЬ «Штольню»
+  const khvGuests = [[38,26,'#5a7ea6',0],[74,34,'#a8505f',6],[112,28,'#3F7C77',3],[140,40,'#B58A2E',9]];
+  khvGuests.forEach(([gx,gy,col,off])=>{
+    drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off);
+    drawSongNote(gx, FLOOR_Y+gy-41, off);           // ноти над головою
+  });
+  // гості тягнуть «Штольню» (без перебріхування слів — тільки настрій)
+  const SHTOLNYA = ['🎶 Штольня 🎶', 'ля-ля-ля-ля', '🎶🎶🎶', 'гуляєм!'];
+  const line = SHTOLNYA[(game.t>>6) % SHTOLNYA.length];
+  drawShout(89, FLOOR_Y-2, line);
   // Кітана на сцені поруч
   drawKitana(sx+100, syTop+2, -1);
   ctx.fillStyle = COL.rose; ctx.fillRect(sx+103, syTop-7, 4, 3);
@@ -2795,7 +2831,7 @@ function drawWedKhv(){
   ctx.fillStyle = '#f4e8c8'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   ctx.fillText('06 · 09 · 2026', W/2, 26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(244,232,200,.8)';
-  ctx.fillText('дворик бару «Хвильовий»', W/2, 38);
+  ctx.fillText('дворик «Хвильового» · усі співають «Штольню» 🎶', W/2, 38);
 }
 /* Молодята сидячи: ноги звисають з краю сцени, погойдуються по черзі */
 function drawSeatedCouple(kx, dx, edgeY){
@@ -3192,13 +3228,19 @@ function drawCaption(line1, line2){
 }
 
 /* Сітком-заставка: полароїди з реальних фото у 8-біт, потім титр */
+function sitcomFrames(){
+  // базові 5 + спільні фото гостей (кожне з підписом)
+  return SITCOM_PH.map(img=>({img, cap:null}))
+    .concat(SITCOM_EXTRA.map(m=>({img:m.img, cap:m.name})));
+}
 function drawSitcom(){
   ctx.fillStyle = '#0e0c14'; ctx.fillRect(0,0,W,H);
   drawOrnament(16); drawOrnament(H-22);
-  const t = game.phaseT, DUR = 55, n = SITCOM_PH.length;
+  const frames = sitcomFrames();
+  const t = game.phaseT, DUR = 55, n = frames.length;
   const idx = Math.min(n, Math.floor(t/DUR));
   if(idx < n){
-    const img = SITCOM_PH[idx];
+    const fr = frames[idx], img = fr.img;
     const pop = Math.min(1, (t%DUR)/6);                 // швидкий поп-ін
     const maxW = Math.min(192, (H-140)/0.75);           // влазить і в ландшафт
     const pw = maxW*pop, phh = maxW*0.75*pop;
@@ -3210,6 +3252,10 @@ function drawSitcom(){
     if(headReady(img)){
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(img, -pw/2, -phh/2, pw, phh);
+    }
+    if(fr.cap && pop>0.9){                              // підпис гостя на полароїді
+      ctx.fillStyle = '#4a4636'; ctx.font = '9px monospace'; ctx.textAlign='center';
+      ctx.fillText('від ' + fr.cap, 0, phh/2+16);
     }
     ctx.restore();
   } else {
@@ -3530,6 +3576,157 @@ document.getElementById('btn-ics').addEventListener('click', ()=>{
   URL.revokeObjectURL(a.href);
 });
 
+/* ---------------- запрошення як картинка (зберегти на телефон) ---------------- */
+function invitationData(){
+  const name = (rsvp.plusOne && rsvp.plusOne.name) || (rsvp.pickedGuest && rsvp.pickedGuest.name)
+    || (GUEST && GUEST.name) || playerName || '';
+  const slot = GUEST ? SLOTS[GUEST.slot] : null;
+  return {
+    greeting: name ? name : '',
+    surname: game.diiaSurname || '',
+    what: slot ? slot.what : '',
+    when: slot ? slot.when : '6 вересня 2026 · Київ',
+    where: slot ? slot.where : '',
+    hasSlot: !!slot,
+  };
+}
+/* вишиванковий ряд на довільному контексті */
+function cardOrnament(g, y, w, s){
+  for(let x=40; x<w-44; x+=16*s){
+    g.fillStyle = '#a8323c';
+    g.fillRect(x+2*s, y, 2*s, 2*s); g.fillRect(x, y+2*s, 6*s, 2*s); g.fillRect(x+2*s, y+4*s, 2*s, 2*s);
+    g.fillStyle = '#2f5d4a';
+    g.fillRect(x+10*s, y+2*s, 2*s, 2*s);
+  }
+}
+/* гілочка калини (три ягоди + листок) */
+function cardKalyna(g, cx, cy, s){
+  g.fillStyle = '#c0202e';
+  [[0,0],[-5,4],[5,4]].forEach(([dx,dy])=>{
+    g.beginPath(); g.arc(cx+dx*s, cy+dy*s, 3.2*s, 0, 7); g.fill();
+    g.fillStyle = '#e86a72'; g.beginPath(); g.arc(cx+dx*s-1*s, cy+dy*s-1*s, 1*s, 0, 7); g.fill();
+    g.fillStyle = '#c0202e';
+  });
+  g.fillStyle = '#2f5d4a';
+  g.beginPath(); g.ellipse(cx+7*s, cy-4*s, 4*s, 2*s, -0.6, 0, 7); g.fill();
+}
+function buildInvitationCard(){
+  const c = document.createElement('canvas'); c.width = 720; c.height = 1280;
+  const g = c.getContext('2d');
+  const W2 = 720;
+  // тло — тепла слонова кістка з легкою віньєткою
+  g.fillStyle = '#f6efdf'; g.fillRect(0,0,720,1280);
+  const vg = g.createRadialGradient(360,600,200, 360,600,720);
+  vg.addColorStop(0,'rgba(255,255,255,0)'); vg.addColorStop(1,'rgba(150,120,70,.14)');
+  g.fillStyle = vg; g.fillRect(0,0,720,1280);
+  // подвійна рамка
+  g.strokeStyle = '#b8912e'; g.lineWidth = 5; g.strokeRect(24,24,672,1232);
+  g.strokeStyle = '#a8323c'; g.lineWidth = 2; g.strokeRect(36,36,648,1208);
+  // вишиванкові смуги
+  cardOrnament(g, 60, W2, 3);
+  cardOrnament(g, 1196, W2, 3);
+  // калина в кутах
+  cardKalyna(g, 70, 110, 3.2); cardKalyna(g, 650, 110, 3.2);
+  cardKalyna(g, 70, 1170, 3.2); cardKalyna(g, 650, 1170, 3.2);
+
+  g.textAlign = 'center';
+  const d = invitationData();
+  // вітання
+  g.fillStyle = '#a8323c'; g.font = 'bold 30px Georgia, serif';
+  g.fillText(d.greeting ? (d.greeting + ', це запрошення тобі') : 'ЗАПРОШЕННЯ', 360, 170);
+
+  // фото-голови у кружечках
+  const heads = [['katya', 250], ['dima', 470]];
+  heads.forEach(([who, cx])=>{
+    const fr = headFrames(who);
+    const img = fr && (who==='katya' ? fr[3] : fr[0]);
+    g.save();
+    g.beginPath(); g.arc(cx, 300, 74, 0, 7); g.closePath();
+    g.fillStyle = '#fff'; g.fill();
+    g.strokeStyle = '#b8912e'; g.lineWidth = 4; g.stroke();
+    g.clip();
+    g.imageSmoothingEnabled = false;
+    if(img && headReady(img)){
+      const iw = 150, ih = 150*img.height/img.width;
+      g.drawImage(img, cx-iw/2, 300-ih/2-6, iw, ih);
+    }
+    g.restore();
+  });
+  // сердечко між ними
+  g.fillStyle = '#c0202e'; g.font = '46px Georgia, serif';
+  g.fillText('♥', 360, 316);
+
+  // імена
+  g.fillStyle = '#2b2b38'; g.font = 'bold 72px Georgia, serif';
+  g.fillText('Катя  &  Діма', 360, 470);
+  g.fillStyle = '#6b6658'; g.font = 'italic 28px Georgia, serif';
+  g.fillText('запрошують тебе на своє весілля', 360, 520);
+
+  // дата великим
+  g.fillStyle = '#b8912e'; g.font = 'bold 88px Georgia, serif';
+  g.fillText('6·09·2026', 360, 640);
+  g.fillStyle = '#a8323c'; g.font = '26px Georgia, serif';
+  g.fillText('неділя · Київ', 360, 682);
+
+  // блок локації/часу
+  let y = 770;
+  if(d.hasSlot){
+    g.fillStyle = '#2b2b38'; g.font = 'bold 34px Georgia, serif';
+    g.fillText(d.where, 360, y); y += 46;
+    g.fillStyle = '#4a4636'; g.font = '26px Georgia, serif';
+    g.fillText(d.what, 360, y); y += 38;
+    g.fillText(d.when, 360, y); y += 50;
+  } else {
+    g.fillStyle = '#4a4636'; g.font = '26px Georgia, serif';
+    g.fillText('6 вересня 2026 · Київ', 360, y); y += 40;
+    g.fillStyle = '#8a8470'; g.font = 'italic 22px Georgia, serif';
+    g.fillText('точний час і місце — у твоєму', 360, y); y += 30;
+    g.fillText('персональному запрошенні', 360, y); y += 46;
+  }
+  // прізвище після весілля
+  if(d.surname){
+    g.fillStyle = '#6b6658'; g.font = 'italic 24px Georgia, serif';
+    g.fillText('віднині — ' + d.surname, 360, y); y += 46;
+  }
+
+  // дрес-код + квіти
+  y = Math.max(y, 950);
+  if(DRESS_CODE && DRESS_CODE !== '—'){
+    g.fillStyle = '#2b2b38'; g.font = 'bold 24px Georgia, serif';
+    g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 42;
+  }
+  g.fillStyle = '#a8323c'; g.font = '22px Georgia, serif';
+  g.fillText('🌸 замість букета — принеси квітку', 360, y); y += 30;
+  g.fillText('з них зберемо декор свята', 360, y);
+
+  // вірш унизу
+  g.fillStyle = '#6b6658'; g.font = 'italic 24px Georgia, serif';
+  g.fillText('Від свайпу вправо — до весільних дзвонів.', 360, 1120);
+  g.fillText('Приходь на свято — без зайвих церемоній!', 360, 1152);
+  return c;
+}
+function saveInvitation(){
+  const btn = document.getElementById('btn-save-inv');
+  const old = btn.textContent; btn.textContent = 'малюю…';
+  const c = buildInvitationCard();
+  c.toBlob(blob=>{
+    if(!blob){ btn.textContent = old; return; }
+    const fname = 'zaproshennya-katya-dima.png';
+    const file = new File([blob], fname, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:'Запрошення на весілля'})
+        .catch(()=>{}).finally(()=>{ btn.textContent = old; });
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+      btn.textContent = '✓ збережено';
+      setTimeout(()=> btn.textContent = old, 1800);
+    }
+  }, 'image/png');
+}
+document.getElementById('btn-save-inv').addEventListener('click', saveInvitation);
+
 /* тайтл-музика: браузер дозволяє звук лише після жесту — вмикаємо з першого дотику */
 document.addEventListener('pointerdown', ()=>{
   if(game.state==='title' && !bgmKey) playBgm('syn');
@@ -3602,7 +3799,7 @@ function update(){
   switch(game.phase){
 
     case 'sitcom':
-      if(game.phaseT > SITCOM_PH.length*55 + 130 || (!game.watch && input.actionEdge && game.phaseT>10)){
+      if(game.phaseT > sitcomFrames().length*55 + 130 || (!game.watch && input.actionEdge && game.phaseT>10)){
         input.actionEdge = false;
         setPhase('cap1');
       }
@@ -4163,6 +4360,15 @@ async function openSelfie(){
   elTitle.classList.add('hidden');
   document.getElementById('selfie-screen').classList.remove('hidden');
   const st = document.getElementById('selfie-status');
+  const snapBtn = document.getElementById('selfie-snap');
+  // вже надсилав раніше — одне фото на гостя
+  if(localStorage.getItem('wed-selfie-sent')){
+    st.textContent = 'ти вже додав своє фото в гру 💛 (одне на гостя)';
+    snapBtn.disabled = true;
+    document.getElementById('selfie-send').disabled = true;
+    return;
+  }
+  snapBtn.disabled = false;
   st.textContent = 'вмикаю камеру…';
   try{
     selfieStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:640}}});
@@ -4205,8 +4411,11 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
     localStorage.setItem('wed-player-name', name);
   }
   st.textContent = 'надсилаю…';
+  // одне фото на гостя: стабільний documentId (за персональним кодом або імʼям).
+  // Друга спроба → 409 ALREADY_EXISTS (правило allow update:false), і ми це ловимо.
+  const docId = (GUEST && GUEST.id) ? GUEST.id : ('name-' + slugify(name));
   try{
-    const r = await fetch(FS_BASE+'selfies?key='+FB.apiKey, {
+    const r = await fetch(FS_BASE+'selfies?documentId='+encodeURIComponent(docId)+'&key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({fields:{
         name:{stringValue:name},
@@ -4214,9 +4423,19 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
         at:{integerValue:String(Date.now())},
       }}),
     });
-    st.textContent = r.ok
-      ? '✓ фото полетіло! скоро '+name+' зʼявиться у грі 🕹'
-      : 'поки не приймається — спробуй пізніше (Катя ще відкриває скриньку)';
+    if(r.ok){
+      localStorage.setItem('wed-selfie-sent', docId);
+      st.textContent = '✓ фото полетіло! скоро '+name+' зʼявиться у грі 🕹';
+      document.getElementById('selfie-send').disabled = true;
+      document.getElementById('selfie-snap').disabled = true;
+    } else if(r.status===409){
+      localStorage.setItem('wed-selfie-sent', docId);
+      st.textContent = 'у тебе вже є фото в грі 💛 (одне на гостя)';
+      document.getElementById('selfie-send').disabled = true;
+      document.getElementById('selfie-snap').disabled = true;
+    } else {
+      st.textContent = 'поки не приймається — спробуй пізніше (Катя ще відкриває скриньку)';
+    }
   }catch(e){ st.textContent = 'не надіслалось — перевір інтернет і спробуй ще.'; }
 });
 document.getElementById('selfie-back').addEventListener('click', ()=> closeSelfie(true));
@@ -4225,6 +4444,71 @@ if(PARAMS.get('selfie') !== null && PARAMS.get('selfie') !== undefined && PARAMS
   // прямий лінк ?selfie — одразу камера
   setTimeout(openSelfie, 400);
 }
+
+/* --------- спільні фото гостей у сітком-заставку ---------
+   Гість додає НАШЕ спільне фото (з галереї) → Firestore `memories` {name,image,at}.
+   Сітком підвантажує їх і показує після базових 5 з підписом «від Імені».
+   Правило: match /memories/{doc} { allow create, read: if true; allow update, delete: if false; } */
+function pixelateToDataURL(imgEl, targetW){
+  const w = targetW, h = Math.round(targetW * imgEl.naturalHeight / imgEl.naturalWidth) || Math.round(targetW*0.75);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = true;
+  g.drawImage(imgEl, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', 0.7);
+}
+async function loadMemories(){
+  try{
+    const r = await fetch(FS_BASE+'memories?key='+FB.apiKey+'&pageSize=60');
+    if(!r.ok) return;
+    const j = await r.json();
+    (j.documents||[]).forEach(d=>{
+      const src = d.fields?.image?.stringValue;
+      if(!src) return;
+      const im = new Image(); im.src = src;
+      SITCOM_EXTRA.push({img:im, name: d.fields?.name?.stringValue || 'гостя'});
+    });
+  }catch(e){}
+}
+document.getElementById('btn-memory').addEventListener('click', ()=>{
+  document.getElementById('memory-file').click();
+});
+document.getElementById('memory-file').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const st = document.getElementById('memory-status');
+  st.textContent = 'готую фото…';
+  const url = URL.createObjectURL(f);
+  const im = new Image();
+  im.onload = async ()=>{
+    URL.revokeObjectURL(url);
+    const data = pixelateToDataURL(im, 128);          // 8-біт, легке
+    let name = localStorage.getItem('wed-player-name') || '';
+    if(!name){
+      name = (prompt('Як тебе підписати під фото?')||'').trim();
+      if(!name){ st.textContent=''; return; }
+      localStorage.setItem('wed-player-name', name);
+    }
+    st.textContent = 'надсилаю…';
+    try{
+      const r = await fetch(FS_BASE+'memories?key='+FB.apiKey, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({fields:{
+          name:{stringValue:name}, image:{stringValue:data}, at:{integerValue:String(Date.now())},
+        }}),
+      });
+      if(r.ok){
+        st.textContent = '✓ дякуємо! твоє фото зʼявиться у заставці гри 💛';
+        const pim = new Image(); pim.src = data; SITCOM_EXTRA.push({img:pim, name});
+      } else {
+        st.textContent = 'поки не приймається — спробуй пізніше (Катя ще відкриває скриньку)';
+      }
+    }catch(err){ st.textContent = 'не надіслалось — перевір інтернет.'; }
+  };
+  im.onerror = ()=>{ st.textContent = 'не вдалося прочитати фото 😔'; };
+  im.src = url;
+});
+loadMemories();   // підвантажити спільні фото гостей на старті
 
 /* ================= панель досягнень ================= */
 /* тайтл памʼятає, чию історію ти вже пройшов */
@@ -4520,17 +4804,26 @@ const RSVP_GUEST_LIST = `
   const [id, ...rest] = l.split(';');
   return {id:id.trim(), name:rest.join(';').trim()};
 });
-async function sendRsvpToApp(guestId, response){
+const slugify = s => (s||'').toLowerCase().trim()
+  .replace(/[^a-zа-яїієґ0-9]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,40) || 'x';
+async function sendRsvpToApp(guestId, response, extra){
   if(!guestId) return false;
   try{
     const url = 'https://firestore.googleapis.com/v1/projects/'+FB.projectId+
                 '/databases/(default)/documents/rsvps?key='+FB.apiKey;
+    const fields = {
+      guestId:{stringValue:guestId},
+      response:{stringValue:response},
+    };
+    // невідомий +1 → додаткові поля, щоб застосунок/Катя перевели його у гостя
+    if(extra && extra.plusOneName){
+      fields.plusOneName = {stringValue: extra.plusOneName};
+      if(extra.plusOneOf)     fields.plusOneOf     = {stringValue: extra.plusOneOf};
+      if(extra.plusOneOfName) fields.plusOneOfName = {stringValue: extra.plusOneOfName};
+    }
     const r = await fetch(url, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({fields:{
-        guestId:{stringValue:guestId},
-        response:{stringValue:response},
-      }}),
+      body: JSON.stringify({fields}),
     });
     return r.ok;
   }catch(e){ return false; }
@@ -4538,6 +4831,8 @@ async function sendRsvpToApp(guestId, response){
 function rsvpGuestId(){
   if(GUEST && GUEST.id) return GUEST.id;
   if(rsvp.pickedGuest) return rsvp.pickedGuest.id;
+  // невідомий +1: стабільний псевдо-id (не чіпає статус господаря запрошення)
+  if(rsvp.plusOne) return 'plus1-' + slugify(rsvp.plusOne.name);
   // спроба знайти за імʼям гравця
   const nm = (localStorage.getItem('wed-player-name')||'').toLowerCase();
   const hitByName = RSVP_GUEST_LIST.find(g=> nm && g.name.toLowerCase().startsWith(nm));
@@ -4564,13 +4859,52 @@ const elRsvpDots = document.getElementById('rsvp-dots');
 const elRsvpSummary = document.getElementById('rsvp-summary');
 
 function rsvpShow(){
-  // спершу — «хто ти?» зі списку гостей (коли список є, а персонального коду нема)
-  if(rsvp.idx===0 && !rsvp.pickedGuest && !(GUEST && GUEST.id) && RSVP_GUEST_LIST.length){
+  // «хто ти?» зі списку гостей (коли список є, а персонального коду нема)
+  const needIdentify = rsvp.idx===0 && !rsvp.pickedGuest && !rsvp.plusOne && !(GUEST && GUEST.id) && RSVP_GUEST_LIST.length;
+  if(needIdentify){
     elRsvpSummary.classList.add('hidden');
     elRsvpDots.textContent = '';
-    elRsvpQ.textContent = 'Хто ти у списку гостей?';
     elRsvpOpts.innerHTML = '';
+
+    // під-крок А: «я чийсь +1» → обрати, чий саме
+    if(rsvp.plusMode === 'host'){
+      elRsvpInput.classList.add('hidden');
+      elRsvpQ.textContent = 'Чий ти +1?';
+      RSVP_GUEST_LIST.forEach(g=>{
+        const b = document.createElement('button');
+        b.className = 'btn'; b.style.background = '#2b2b38'; b.textContent = g.name;
+        b.addEventListener('click', ()=>{ rsvp._plusHost = g; rsvp.plusMode = 'name'; rsvpShow(); });
+        elRsvpOpts.appendChild(b);
+      });
+      const back = document.createElement('button');
+      back.className = 'btn'; back.style.background = '#55515f'; back.textContent = '← Назад';
+      back.addEventListener('click', ()=>{ rsvp.plusMode = null; rsvpShow(); });
+      elRsvpOpts.appendChild(back);
+      return;
+    }
+    // під-крок Б: вписати своє імʼя
+    if(rsvp.plusMode === 'name'){
+      elRsvpQ.textContent = 'А як тебе звати?';
+      elRsvpInput.classList.remove('hidden');
+      elRsvpInput.value = localStorage.getItem('wed-player-name') || '';
+      const b = document.createElement('button');
+      b.className = 'btn katya'; b.textContent = 'Далі';
+      b.addEventListener('click', ()=>{
+        const nm = elRsvpInput.value.trim();
+        if(!nm) return;
+        localStorage.setItem('wed-player-name', nm);
+        rsvp.plusOne = {name:nm, hostId:rsvp._plusHost.id, hostName:rsvp._plusHost.name};
+        rsvp.plusMode = null;
+        elRsvpInput.classList.add('hidden');
+        rsvpShow();
+      });
+      elRsvpOpts.appendChild(b);
+      return;
+    }
+
+    // головний крок: обрати себе зі списку
     elRsvpInput.classList.add('hidden');
+    elRsvpQ.textContent = 'Хто ти у списку гостей?';
     const nm = (localStorage.getItem('wed-player-name')||'').toLowerCase();
     const sorted = [...RSVP_GUEST_LIST].sort((a,b)=>
       (nm && b.name.toLowerCase().startsWith(nm)) - (nm && a.name.toLowerCase().startsWith(nm)));
@@ -4580,6 +4914,11 @@ function rsvpShow(){
       b.addEventListener('click', ()=>{ rsvp.pickedGuest = g; rsvpShow(); });
       elRsvpOpts.appendChild(b);
     });
+    // варіант для невідомого +1
+    const p1 = document.createElement('button');
+    p1.className = 'btn'; p1.style.background = 'var(--gold)'; p1.textContent = '🙋 Мене нема тут — я чийсь +1';
+    p1.addEventListener('click', ()=>{ rsvp.plusMode = 'host'; rsvpShow(); });
+    elRsvpOpts.appendChild(p1);
     return;
   }
   const item = RSVP_QUESTIONS[rsvp.idx];
@@ -4615,8 +4954,10 @@ function rsvpShow(){
   }
 }
 function rsvpText(){
-  const code = PARAMS.get('guest') || 'без коду';
-  return 'Відповіді на весільне запрошення (' + code + '):\n' +
+  const who = rsvp.plusOne
+    ? rsvp.plusOne.name + ' (+1 до ' + rsvp.plusOne.hostName + ')'
+    : (rsvp.pickedGuest ? rsvp.pickedGuest.name : (PARAMS.get('guest') || 'без коду'));
+  return 'Відповіді на весільне запрошення (' + who + '):\n' +
     RSVP_QUESTIONS.map((it,i)=> (i+1)+') '+it.q+' — '+rsvp.answers[i]).join('\n');
 }
 function rsvpFinish(){
@@ -4624,9 +4965,12 @@ function rsvpFinish(){
   elRsvpDots.textContent = '';
   // тихо пишемо yes/no у застосунок весілля (якщо знаємо, хто це)
   const gid = rsvpGuestId();
+  const extra = rsvp.plusOne
+    ? {plusOneName: rsvp.plusOne.name, plusOneOf: rsvp.plusOne.hostId, plusOneOfName: rsvp.plusOne.hostName}
+    : null;
   if(gid && !rsvp.sent){
     rsvp.sent = true;
-    sendRsvpToApp(gid, rsvpResponse()).then(ok=>{
+    sendRsvpToApp(gid, rsvpResponse(), extra).then(ok=>{
       if(ok) elRsvpQ.textContent = 'Дякуємо! Відповідь записано ✓ Можеш ще й:';
     });
   }
@@ -4652,6 +4996,7 @@ function rsvpFinish(){
 }
 document.getElementById('btn-rsvp').addEventListener('click', ()=>{
   rsvp.idx = 0; rsvp.answers = []; rsvp.pickedGuest = null; rsvp.sent = false;
+  rsvp.plusOne = null; rsvp.plusMode = null; rsvp._plusHost = null;
   elEnd.classList.add('hidden');
   elRsvp.classList.remove('hidden');
   rsvpShow();
