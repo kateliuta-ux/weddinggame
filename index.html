@@ -205,6 +205,8 @@
 <div id="test-badge" class="hidden" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:500;
   background:#c02a7a;color:#fff;font:bold 11px monospace;padding:3px 10px;border-radius:10px;letter-spacing:1px;
   box-shadow:0 2px 8px rgba(0,0,0,.4)">🧪 ТЕСТ-РЕЖИМ · нічого не зберігається</div>
+<div id="mute-btn" title="музика вкл/викл" style="position:fixed;top:6px;right:8px;z-index:450;cursor:pointer;
+  font-size:18px;line-height:1;padding:3px 5px;border-radius:8px;background:rgba(20,18,26,.6);user-select:none">🔊</div>
 <div id="stage">
   <canvas id="game" width="320" height="568"></canvas>
 
@@ -3253,99 +3255,53 @@ function playNote(f, t, d, type, vol){
   o.connect(gn); gn.connect(audioCtx.destination);
   o.start(t); o.stop(t+d);
 }
-/* ---------------- ПОЛІФОНІЧНА музика без слів ----------------
-   Власний синтезатор: акордові пади + мелодія + бас одночасно.
-   Жодних вокалів, жодного стрімінгу — легко для мобільного. */
-const NT = {C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
-  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
-  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880};
-// акорд від кореня (частота): мажор/мінор — три голоси
-const chord = (root, min) => [root, root*(min?1.1892:1.2599), root*1.4983];
-/* пісня = {mel:[[freq|0, dur]…], ch:[[акорд, dur]…]} — mel і ch однакової сумарної тривалості */
-const SONGS = {
-  // світла, грайлива (тайтл, тіндер, чат, побачення)
-  love: {
-    mel:[[NT.C5,.3],[NT.E5,.3],[NT.G5,.45],[NT.E5,.3],[NT.A4,.3],[NT.C5,.3],[NT.E5,.45],[NT.C5,.3],
-         [NT.F4,.3],[NT.A4,.3],[NT.C5,.45],[NT.A4,.3],[NT.G4,.3],[NT.B4,.3],[NT.D5,.6]],
-    ch:[[chord(NT.C4),1.2],[chord(NT.A3,1),1.2],[chord(NT.F3),1.2],[chord(NT.G3),1.2]],
-  },
-  // ніжна, з тугою (Лондон-розлука, освідчення, сватання)
-  tender: {
-    mel:[[NT.E5,.6],[NT.D5,.6],[NT.C5,.9],[NT.A4,.5],[NT.C5,.4],[NT.E5,.8],
-         [NT.F5,.6],[NT.E5,.6],[NT.D5,.9],[NT.C5,.5],[NT.B4,.4],[NT.A4,1.0]],
-    ch:[[chord(NT.A3,1),2.1],[chord(NT.F3),2.1],[chord(NT.C4),2.1],[chord(NT.G3),2.1]],
-  },
-  // пустотлива, скрадлива (таємна операція «Коробочка»)
-  sneak: {
-    mel:[[NT.A4,.22],[NT.C5,.22],[NT.A4,.22],[NT.E5,.22],[NT.D5,.22],[NT.C5,.44],
-         [NT.A4,.22],[NT.B4,.22],[NT.C5,.22],[NT.E5,.44],[NT.A4,.22],[NT.E4,.44]],
-    ch:[[chord(NT.A3,1),1.32],[chord(NT.A3,1),1.32],[chord(NT.D3,1),1.32],[chord(NT.E3),1.32]],
-  },
-  // енергійна (рівень гурту)
-  band: {
-    mel:[[NT.A4,.2],[NT.A4,.2],[NT.C5,.2],[NT.E5,.2],[NT.D5,.2],[NT.C5,.2],[NT.A4,.4],
-         [NT.G4,.2],[NT.A4,.2],[NT.C5,.2],[NT.D5,.2],[NT.E5,.4],[NT.C5,.4]],
-    ch:[[chord(NT.A3,1),1.2],[chord(NT.F3),1.2],[chord(NT.C4),1.2],[chord(NT.G3),1.2]],
-  },
-  // «Горіла сосна» (народна весільна, суспільне надбання) — фінал
-  wed: {
-    mel:[[NT.A4,.45],[NT.A4,.3],[NT.C5,.45],[NT.C5,.3],[NT.E5,.45],[NT.E5,.3],
-         [NT.D5,.4],[NT.C5,.4],[NT.B4,.8],[NT.C5,.45],[NT.B4,.3],[NT.A4,.45],[NT.G4,.3],[NT.A4,1.0]],
-    ch:[[chord(NT.A3,1),1.8],[chord(NT.F3),1.8],[chord(NT.E3),1.8],[chord(NT.A3,1),1.8]],
-  },
+/* ---------------- BGM: справжні україномовні треки SSB ----------------
+   Реальні пісні гурту (з дозволу автора): звучать «як SSB» і не зациклюються
+   (довгі). Тихий фон + кнопка вимкнення. Ліниве завантаження по одному треку. */
+const BGM_TRACKS = {
+  planeta:  'audio/ssb_planeta.m4a',    // «Моя планета»
+  khata:    'audio/ssb_khata.m4a',      // «Над моєю хатою»
+  stezhyna: 'audio/ssb_stezhyna.m4a',   // «Стежина»
+  pozniaky: 'audio/ssb_pozniaky.m4a',   // «Позняки»
 };
-function startSong(song){
-  try{
-    ensureAudio();
-    if(musicOn) return;
-    musicOn = true;
-    const loopDur = song.mel.reduce((a,[,d])=>a+d,0);
-    let nextT = audioCtx.currentTime + 0.05;
-    const schedule = ()=>{
-      if(!musicOn) return;
-      while(nextT < audioCtx.currentTime + 1.0){
-        let tt = nextT;                                   // мелодія
-        song.mel.forEach(([f,d])=>{ if(f) playNote(f, tt, d*0.95, 'square', 0.03); tt += d; });
-        let ct = nextT;                                   // акорди + бас
-        song.ch.forEach(([c,d])=>{
-          c.forEach(cf => playNote(cf, ct, d*0.98, 'sine', 0.028));   // м'який пад
-          playNote(c[0]/2, ct, d*0.9, 'triangle', 0.05);              // бас
-          playNote(c[0]/2, ct+d/2, d*0.4, 'triangle', 0.03);
-          ct += d;
-        });
-        nextT += loopDur;
-      }
-    };
-    schedule();
-    musicTimer = setInterval(schedule, 400);
-  }catch(e){ /* без звуку — теж гра */ }
-}
-/* сумісність зі старими викликами startMusic(...) → весільна пісня */
-function startMusic(){ startSong(SONGS.wed); }
-function stopMusic(){
-  musicOn = false;
-  if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
-}
-
-/* фаза → пісня. Капшни не мапимо — грає далі поточна (без ривків). */
+let musicMuted = localStorage.getItem('wed-mute') === '1';
+const bgmEls = {};
 let chipKey = null;
+/* фаза → трек; kitana = тиша (мікрофон). Капшни не мапимо — грає далі поточний. */
 const CHIP_MAP = {
-  prolog:'love', sitcom:'love', set:'love', montage:'love',
-  tinder:'love', swipe:'love', match:'love', chat:'love', date:'love', battle:'love', run:'tender',
-  band:'band',
-  svat:'tender',
-  secret:'sneak', prop:'tender', diia:'tender',
-  wed:'wed',
+  prolog:'planeta', sitcom:'planeta', set:'planeta', montage:'planeta',
+  tinder:'khata', swipe:'khata', match:'khata', chat:'khata', date:'khata', battle:'khata', run:'khata',
+  band:'pozniaky',
+  svat:'planeta',
+  secret:'stezhyna', prop:'stezhyna', diia:'stezhyna',
+  wed:'stezhyna',
 };
 function chipForPhase(phase){ return CHIP_MAP[phase] || null; }
 function playChip(key){
-  if(chipKey === key && musicOn) return;   // та сама пісня — грає далі
-  stopMusic();
-  const s = SONGS[key]; if(!s){ chipKey = null; return; }
-  chipKey = key; startSong(s);
+  if(musicMuted){ chipKey = key; return; }               // запам'ятали, але не граємо
+  const cur = bgmEls[chipKey];
+  if(chipKey === key && cur && !cur.paused) return;       // той самий трек — грає далі
+  stopChip();
+  const src = BGM_TRACKS[key]; if(!src){ chipKey = null; return; }
+  let el = bgmEls[key];
+  if(!el){ el = new Audio(src); el.loop = true; el.volume = 0.32; bgmEls[key] = el; }
+  el.currentTime = 0; el.play().catch(()=>{});
+  chipKey = key;
 }
-function stopChip(){ chipKey = null; stopMusic(); }
-/* сумісність: рівень гурту та фінал більше не стрімлять — усе через синтезатор */
+function stopChip(){ if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause(); chipKey = null; }
+function stopMusic(){ if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause(); }  // пауза поточного
+function startMusic(){}                                   // сумісність (весілля йде через chipForPhase)
+function setMute(m){
+  musicMuted = m; localStorage.setItem('wed-mute', m ? '1' : '0');
+  const btn = document.getElementById('mute-btn'); if(btn) btn.textContent = m ? '🔇' : '🔊';
+  if(m){ Object.values(bgmEls).forEach(e=>{ try{ e.pause(); }catch(_){} }); }
+  else if(chipKey){ const k = chipKey; chipKey = null; playChip(k); }   // відновити поточний
+}
+function toggleMute(){ setMute(!musicMuted); }
+(function(){ const mb=document.getElementById('mute-btn');
+  if(mb){ mb.textContent = musicMuted?'🔇':'🔊';
+    mb.addEventListener('click', e=>{ e.stopPropagation(); toggleMute(); }); } })();
+/* сумісність зі старими викликами */
 function playBandSong(){}
 function stopBandSong(){}
 function playShtolnya(){}
@@ -4041,7 +3997,7 @@ function openViber(fromTitle){
   for(let i=0;i<16;i++) setTimeout(viberSpawn, i*90);       // одразу рясно
   clearInterval(viberTimer); viberTimer = setInterval(viberSpawn, 170);
   clearInterval(viberSpark); viberSpark = setInterval(viberSparkle, 130);
-  playChip('love');                                         // весела поліфонія
+  playChip('planeta');                                         // весела поліфонія
 }
 function closeViber(){
   clearInterval(viberTimer); viberTimer = null;
@@ -4111,7 +4067,7 @@ document.getElementById('viber-save').addEventListener('click', ()=>{
 
 /* тайтл-музика: браузер дозволяє звук лише після жесту — вмикаємо з першого дотику */
 document.addEventListener('pointerdown', ()=>{
-  if(game.state==='title' && !chipKey) playChip('love');
+  if(game.state==='title' && !chipKey) playChip('planeta');
 });
 
 /* імʼя гравця: питаємо один раз, гра звертається на імʼя */
