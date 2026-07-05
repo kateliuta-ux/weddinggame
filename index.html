@@ -3664,23 +3664,69 @@ function novelBg(i){
   // легке затемнення знизу під текст
   const dg=ctx.createLinearGradient(0,H*0.55,0,H); dg.addColorStop(0,'rgba(10,8,14,0)'); dg.addColorStop(1,'rgba(10,8,14,.72)');
   ctx.fillStyle=dg; ctx.fillRect(0,H*0.55,W,H*0.45);
+  novelBgFigures(i, fl);                          // живі піксельні персонажі у сцені
+}
+/* піксельні герої в сценах новели (перекриваються портретом на репліках,
+   повністю видно на кадрах-наратора) */
+function novelBgFigures(i, fl){
+  const walk = (game.t>>4)&1;
+  const P = (x,who,dir,sc)=>{ ctx.save(); ctx.translate(x, fl); ctx.scale(sc||1.3, sc||1.3); drawPerson(0,0,who,walk,dir,false); ctx.restore(); };
+  if(i===0){ P(W/2-40,'katya',1,1.3); P(W-42,'guy',-1,1.2); }
+  else if(i===2){ P(W/2-16,'katya',1,1.35); P(W/2+18,'dima',-1,1.35); }
+  else if(i===3){ P(66,'katya',1,1.2); P(W-66,'dima',-1,1.2); }
+  else if(i===4){ P(66,'katya',1,1.25);
+    ctx.save(); ctx.translate(W/2+18, fl-2); ctx.scale(1.8,1.8); drawKitana(0,0,-1); ctx.restore(); }
+  else if(i===5){ P(46,'starosta',1,1.15); P(W-46,'starosta',-1,1.15); }
+  else if(i===6){ P(W/2-20,'dima',1,1.35); P(W/2+20,'katya',-1,1.35); }
+  else if(i===7){ P(60,'katya',1,1.3); P(W-60,'dima',-1,1.3); }
+  else if(i===8){ P(W/2-20,'katya',1,1.4); P(W/2+20,'dima',-1,1.4); }
 }
 /* крупний фото-портрет того, хто говорить — спирається дном над вікном тексту */
-function drawNovelPortrait(who, jaw, boxY){
-  const fr = headFrames(who); if(!fr) return;
-  const idx = !jaw ? 0 : jaw>=2 ? 2 : 1;
-  const img = (idx===0 && fr[3]) ? fr[3] : fr[idx];
-  if(!headReady(img)) return;
-  const topY = 46, ratio = img.width/img.height;
-  const maxH = PORTRAIT_MODE ? Math.min(boxY-topY-10, H*0.40) : (boxY-topY-6);
-  let ph = maxH, pw = ph*ratio; const maxW = W*0.52;
-  if(pw > maxW){ pw = maxW; ph = pw/ratio; }
-  const px = 14, py = boxY - 6 - ph;
+/* Великий манга/аніме піксель-портрет мовця (на базі drawPortraitPixel 48×48,
+   масштабований чітко + панель зі скрінтоном, подвійна рамка й ефекти емоцій). */
+const offNov = document.createElement('canvas'); offNov.width = offNov.height = 48;
+const offNovCtx = offNov.getContext('2d'); let offNovKey = '';
+function drawNovelPortrait(who, emo, boxY, talking){
+  emo = emo || 'normal';
+  const key = who+'|'+emo;
+  if(key !== offNovKey){ drawPortraitPixel(offNovCtx, who, emo); offNovKey = key; }
+  const topY = 44;
+  const size = Math.round(Math.min(boxY - topY - 6, PORTRAIT_MODE ? W*0.62 : H*0.72));
+  const px = 12, bob = talking ? ((game.t>>3)&1) : 0;
+  const py = boxY - 4 - size - bob;
+  const accent = who==='katya' ? COL.rose : COL.sage;
   ctx.save();
-  ctx.fillStyle = 'rgba(20,16,26,.32)';
-  ctx.beginPath(); ctx.ellipse(px+pw/2, py+ph*0.55, pw*0.6, ph*0.58, 0,0,7); ctx.fill();
+  // манга-панель зі скрінтоном по краю
+  ctx.fillStyle = who==='katya' ? '#241820' : '#152220';
+  ctx.fillRect(px-4, py-4, size+8, size+8);
+  ctx.fillStyle = who==='katya' ? 'rgba(232,138,160,.5)' : 'rgba(127,192,182,.45)';
+  for(let yy=0; yy<size+8; yy+=5) for(let xx=((yy/5)%2?2:0); xx<size+8; xx+=5) ctx.fillRect(px-4+xx, py-4+yy, 1,1);
+  // великий чіткий піксель-портрет
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, px, py, pw, ph);
+  ctx.drawImage(offNov, px, py, size, size);
+  // подвійна рамка панелі
+  ctx.strokeStyle = '#0e0a12'; ctx.lineWidth = 3; ctx.strokeRect(px-4, py-4, size+8, size+8);
+  ctx.strokeStyle = accent; ctx.lineWidth = 1; ctx.strokeRect(px-1, py-1, size+2, size+2);
+  ctx.restore();
+  novelMangaFx(emo, px, py, size);
+}
+/* манга-ефекти емоцій біля портрета */
+function novelMangaFx(emo, px, py, size){
+  const t = game.t, rx = px+size;
+  ctx.save(); ctx.textAlign='center';
+  if(emo==='happy'){
+    ctx.font='17px serif';
+    [[rx-8,py+14],[rx+8,py+40],[rx-18,py+size-24]].forEach((s,i)=>{ if(((t>>3)+i)&1) ctx.fillText('✨', s[0], s[1]); });
+  } else if(emo==='wow'){
+    ctx.fillStyle='#ffe08a'; ctx.font='bold 30px monospace'; ctx.fillText('!', rx+8, py+30);
+    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1;
+    for(let i=0;i<5;i++){ ctx.beginPath(); ctx.moveTo(rx+2, py+36+i*11); ctx.lineTo(rx+20, py+31+i*11); ctx.stroke(); }
+  } else if(emo==='shy'){
+    ctx.font='15px serif';
+    for(let i=0;i<3;i++){ const hy = py+size-14-((t*0.5+i*34)%(size*0.6)); ctx.globalAlpha=0.85; ctx.fillText('💗', rx-10+(i%2?7:-5), hy); }
+  } else if(emo==='tired'){
+    ctx.font='15px serif'; ctx.fillText('💧', rx-12, py+18+((t>>2)&3));
+  }
   ctx.restore();
 }
 function startNovel(){
@@ -3719,9 +3765,9 @@ function drawNovel(){
   ctx.fillStyle='#d8d4c4'; ctx.font='9px monospace'; ctx.fillText(chap.cap[1], W/2, 38);
   // текстове вікно
   const boxY = H - (PORTRAIT_MODE?132:70), boxH = PORTRAIT_MODE?112:56;
-  // крупний портрет мовця (спирається над вікном)
-  const jaw = (n.shown < ln.text.length) ? [0,1,2,1][(game.t>>2)&3] : 0;
-  if(ln.who) drawNovelPortrait(ln.who, jaw, boxY);
+  // крупний манга-піксель-портрет мовця (спирається над вікном)
+  const talking = n.shown < ln.text.length;
+  if(ln.who) drawNovelPortrait(ln.who, ln.emo, boxY, talking);
   ctx.fillStyle='rgba(18,14,22,.82)'; ctx.fillRect(10,boxY,W-20,boxH);
   ctx.strokeStyle='rgba(181,138,46,.6)'; ctx.lineWidth=1; ctx.strokeRect(10,boxY,W-20,boxH);
   drawOrnament(boxY-7, 14, W-14);
