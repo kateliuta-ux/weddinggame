@@ -3288,6 +3288,16 @@ function playBandSong(){
 }
 function stopBandSong(){ if(bandAudio) bandAudio.pause(); }
 
+/* «Штольня» (Вхід у змінному взутті) — трек із «їхнього» фільму; фінал у Хвильовому + Viber-картка */
+let shtolnyaAudio = null;
+function playShtolnya(){
+  try{
+    if(!shtolnyaAudio){ shtolnyaAudio = new Audio('audio/shtolnya.m4a'); shtolnyaAudio.loop = true; shtolnyaAudio.volume = 0.5; }
+    shtolnyaAudio.currentTime = 0; shtolnyaAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function stopShtolnya(){ if(shtolnyaAudio) shtolnyaAudio.pause(); }
+
 /* ================= титри сцен ================= */
 function drawOrnament(cy, x0, x1){
   /* вишиванковий ряд: червоно-чорні ромбики (як на рушниках) */
@@ -3631,6 +3641,7 @@ function setPhase(p){
   game.phase = p; game.phaseT = 0;
   // фонова музика Space Spice Boy за фазою (чиптюн сцени має пріоритет)
   if(p !== 'band') stopBandSong();       // реальний трек SSB — лише на рівні гурту
+  if(p !== 'wed') stopShtolnya();        // «Штольня» — лише у фіналі Хвильового
   // музика грає неперервно; глушимо лише там, де своя музика/мікрофон
   if(p==='kitana' || p==='band' || p==='wed'){ stopChip(); }
   else { const want = chipForPhase(p); if(want) playChip(want); }
@@ -3665,7 +3676,7 @@ function lazyToEnd(){
   game.t = 0; game.dialog = null; game.onDialogEnd = null;
   game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
   game.wedBoth = !GUEST;
-  dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic(); stopChip(); stopBandSong();
+  dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic(); stopChip(); stopBandSong(); stopShtolnya();
   elTitle.classList.add('hidden');
   document.getElementById('watch-pov-menu').classList.add('hidden');
   elEnd.classList.add('hidden');
@@ -3677,7 +3688,7 @@ function lazyToEnd(){
 }
 
 function finishGame(){
-  stopMusic(); stopChip(); stopBandSong();
+  stopMusic(); stopChip(); stopBandSong(); stopShtolnya();
   game.state = 'end';
   if(!game.watch){
     localStorage.setItem('wed-done-'+game.pov, '1');
@@ -3915,9 +3926,11 @@ function openViber(){
   document.getElementById('viber-emojis').innerHTML = '';
   for(let i=0;i<10;i++) setTimeout(viberSpawn, i*120);      // одразу трохи
   clearInterval(viberTimer); viberTimer = setInterval(viberSpawn, 260);
+  playShtolnya();                                            // «їхній» трек із фільму
 }
 function closeViber(){
   clearInterval(viberTimer); viberTimer = null;
+  stopShtolnya();
   document.getElementById('viber-invite').classList.add('hidden');
   document.getElementById('end-screen').classList.remove('hidden');
 }
@@ -4226,12 +4239,16 @@ function update(){
         // без персонального коду — показуємо обидва по черзі
         game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
         game.wedBoth = !GUEST;
-        setPhase('wed'); startMusic(MELODY_WED, BASS_WED);
+        setPhase('wed');
+        // Хвильовий → «Штольня» (їхній трек), Софі → «Горіла сосна» (народна)
+        if(game.wedLoc==='khv'){ playShtolnya(); } else { startMusic(MELODY_WED, BASS_WED); }
       }
       break;
 
     case 'wed':
-      if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); }
+      if(game.wedBoth && game.phaseT === 230){   // Софі → Хвильовий: міняємо й музику
+        game.wedLoc = 'khv'; shake(2,8); stopMusic(); playShtolnya();
+      }
       if(game.phaseT === (game.wedBoth ? 460 : 230)) setPhase('credits');
       break;
 
