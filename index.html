@@ -310,9 +310,13 @@ const GUESTS = {
 const GUEST = GUESTS[(PARAMS.get('guest')||'').toLowerCase()] || null;
 const CENSORED = GUEST ? GUEST.family : PARAMS.get('v')==='family';
 const SLOTS = {
-  A: {what:'Церемонія і банкет', when:'6 вересня 2026 · час уточнюється', where:'Київ · локація уточнюється'},
-  B: {what:'Банкет',             when:'6 вересня 2026 · час уточнюється', where:'Київ · локація уточнюється'},
+  A: {what:'Денна частина · церемонія', when:'6 вересня 2026 · збір о 12:00', where:'«Бути Софі», Київ',
+      ics:{start:'20260906T114500', end:'20260906T160000', loc:'Бути Софі, Київ'}},
+  B: {what:'Вечірня частина · свято',   when:'6 вересня 2026 · 17:30',        where:'«Хвильовий», Київ',
+      ics:{start:'20260906T173000', end:'20260906T235900', loc:'Хвильовий, Київ'}},
 };
+const DRESS_CODE = 'святкове вбрання';   // TODO: точне формулювання від Каті
+const FLOWERS_NOTE = 'Замість букета — принеси квітку-дві:\nз них зберемо декор свята 🌸';
 
 /* ---------------- досягнення 🏆 ---------------- */
 const ACHS = [
@@ -2979,17 +2983,19 @@ function finishGame(){
   const body = document.getElementById('inv-body');
   const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
   const verse = '<i>Від свайпу вправо — до весільних дзвонів.<br>Приходь на свято — без зайвих церемоній!</i><br><br>';
+  const extras =
+    `<br><b>Дрес-код:</b> ${DRESS_CODE}<br>` +
+    `<span style="opacity:.85">${FLOWERS_NOTE.replace('\n','<br>')}</span>`;
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
     body.innerHTML = verse +
-      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}<br><br>` +
-      'Деталі оновляться за цим самим посиланням.';
+      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}<br>` + extras;
   } else {
     title.textContent = playerName ? (playerName.toUpperCase() + ', ЦЕ ТОБІ') : 'ЗАПРОШЕННЯ';
     body.innerHTML = verse +
-      'Час і місце підтягнуться з твого персонального посилання —<br>' +
-      'а поки збережи дату: 6 вересня 2026, Київ.' + surn;
+      '6 вересня 2026 · Київ<br>' +
+      'Твій час і локацію покаже персональне посилання.' + surn + '<br>' + extras;
   }
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
@@ -2998,10 +3004,20 @@ function finishGame(){
   updateHudAndControls();
 }
 document.getElementById('btn-ics').addEventListener('click', ()=>{
+  // календар з реальним часом і локацією твого потоку
+  const s = GUEST ? SLOTS[GUEST.slot] : null;
+  const ev = s ? [
+    'DTSTART;TZID=Europe/Kyiv:'+s.ics.start,
+    'DTEND;TZID=Europe/Kyiv:'+s.ics.end,
+    'LOCATION:'+s.ics.loc,
+  ] : [
+    'DTSTART;VALUE=DATE:20260906','DTEND;VALUE=DATE:20260907','LOCATION:Київ',
+  ];
   const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//katya-dima-wedding//UA',
-    'BEGIN:VEVENT','UID:wedding-katya-dima-20260906','DTSTART;VALUE=DATE:20260906',
-    'DTEND;VALUE=DATE:20260907','SUMMARY:Весілля Каті і Діми 🥂','LOCATION:Київ',
-    'DESCRIPTION:Деталі — у грі-запрошенні','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    'BEGIN:VEVENT','UID:wedding-katya-dima-20260906', ...ev,
+    'SUMMARY:Весілля Каті і Діми 🥂',
+    'DESCRIPTION:Дрес-код: '+DRESS_CODE+'. Принеси квітку для декору 🌸',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
   a.download = 'vesillya-katya-dima.ics';
