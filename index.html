@@ -186,7 +186,7 @@
 
   <div id="title-screen" class="overlay">
     <h1>КАТЯ ♥ ДІМА</h1>
-    <div class="sub">шлях до весілля · 06.09.2026 · Київ</div>
+    <div class="sub">наші запросини на весілля · 06.09.2026 · Київ</div>
     <div class="menu">
       <button class="btn katya" data-pov="katya">Грати за Катю</button>
       <button class="btn dima" data-pov="dima">Грати за Діму</button>
@@ -3269,6 +3269,54 @@ function drawCaption(line1, line2){
   ctx.textAlign='left';
 }
 
+/* Весільна шишка — обрядовий хлібець запросин (піксельна) */
+function drawShyshka(cx, cy, s){
+  // тісто
+  ctx.fillStyle = '#c88a44';
+  ctx.beginPath(); ctx.ellipse(cx, cy, 13*s, 10*s, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#e0a85c';                        // світліший верх
+  ctx.beginPath(); ctx.ellipse(cx, cy-3*s, 10*s, 6*s, 0, 0, 7); ctx.fill();
+  // защипи-«шишечки» по краю
+  ctx.fillStyle = '#b8783c';
+  for(let i=0;i<6;i++){
+    const a = i*(Math.PI/3);
+    ctx.fillRect(cx+Math.cos(a)*11*s-1.5*s, cy+Math.sin(a)*8*s-1.5*s, 3*s, 3*s);
+  }
+  // колосок згори
+  ctx.fillStyle = '#d8b25a';
+  ctx.fillRect(cx-1*s, cy-16*s, 2*s, 8*s);
+  for(let i=0;i<3;i++){ ctx.fillRect(cx-4*s, cy-15*s+i*3*s, 3*s, 2*s); ctx.fillRect(cx+1*s, cy-15*s+i*3*s, 3*s, 2*s); }
+  // калина
+  ctx.fillStyle = '#c0202e';
+  ctx.beginPath(); ctx.arc(cx-6*s, cy-6*s, 2*s, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx-3*s, cy-7*s, 2*s, 0, 7); ctx.fill();
+}
+/* Пролог-рамка: пояснюємо, що ця гра — і є наші запросини на весілля */
+function drawProlog(){
+  ctx.fillStyle = '#0e0c14'; ctx.fillRect(0,0,W,H);
+  drawOrnament(16); drawOrnament(H-22);
+  const cy = H/2;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = COL.gold; ctx.font = 'bold 20px monospace';
+  ctx.fillText('ЗАПРОСИНИ', W/2, cy-78);
+  drawShyshka(W/2, cy-40, 1.5);
+  ctx.fillStyle = '#d8d4c4'; ctx.font = '9px monospace';
+  const lines = [
+    'Колись молода з дружками обходила хати —',
+    'з весільною шишкою кликала рідних на весілля.',
+    '',
+    'Ми не обійдемо всіх пішки.',
+    'Тож наші запросини — отут, у цій грі.',
+    '',
+    'Пройди наш шлях — і в кінці',
+    'поклич себе на наше свято. 💛',
+  ];
+  lines.forEach((ln,i)=> ctx.fillText(ln, W/2, cy+2 + i*15));
+  ctx.fillStyle = 'rgba(216,212,196,.5)'; ctx.font = '8px monospace';
+  ctx.fillText(game.watch ? '' : 'тап — далі', W/2, H-30);
+  ctx.textAlign = 'left';
+}
+
 /* Сітком-заставка: полароїди з реальних фото у 8-біт, потім титр */
 function sitcomFrames(){
   // базові 5 + спільні фото гостей (кожне з підписом)
@@ -3562,7 +3610,7 @@ function startGame(pov, watch){
   elHud.classList.remove('hidden');
   document.getElementById('watch-hint').classList.toggle('hidden', !watch);
   document.getElementById('watch-play').classList.toggle('hidden', !watch);
-  setPhase('sitcom');            // сітком-заставка перед історією
+  setPhase('prolog');            // рамка: це наші запросини на весілля
 }
 
 function finishGame(){
@@ -3576,6 +3624,11 @@ function finishGame(){
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
   const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
+  // запросини: обрядова формула — це і є момент, коли молоді кличуть на весілля
+  const zaprosyny =
+    '<div style="color:var(--gold);font-weight:bold;letter-spacing:1px;margin-bottom:4px">🍞 ЗАПРОСИНИ</div>' +
+    '<i style="opacity:.9">За давнім звичаєм молоді самі кличуть на весілля.<br>' +
+    'Просили тато й мама, і ми просимо:<br>приходь до нас на свято.</i><br><br>';
   const verse = '<i>Від свайпу вправо — до весільних дзвонів.<br>Приходь на свято — без зайвих церемоній!</i><br><br>';
   const extras =
     `<br><b>Дрес-код:</b> ${DRESS_CODE}<br>` +
@@ -3584,11 +3637,11 @@ function finishGame(){
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
-    body.innerHTML = verse +
+    body.innerHTML = zaprosyny + verse +
       `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}<br>` + extras;
   } else {
-    title.textContent = playerName ? (playerName.toUpperCase() + ', ЦЕ ТОБІ') : 'ЗАПРОШЕННЯ';
-    body.innerHTML = verse +
+    title.textContent = playerName ? (playerName.toUpperCase() + ', ТЕБЕ КЛИЧУТЬ') : 'ЗАПРОСИНИ';
+    body.innerHTML = zaprosyny + verse +
       '6 вересня 2026 · Київ<br>' +
       'Твій час і локацію покаже персональне посилання.' + surn + '<br>' + extras;
   }
@@ -3675,9 +3728,11 @@ function buildInvitationCard(){
 
   g.textAlign = 'center';
   const d = invitationData();
-  // вітання
-  g.fillStyle = '#a8323c'; g.font = 'bold 30px Georgia, serif';
-  g.fillText(d.greeting ? (d.greeting + ', це запрошення тобі') : 'ЗАПРОШЕННЯ', 360, 170);
+  // вітання — це запросини
+  g.fillStyle = '#b8912e'; g.font = 'bold 22px Georgia, serif';
+  g.fillText('🍞 ЗАПРОСИНИ 🍞', 360, 138);
+  g.fillStyle = '#a8323c'; g.font = 'bold 28px Georgia, serif';
+  g.fillText(d.greeting ? (d.greeting + ', тебе кличуть на весілля') : 'тебе кличуть на весілля', 360, 174);
 
   // фото-голови у кружечках
   const heads = [['katya', 250], ['dima', 470]];
@@ -3703,8 +3758,9 @@ function buildInvitationCard(){
   // імена
   g.fillStyle = '#2b2b38'; g.font = 'bold 72px Georgia, serif';
   g.fillText('Катя  &  Діма', 360, 470);
-  g.fillStyle = '#6b6658'; g.font = 'italic 28px Georgia, serif';
-  g.fillText('запрошують тебе на своє весілля', 360, 520);
+  g.fillStyle = '#6b6658'; g.font = 'italic 25px Georgia, serif';
+  g.fillText('Просили тато й мама, і ми просимо —', 360, 512);
+  g.fillText('приходь до нас на весілля', 360, 542);
 
   // дата великим
   g.fillStyle = '#b8912e'; g.font = 'bold 88px Georgia, serif';
@@ -3844,6 +3900,13 @@ function update(){
   const p = game.player, npc = game.npc;
 
   switch(game.phase){
+
+    case 'prolog':
+      if(game.phaseT > 460 || (!game.watch && input.actionEdge && game.phaseT>20)){
+        input.actionEdge = false;
+        setPhase('sitcom');
+      }
+      break;
 
     case 'sitcom':
       if(game.phaseT > sitcomFrames().length*55 + 130 || (!game.watch && input.actionEdge && game.phaseT>10)){
@@ -4095,6 +4158,9 @@ function render(){
   if(game.state==='end'){ return; }
 
   switch(game.phase){
+    case 'prolog':
+      drawProlog();
+      break;
     case 'sitcom':
       drawSitcom();
       break;
