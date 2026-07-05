@@ -3365,7 +3365,9 @@ function drawOrnament(cy, x0, x1, patIdx){
   if(x0===undefined) x0 = 28;
   if(x1===undefined) x1 = W-32;
   const s = 3;                                     // розмір хрестика (px)
-  const P = ORN_PATTERNS[(patIdx==null ? (cy|0) : patIdx) % ORN_PATTERNS.length];
+  const n = ORN_PATTERNS.length;
+  const idx = (((patIdx==null ? Math.floor(cy) : patIdx) % n) + n) % n;  // завжди невід'ємний
+  const P = ORN_PATTERNS[idx];
   const cols = P[0].length;
   const R = '#b3323c', B = '#241c26';
   for(let x=x0, c=0; x < x1 - s; x += s, c++){
