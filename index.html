@@ -451,17 +451,17 @@ const DIMA_2021 = {hair:'#8a7048', hi:'#ecdca0', top:'#f4f2ec', topD:'#d8d4c8', 
 function setScript(pov){
   // ПОВ реально різні: Катя — режисерка за камерою, Діма — гість у кадрі
   if(pov==='katya') return [
-    {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nДва креативники, година на ідею.'},
+    {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nБриф: метаверс для старших людей.'},
     {who:'katya', emo:'tired',  text:'Той, з міліруванням. В камеру. Дубль три!'},
     {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
     {who:'katya', emo:'shy',    text:'(в камеру, Дімо.)'},
     {who:null,    emo:null,     text:'Шоу ніхто так і не побачив.'},
   ];
   return [
-    {who:null,   emo:null,   text:'Офіс агенції. Мене покликали в шоу\nпро ідеї. Поряд — ще один креативник.'},
+    {who:null,   emo:null,   text:'Офіс агенції. Бриф — метаверс для старших.\nУ парі зі мною стратег Макс.'},
     {who:'guy',  emo:'normal',text:'Ну що, штормимо? Година пішла.'},
     {who:'dima', emo:'happy', text:'А куди дивитись — в камеру\nчи на режисерку?)'},
-    {who:null,   emo:null,   text:'Режисерку я тоді до пуття й не роздивився.\n(Дарма.)'},
+    {who:null,   emo:null,   text:'Не впізнав, що це вона. Та симпатичну\nрежисерку-блондинку — запамʼятав.'},
   ];
 }
 function chatScript(pov){
@@ -555,7 +555,7 @@ function pingIntroScript(pov){
     {who:'katya', emo:'normal',text:'Місяць у Лондоні — заради візи.'},
     {who:null,    emo:null,   text:'Єдиний міст додому — цей чат.\nВідповідай на все! (тап / ПРОБІЛ)'},
   ] : [
-    {who:'dima', emo:'shy',  text:'Вона за 2500 кілометрів.\nАле чат гарячий, як ніколи.'},
+    {who:'dima', emo:'shy',  text:'Вона за 2500 км. Ми стільки писали…\nЯ був закоханий і — чесно — скучав.'},
     {who:null,   emo:null,   text:'Тримай темп листування! (тап / ПРОБІЛ)'},
   ];
 }
@@ -596,8 +596,9 @@ function propBoxScript(pov){
     : {who:null, emo:null, text:'КОНСПІРАЦІЯ [провал]: вона знає.\nБайдуже. Вперед.'};
   return [
     voice,
-    {who:'dima', emo:'shy', text:'…~~люблю~~ … ~~~ …\n~~~ дружиною ~~~ …'},
-    {who:null,   emo:null,  text:'Слова втонули в сяйві золотім —\nале «моєю будь» почули в нім.'},
+    {who:'dima', emo:'shy', text:'Хочу, щоб ти стала… Катериною Лютою.'},
+    {who:'dima', emo:'shy', text:'І попри те, що я тебе часом бішу —\nхочу з тобою жити.'},
+    {who:null,   emo:null,  text:'Слова незграбні, та в них — усе.\n(вона сказала «так» ще до крапки.)'},
   ];
 }
 function propOutroScript(pov){
@@ -608,7 +609,7 @@ function propOutroScript(pov){
 /* дзеркальні таємниці: кожен ПОВ бачить сцену, якої не бачить інший */
 function secretIntroScript(pov){
   return pov==='dima' ? [
-    {who:null,  emo:null,  text:'Позняки. Діма тут виріс —\nтепер тут їхній дім на двох.'},
+    {who:null,  emo:null,  text:'Позняки — Дімине місце сили.\nТут він виріс. Тепер це їхній дім на двох.'},
     {who:null,  emo:null,  text:'ТАЄМНА ОПЕРАЦІЯ «КОРОБОЧКА».\nЗа тиждень до будиночків.'},
     {who:'dima',emo:'normal',text:'Головне — щоб вона не побачила.'},
     {who:null,  emo:null,  text:'Тримай А, щоб ховати коробочку,\nколи Катя дивиться!'},
@@ -3055,12 +3056,12 @@ function drawMontage(){
 /* ================= ЕКСКЛЮЗИВ ДІМИ: SPACE SPICE BOY ================= */
 function bandIntroScript(){
   return [
-    {who:'dima', emo:'happy', text:'А в мене є гурт — SPACE SPICE BOY.'},
+    {who:'dima', emo:'happy', text:'А в мене гурт — SPACE SPICE BOY.\nЯ, Лана Чубаха і Влад. З 2013-го.'},
     {who:null,   emo:null,    text:'Лови ноти на лінії! (тап у колонці / A S D)'},
   ];
 }
 function bandOutroScript(){
-  return [{who:'dima', emo:'happy', text:'«Такой себе син», але хіт.'}];
+  return [{who:'dima', emo:'happy', text:'Оце — «Позняки». Наша.'}];
 }
 function startBand(){
   game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false};
@@ -3451,7 +3452,7 @@ function updateDialog(){
   } else if(game.watch){
     d.waitTimer++;
     // у перегляді тримаємо рядок на екрані ~пропорційно довжині (щоб встигнути прочитати)
-    if(d.waitTimer > Math.max(120, ln.text.length*3.2)) advanceDialog();
+    if(d.waitTimer > Math.max(75, ln.text.length*2.0)) advanceDialog();
   }
 }
 
@@ -4787,7 +4788,7 @@ function startKitana(){
 }
 function kitanaIntroScript(pov){
   return [
-    {who:null, emo:null, text:'Осінній двір у Дана. Сірий клубок —\nмале кошеня, що обрало нас двох.'},
+    {who:null, emo:null, text:'Осінній двір у Дана. Катя перша:\n«беремо». Кітана й сама побігла в коробку.'},
     {who:null, emo:null, text:'🎤 Нявкай — Кітана побіжить!\nЧастіше нявкаєш — швидше біжить.\n(або тапай / ПРОБІЛ)'},
   ];
 }
@@ -4899,7 +4900,7 @@ function drawKitanaScene(){
 }
 function kitanaOutroScript(pov){
   return [
-    {who:null, emo:null, text:'Кітана вибрала — і крапка тут:\nвідтоді в нас її затишний кут. 🐈'},
+    {who:null, emo:null, text:'Повелась на іграшку — і лишилась назавжди.\nВідтоді в нас її затишний кут. 🐈'},
   ];
 }
 
