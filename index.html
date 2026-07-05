@@ -1428,24 +1428,30 @@ function drawMatch(){
     ctx.fillRect(hx,hy+2,7,3); ctx.fillRect(hx+1,hy+5,5,2); ctx.fillRect(hx+3,hy+7,1,1);
   }
   const bounce = Math.abs(Math.sin(game.phaseT*0.08))*6;
-  const cyc = H>>1;                                   // центр по вертикалі
-  drawOrnament(cyc-124);                              // вишиванковий кант
-  drawOrnament(cyc+34);
-  ctx.fillStyle = COL.gold; ctx.font='bold 22px monospace'; ctx.textAlign='center';
-  ctx.fillText('ЦЕ МЕТЧ!', W/2, cyc-90-bounce);
-  // портрети
+  const big = PORTRAIT_MODE;
+  const psz = big ? 64 : 50;                          // розмір фото
+  const fw = psz+4;                                   // рамка
+  const titleY = big ? (H>>1)-90-bounce : 30-bounce;
+  const portY  = big ? (H>>1)-72 : 44;                // верх фоторамок
+  ctx.textAlign='center';
+  drawOrnament(Math.max(2, titleY-24));               // вишиванковий кант зверху
+  drawOrnament(portY+fw+30);                          // і знизу
+  ctx.fillStyle = COL.gold; ctx.font='bold '+(big?22:16)+'px monospace';
+  ctx.fillText('ЦЕ МЕТЧ!', W/2, titleY);
+  // портрети (по центру)
   ctx.imageSmoothingEnabled = false;
+  const lx = W/2 - fw - 3, rx = W/2 + 3;
   ctx.fillStyle = '#fff';
-  ctx.fillRect(88,cyc-72,72,72); ctx.fillRect(160,cyc-72,72,72);
-  ctx.drawImage(offK, 92, cyc-68, 64, 64);
-  ctx.drawImage(offD, 164, cyc-68, 64, 64);
+  ctx.fillRect(lx, portY, fw, fw); ctx.fillRect(rx, portY, fw, fw);
+  ctx.drawImage(offK, lx+2, portY+2, psz, psz);
+  ctx.drawImage(offD, rx+2, portY+2, psz, psz);
   // серце між ними
-  const hy2 = cyc-44 + ((game.t>>3)&3);
+  const hy2 = portY + fw/2 - 8 + ((game.t>>3)&3);
   ctx.fillStyle = COL.rose;
-  ctx.fillRect(152,hy2,6,6); ctx.fillRect(162,hy2,6,6);
-  ctx.fillRect(152,hy2+4,16,6); ctx.fillRect(155,hy2+10,10,4); ctx.fillRect(158,hy2+14,4,3);
+  ctx.fillRect(W/2-5,hy2,4,4); ctx.fillRect(W/2+1,hy2,4,4);
+  ctx.fillRect(W/2-5,hy2+3,10,4); ctx.fillRect(W/2-3,hy2+7,6,3); ctx.fillRect(W/2-1,hy2+10,2,2);
   ctx.fillStyle = '#c9c4b4'; ctx.font='8px monospace';
-  ctx.fillText('11 серпня 2022', W/2, cyc+20);
+  ctx.fillText('11 серпня 2022', W/2, portY+fw+16);
   ctx.textAlign='left';
 }
 
