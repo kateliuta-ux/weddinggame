@@ -192,6 +192,9 @@
 </style>
 </head>
 <body>
+<div id="test-badge" class="hidden" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:500;
+  background:#c02a7a;color:#fff;font:bold 11px monospace;padding:3px 10px;border-radius:10px;letter-spacing:1px;
+  box-shadow:0 2px 8px rgba(0,0,0,.4)">🧪 ТЕСТ-РЕЖИМ · нічого не зберігається</div>
 <div id="stage">
   <canvas id="game" width="320" height="568"></canvas>
 
@@ -404,6 +407,10 @@ const GUESTS = {
 };
 const GUEST = GUESTS[(PARAMS.get('guest')||'').toLowerCase()] || null;
 const CENSORED = GUEST ? GUEST.family : PARAMS.get('v')==='family';
+/* ТЕСТ-режим (?test=1): гра працює повністю, але НЕ пише реальні дані —
+   не міняє статуси гостей, не лишає фото/мелодій. Для безпечного тестування. */
+const TEST_MODE = PARAMS.has('test');
+if(TEST_MODE){ const tb = document.getElementById('test-badge'); if(tb) tb.classList.remove('hidden'); }
 const SLOTS = {
   A: {what:'Денна частина · церемонія', when:'6 вересня 2026 · збір о 12:00', where:'«Бути Софі», Київ',
       ics:{start:'20260906T114500', end:'20260906T160000', loc:'Бути Софі, Київ'}},
@@ -4527,6 +4534,7 @@ function smpDeserialize(code){
 // літерал, бо FB оголошено нижче по файлу (інакше TDZ кладе весь скрипт)
 const FS_BASE = 'https://firestore.googleapis.com/v1/projects/wedding-6e47f/databases/(default)/documents/';
 async function saveTrack(author, pattern){
+  if(TEST_MODE) return true;               // тест: не лишаємо мелодій у плейлисті
   try{
     const r = await fetch(FS_BASE+'sampler-tracks?key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -4681,6 +4689,12 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
     localStorage.setItem('wed-player-name', name);
   }
   st.textContent = 'надсилаю…';
+  if(TEST_MODE){                            // тест: показуємо, не зберігаючи
+    if(selfieShot){ const pim=new Image(); pim.src=selfieShot; GUEST_FACES.push({img:pim, name}); }
+    st.textContent = '✓ (тест) фото показано в грі, але не збережено';
+    document.getElementById('selfie-send').disabled = true;
+    return;
+  }
   // одне фото на гостя: стабільний documentId (за персональним кодом або імʼям).
   // Друга спроба → 409 ALREADY_EXISTS (правило allow update:false), і ми це ловимо.
   const docId = (GUEST && GUEST.id) ? GUEST.id : ('name-' + slugify(name));
@@ -4761,6 +4775,10 @@ document.getElementById('memory-file').addEventListener('change', e=>{
       localStorage.setItem('wed-player-name', name);
     }
     st.textContent = 'надсилаю…';
+    if(TEST_MODE){                          // тест: показуємо в заставці, не зберігаючи
+      const pim = new Image(); pim.src = data; SITCOM_EXTRA.push({img:pim, name});
+      st.textContent = '✓ (тест) додано в заставку локально, не збережено'; return;
+    }
     try{
       const r = await fetch(FS_BASE+'memories?key='+FB.apiKey, {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -5181,6 +5199,7 @@ const slugify = s => (s||'').toLowerCase().trim()
   .replace(/[^a-zа-яїієґ0-9]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,40) || 'x';
 async function sendRsvpToApp(guestId, response, extra){
   if(!guestId) return false;
+  if(TEST_MODE) return true;               // тест: не чіпаємо статуси гостей
   try{
     const url = 'https://firestore.googleapis.com/v1/projects/'+FB.projectId+
                 '/databases/(default)/documents/rsvps?key='+FB.apiKey;
