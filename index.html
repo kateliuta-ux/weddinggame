@@ -240,6 +240,14 @@
       <button class="btn watch" data-pov="watch">🍿 Просто подивитись</button>
       <button class="btn" id="btn-lazy" style="background:#55515f">⏩ Одразу до запрошення</button>
       <button class="btn" id="btn-sampler">🎹 Семплер</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+        <button class="btn" id="btn-selfie" style="background:var(--sage);flex:1;min-width:130px">📸 Додай себе в гру</button>
+        <button class="btn" id="btn-memory" style="background:var(--terra);flex:1;min-width:130px">🖼 Фото, де ти з нами</button>
+      </div>
+      <button class="btn" id="btn-viber-title" style="background:#7a2f8a">🌹 Запрошення «для тьоті» 🕊</button>
+      <div id="photo-hint" style="color:#8a8878;font-size:clamp(9px,2cqw,12px);max-width:88%;text-align:center;line-height:1.4">
+        📸 твоє селфі стане головою гостя на весіллі · 🖼 ваше з тобою спільне фото — у заставку історії
+      </div>
     </div>
     <div class="menu hidden" id="watch-pov-menu">
       <div class="sub" style="margin-bottom:2px">Чию історію дивитись?</div>
@@ -285,26 +293,32 @@
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
       <button class="btn" id="btn-save-inv" style="background:var(--terra)">💾 Зберегти запрошення</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
-      <button class="btn" id="btn-selfie" style="background:var(--sage)">📸 Додай себе в гру</button>
-      <button class="btn" id="btn-memory" style="background:var(--terra)">🖼 Додай наше спільне фото</button>
-      <button class="btn" id="btn-viber" style="background:#7a2f8a">🌹 Версія «для тьоті у Viber» 🕊</button>
+      <button class="btn" id="btn-viber" style="background:#7a2f8a">🌹 Версія «для тьоті» 🕊</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
-    <div id="memory-status" style="color:#8a8878;font-size:11px;min-height:14px;max-width:86%;text-align:center"></div>
-    <input id="memory-file" type="file" accept="image/*" class="hidden">
   </div>
+  <!-- глобальні (фото додаються з початкового меню) -->
+  <div id="memory-status" class="hidden" style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:400;
+    background:#2b2b38;color:#e8e2d0;font-size:12px;padding:8px 14px;border-radius:10px;max-width:90vw;text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.5)"></div>
+  <input id="memory-file" type="file" accept="image/*" class="hidden">
 
   <!-- кічове запрошення в стилі гіфок від родичів у Viber -->
   <div id="viber-invite" class="hidden">
     <div id="viber-emojis"></div>
     <div id="viber-card">
-      <div class="v-top">✨🕊️ ✿ 🕊️✨</div>
-      <div class="v-hello" id="viber-hello">Дорогі рідні!</div>
+      <div class="v-top">🕊️✨🌹 ✿ 🌹✨🕊️</div>
+      <div class="v-hello" id="viber-hello">Дорога тьотю! 💐</div>
       <div class="v-title">ЗАПРОШУЄМО<br>НА ВЕСІЛЛЯ!!!</div>
       <div class="v-names">Катерина 💍 Дмитро</div>
       <div class="v-date">✧ 06.09.2026 ✧ Київ ✧</div>
+      <div class="v-venue" id="viber-venue" style="font-family:Georgia,serif;font-size:14px;color:#7a2f8a">📍 6 вересня 2026 · Київ</div>
       <div class="v-wish">Нехай ваша присутність<br>принесе нам щастя й любов!<br>З любов'ю та повагою 💖🙏</div>
-      <div class="v-bottom">🌹🌹🌹 💒 🌹🌹🌹</div>
+      <div class="v-bottom">🌹🕊️🌹 💒 🌹🕊️🌹</div>
+      <div class="v-gender" style="display:flex;gap:8px;justify-content:center;margin:6px 0">
+        <button class="btn" id="viber-f" style="padding:6px 10px;font-size:12px;background:#c02a7a">👩 для жінки</button>
+        <button class="btn" id="viber-m" style="padding:6px 10px;font-size:12px;background:#7a2f8a">👨 для чоловіка</button>
+      </div>
       <div class="v-buttons">
         <button class="btn" id="viber-save" style="background:#c02a7a">💾 Зберегти</button>
         <button class="btn" id="viber-close" style="background:#55515f">Закрити</button>
@@ -668,7 +682,7 @@ function propBoxScript(pov){
   return [
     voice,
     {who:'dima', emo:'shy', text:'Хочу, щоб ти стала… Катериною Лютою.'},
-    {who:'dima', emo:'shy', text:'І попри те, що я тебе часом бішу —\nхочу з тобою жити.'},
+    {who:'dima', emo:'shy', text:'І попри те, що ти мене часом бісиш —\nхочу з тобою жити.'},
     {who:null,   emo:null,  text:'Слова незграбні, та в них — усе.\n(вона сказала «так» ще до крапки.)'},
   ];
 }
@@ -2555,8 +2569,8 @@ function drawDiia(){
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,'#2a2438'); g.addColorStop(1,'#1c1826');
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-  // телефон
-  const pw=96, ph=168, px=(W-pw)>>1, py=(H-ph)>>1;
+  // телефон (ширший, щоб текст влазив; у ландшафті нижчий)
+  const pw=120, ph=PORTRAIT_MODE?176:150, px=(W-pw)>>1, py=(H-ph)>>1;
   ctx.fillStyle = COL.ink; ctx.fillRect(px-4,py-4,pw+8,ph+8);
   ctx.fillStyle = '#f6f5f2'; ctx.fillRect(px,py,pw,ph);
   ctx.fillStyle = '#1a1a24'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
@@ -2574,9 +2588,10 @@ function drawDiia(){
       ctx.fillStyle = on ? '#1E4E8A' : '#eef0f2';
       ctx.fillRect(ox, oy, ow, oh);
       ctx.fillStyle = on ? '#fff' : '#1a1a24';
-      fitText(s.label, ow-6, 8, true);            // довгі прізвища не вилазять
+      fitText(s.label, ow-8, 9, true);            // довгі прізвища не вилазять
       ctx.fillText(s.label, px+pw/2, oy+11);
-      ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888'; ctx.font='6px monospace';
+      ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888';
+      fitText(s.note, ow-8, 6, false);
       ctx.fillText(s.note, px+pw/2, oy+20);
     });
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='9px monospace';
@@ -2608,6 +2623,7 @@ function drawDiia(){
     ctx.fillText('Заяву надіслано', px+pw/2, py+84);
     ctx.font='9px monospace'; ctx.fillStyle='#777';
     ctx.fillText('16 червня 2026', px+pw/2, py+98);
+    fitText('найромантичніша кнопка Дії', pw-8, 9, false);
     ctx.fillText('найромантичніша кнопка Дії', px+pw/2, py+110);
     // штамп «СХВАЛЕНО» влітає (Papers, Please)
     if(d.sentT>28){
@@ -3159,6 +3175,7 @@ function updateBand(){
         if(game.watch){ setPhase('cap2'); return; }
         // семплер прямо в історії: запиши власний рифф SPACE SPICE BOY
         samplerStory = true;
+        stopChip();                        // фон не заважає гратися нотами
         document.getElementById('s-back').textContent = '🎙 ЗАПИСАНО — ДАЛІ';
         document.getElementById('sampler-screen').classList.remove('hidden');
       });
@@ -3212,38 +3229,65 @@ function playNote(f, t, d, type, vol){
   o.connect(gn); gn.connect(audioCtx.destination);
   o.start(t); o.stop(t+d);
 }
-const A4=440, B4=493.88, C5=523.25, D5=587.33, E5=659.25, Gs4=415.30;
-const MELODY = [ // «Біда не в тім, що ти мене не любиш…»
-  [E5,.38],[E5,.38],[D5,.38],[C5,.76],
-  [D5,.38],[C5,.38],[B4,.38],[A4,.76],
-  [E5,.38],[E5,.38],[D5,.38],[C5,.38],[D5,.38],[C5,.38],
-  [B4,.38],[A4,.38],[Gs4,.76],[A4,1.14],
-];
-const BASSLINE = [110, 146.83, 164.81, 110];       // Am Dm E Am
-/* «Горіла сосна, палала» (народна весільна, суспільне надбання) — для фіналу */
-const MELODY_WED = [
-  [440,.45],[440,.3],[523.25,.45],[523.25,.3],[659.25,.45],[659.25,.3],
-  [587.33,.4],[523.25,.4],[493.88,.8],
-  [523.25,.45],[493.88,.3],[440,.45],[392,.3],[440,1.0],
-];
-const BASS_WED = [110, 87.31, 82.41, 110];         // Am F E Am
-function startMusic(melody, bass){
-  const MEL = melody || MELODY, BAS = bass || BASSLINE;
+/* ---------------- ПОЛІФОНІЧНА музика без слів ----------------
+   Власний синтезатор: акордові пади + мелодія + бас одночасно.
+   Жодних вокалів, жодного стрімінгу — легко для мобільного. */
+const NT = {C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
+  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
+  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880};
+// акорд від кореня (частота): мажор/мінор — три голоси
+const chord = (root, min) => [root, root*(min?1.1892:1.2599), root*1.4983];
+/* пісня = {mel:[[freq|0, dur]…], ch:[[акорд, dur]…]} — mel і ch однакової сумарної тривалості */
+const SONGS = {
+  // світла, грайлива (тайтл, тіндер, чат, побачення)
+  love: {
+    mel:[[NT.C5,.3],[NT.E5,.3],[NT.G5,.45],[NT.E5,.3],[NT.A4,.3],[NT.C5,.3],[NT.E5,.45],[NT.C5,.3],
+         [NT.F4,.3],[NT.A4,.3],[NT.C5,.45],[NT.A4,.3],[NT.G4,.3],[NT.B4,.3],[NT.D5,.6]],
+    ch:[[chord(NT.C4),1.2],[chord(NT.A3,1),1.2],[chord(NT.F3),1.2],[chord(NT.G3),1.2]],
+  },
+  // ніжна, з тугою (Лондон-розлука, освідчення, сватання)
+  tender: {
+    mel:[[NT.E5,.6],[NT.D5,.6],[NT.C5,.9],[NT.A4,.5],[NT.C5,.4],[NT.E5,.8],
+         [NT.F5,.6],[NT.E5,.6],[NT.D5,.9],[NT.C5,.5],[NT.B4,.4],[NT.A4,1.0]],
+    ch:[[chord(NT.A3,1),2.1],[chord(NT.F3),2.1],[chord(NT.C4),2.1],[chord(NT.G3),2.1]],
+  },
+  // пустотлива, скрадлива (таємна операція «Коробочка»)
+  sneak: {
+    mel:[[NT.A4,.22],[NT.C5,.22],[NT.A4,.22],[NT.E5,.22],[NT.D5,.22],[NT.C5,.44],
+         [NT.A4,.22],[NT.B4,.22],[NT.C5,.22],[NT.E5,.44],[NT.A4,.22],[NT.E4,.44]],
+    ch:[[chord(NT.A3,1),1.32],[chord(NT.A3,1),1.32],[chord(NT.D3,1),1.32],[chord(NT.E3),1.32]],
+  },
+  // енергійна (рівень гурту)
+  band: {
+    mel:[[NT.A4,.2],[NT.A4,.2],[NT.C5,.2],[NT.E5,.2],[NT.D5,.2],[NT.C5,.2],[NT.A4,.4],
+         [NT.G4,.2],[NT.A4,.2],[NT.C5,.2],[NT.D5,.2],[NT.E5,.4],[NT.C5,.4]],
+    ch:[[chord(NT.A3,1),1.2],[chord(NT.F3),1.2],[chord(NT.C4),1.2],[chord(NT.G3),1.2]],
+  },
+  // «Горіла сосна» (народна весільна, суспільне надбання) — фінал
+  wed: {
+    mel:[[NT.A4,.45],[NT.A4,.3],[NT.C5,.45],[NT.C5,.3],[NT.E5,.45],[NT.E5,.3],
+         [NT.D5,.4],[NT.C5,.4],[NT.B4,.8],[NT.C5,.45],[NT.B4,.3],[NT.A4,.45],[NT.G4,.3],[NT.A4,1.0]],
+    ch:[[chord(NT.A3,1),1.8],[chord(NT.F3),1.8],[chord(NT.E3),1.8],[chord(NT.A3,1),1.8]],
+  },
+};
+function startSong(song){
   try{
     ensureAudio();
     if(musicOn) return;
     musicOn = true;
-    const loopDur = MEL.reduce((a,[,d])=>a+d,0);
+    const loopDur = song.mel.reduce((a,[,d])=>a+d,0);
     let nextT = audioCtx.currentTime + 0.05;
     const schedule = ()=>{
       if(!musicOn) return;
-      while(nextT < audioCtx.currentTime + 0.8){
-        let tt = nextT;
-        MEL.forEach(([f,d])=> { playNote(f, tt, d, 'square', 0.04); tt += d; });
-        const barLen = loopDur/4;
-        BAS.forEach((bf,i)=>{
-          playNote(bf, nextT+i*barLen, barLen*0.95, 'triangle', 0.055);
-          playNote(bf*2, nextT+i*barLen+barLen/2, barLen*0.4, 'triangle', 0.03);
+      while(nextT < audioCtx.currentTime + 1.0){
+        let tt = nextT;                                   // мелодія
+        song.mel.forEach(([f,d])=>{ if(f) playNote(f, tt, d*0.95, 'square', 0.03); tt += d; });
+        let ct = nextT;                                   // акорди + бас
+        song.ch.forEach(([c,d])=>{
+          c.forEach(cf => playNote(cf, ct, d*0.98, 'sine', 0.028));   // м'який пад
+          playNote(c[0]/2, ct, d*0.9, 'triangle', 0.05);              // бас
+          playNote(c[0]/2, ct+d/2, d*0.4, 'triangle', 0.03);
+          ct += d;
         });
         nextT += loopDur;
       }
@@ -3252,72 +3296,36 @@ function startMusic(melody, bass){
     musicTimer = setInterval(schedule, 400);
   }catch(e){ /* без звуку — теж гра */ }
 }
+/* сумісність зі старими викликами startMusic(...) → весільна пісня */
+function startMusic(){ startSong(SONGS.wed); }
 function stopMusic(){
   musicOn = false;
   if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
 }
 
-/* ---------------- BGM: справжні УКРАЇНОМОВНІ треки Space Spice Boy ----------
-   Чиптюн звучав неупізнавано, тож повертаємо реальну музику — але лише
-   україномовні пісні (жодної російської). Вантажаться ліниво, по одному
-   треку на сцену; на весіллі лишається чиптюн «Горіла сосна». */
-const BGM_TRACKS = {
-  planeta:  'audio/ssb_planeta.m4a',    // «Моя планета»
-  khata:    'audio/ssb_khata.m4a',      // «Над моєю хатою»
-  stezhyna: 'audio/ssb_stezhyna.m4a',   // «Стежина»
-};
-const bgmEls = {};
-let chipKey = null;                      // тут — ключ поточного треку
-/* фаза → трек; band = свій «Позняки», wed = «Горіла сосна» (чиптюн).
-   Капшни не мапимо — там просто грає далі поточний трек (без ривків). */
+/* фаза → пісня. Капшни не мапимо — грає далі поточна (без ривків). */
+let chipKey = null;
 const CHIP_MAP = {
-  prolog:'planeta', sitcom:'planeta', set:'planeta', montage:'planeta',
-  tinder:'khata', swipe:'khata', match:'khata', chat:'khata', date:'khata', battle:'khata', run:'khata',
-  svat:'planeta',
-  secret:'stezhyna', prop:'stezhyna', diia:'stezhyna',
+  prolog:'love', sitcom:'love', set:'love', montage:'love',
+  tinder:'love', swipe:'love', match:'love', chat:'love', date:'love', battle:'love', run:'tender',
+  band:'band',
+  svat:'tender',
+  secret:'sneak', prop:'tender', diia:'tender',
+  wed:'wed',
 };
-function chipForPhase(phase){
-  if(phase==='wed') return null;
-  return CHIP_MAP[phase] || null;
-}
+function chipForPhase(phase){ return CHIP_MAP[phase] || null; }
 function playChip(key){
-  if(chipKey === key) return;            // той самий трек — грає далі без перезапуску
-  stopChip();
-  const src = BGM_TRACKS[key]; if(!src){ chipKey = null; return; }
-  stopMusic();                           // прибрати чиптюн (весільний), якщо грав
-  let el = bgmEls[key];
-  if(!el){ el = new Audio(src); el.loop = true; el.volume = 0.5; bgmEls[key] = el; }
-  el.currentTime = 0; el.play().catch(()=>{});
-  chipKey = key;
+  if(chipKey === key && musicOn) return;   // та сама пісня — грає далі
+  stopMusic();
+  const s = SONGS[key]; if(!s){ chipKey = null; return; }
+  chipKey = key; startSong(s);
 }
-function stopChip(){
-  if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause();
-  chipKey = null;
-}
-
-/* Рівень гурту SPACE SPICE BOY — грає СПРАВЖНІЙ трек SSB (укр. «Позняки»).
-   Єдиний стрім у грі; вантажиться тільки на цьому рівні. */
-let bandAudio = null;
-function playBandSong(){
-  try{
-    if(!bandAudio){
-      bandAudio = new Audio('audio/ssb_band_pozniaky.m4a');
-      bandAudio.loop = true; bandAudio.volume = 0.5;
-    }
-    bandAudio.currentTime = 0; bandAudio.play().catch(()=>{});
-  }catch(e){}
-}
-function stopBandSong(){ if(bandAudio) bandAudio.pause(); }
-
-/* «Штольня» (Вхід у змінному взутті) — трек із «їхнього» фільму; фінал у Хвильовому + Viber-картка */
-let shtolnyaAudio = null;
-function playShtolnya(){
-  try{
-    if(!shtolnyaAudio){ shtolnyaAudio = new Audio('audio/shtolnya.m4a'); shtolnyaAudio.loop = true; shtolnyaAudio.volume = 0.5; }
-    shtolnyaAudio.currentTime = 0; shtolnyaAudio.play().catch(()=>{});
-  }catch(e){}
-}
-function stopShtolnya(){ if(shtolnyaAudio) shtolnyaAudio.pause(); }
+function stopChip(){ chipKey = null; stopMusic(); }
+/* сумісність: рівень гурту та фінал більше не стрімлять — усе через синтезатор */
+function playBandSong(){}
+function stopBandSong(){}
+function playShtolnya(){}
+function stopShtolnya(){}
 
 /* ================= титри сцен ================= */
 /* один хрестик — літера Х із пікселів (як стібок вишивки) */
@@ -3688,13 +3696,10 @@ function updateHudAndControls(){
 
 function setPhase(p){
   game.phase = p; game.phaseT = 0;
-  // фонова музика Space Spice Boy за фазою (чиптюн сцени має пріоритет)
-  if(p !== 'band') stopBandSong();       // реальний трек SSB — лише на рівні гурту
-  if(p !== 'wed') stopShtolnya();        // «Штольня» — лише у фіналі Хвильового
-  // музика грає неперервно; глушимо лише там, де своя музика/мікрофон
-  if(p==='kitana' || p==='band' || p==='wed'){ stopChip(); }
+  // поліфонічна музика за фазою; глушимо лише на Кітані (там мікрофон)
+  if(p==='kitana'){ stopChip(); }
   else { const want = chipForPhase(p); if(want) playChip(want); }
-  // капшни та інші немапнуті фази — поточний трек грає далі
+  // капшни та інші немапнуті фази — поточна пісня грає далі
   updateHudAndControls();
 }
 
@@ -3720,20 +3725,13 @@ function startGame(pov, watch){
 
 /* для лінивих: одразу титри → запрошення, без проходження гри */
 function lazyToEnd(){
+  // одразу на запрошення — без історії й без титрів
   tryFullscreen();
   game.state = 'play'; game.watch = true; game.pov = 'katya';
   game.t = 0; game.dialog = null; game.onDialogEnd = null;
-  game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
-  game.wedBoth = !GUEST;
-  dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic(); stopChip(); stopBandSong(); stopShtolnya();
-  elTitle.classList.add('hidden');
+  dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic(); stopChip();
   document.getElementById('watch-pov-menu').classList.add('hidden');
-  elEnd.classList.add('hidden');
-  elHud.classList.remove('hidden');
-  document.getElementById('watch-hint').classList.add('hidden');
-  document.getElementById('watch-play').classList.add('hidden');
-  startMusic(MELODY_WED, BASS_WED);   // весільна музика під титри
-  setPhase('credits');
+  finishGame();                       // прямо на екран запрошення
 }
 
 function finishGame(){
@@ -3747,26 +3745,20 @@ function finishGame(){
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
   const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
-  // запросини: обрядова формула — це і є момент, коли молоді кличуть на весілля
+  // коротко на екрані: тепла формула + місце/час; решта деталей — у збереженому запрошенні
   const zaprosyny =
-    '<div style="color:var(--gold);font-weight:bold;letter-spacing:1px;margin-bottom:4px">🍞 ЗАПРОСИНИ</div>' +
-    '<i style="opacity:.9">За давнім звичаєм молоді самі кличуть на весілля.<br>' +
-    'Просили тато й мама, і ми просимо:<br>приходь до нас на свято.</i><br><br>';
-  const verse = '<i>Від свайпу вправо — до весільних дзвонів.<br>Приходь на свято — без зайвих церемоній!</i><br><br>';
-  const extras =
-    `<br><b>Дрес-код:</b> ${DRESS_CODE}<br>` +
-    `<span style="opacity:.85">${FLOWERS_NOTE.replace(/\n/g,'<br>')}</span><br><br>` +
-    `<span style="opacity:.85">🎁 ${GIFT_NOTE.replace(/\n/g,'<br>')}</span>`;
+    '<i style="opacity:.92">Просили тато й мама, і ми просимо:<br>приходь до нас на свято 🍞</i><br><br>';
+  const more = '<br><span style="opacity:.6;font-size:.9em">дрес-код, квіти й решта — у «Зберегти запрошення» 💾</span>';
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
-    body.innerHTML = zaprosyny + verse +
-      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}<br>` + extras;
+    body.innerHTML = zaprosyny +
+      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}` + more;
   } else {
     title.textContent = playerName ? (playerName.toUpperCase() + ', ТЕБЕ КЛИЧУТЬ') : 'ЗАПРОСИНИ';
-    body.innerHTML = zaprosyny + verse +
+    body.innerHTML = zaprosyny +
       '6 вересня 2026 · Київ<br>' +
-      'Твій час і локацію покаже персональне посилання.' + surn + '<br>' + extras;
+      '<span style="opacity:.8">точний час і місце — у твоєму посиланні</span>' + surn + more;
   }
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
@@ -3844,28 +3836,38 @@ function buildInvitationCard(){
   const c = document.createElement('canvas'); c.width = 720; c.height = 1280;
   const g = c.getContext('2d');
   const W2 = 720;
-  // тло — тепла слонова кістка з легкою віньєткою
-  g.fillStyle = '#f6efdf'; g.fillRect(0,0,720,1280);
-  const vg = g.createRadialGradient(360,600,200, 360,600,720);
-  vg.addColorStop(0,'rgba(255,255,255,0)'); vg.addColorStop(1,'rgba(150,120,70,.14)');
-  g.fillStyle = vg; g.fillRect(0,0,720,1280);
-  // подвійна рамка
-  g.strokeStyle = '#b8912e'; g.lineWidth = 5; g.strokeRect(24,24,672,1232);
-  g.strokeStyle = '#a8323c'; g.lineWidth = 2; g.strokeRect(36,36,648,1208);
-  // вишиванкові смуги
-  cardOrnament(g, 60, W2, 3);
-  cardOrnament(g, 1196, W2, 3);
-  // калина в кутах
-  cardKalyna(g, 70, 110, 3.2); cardKalyna(g, 650, 110, 3.2);
-  cardKalyna(g, 70, 1170, 3.2); cardKalyna(g, 650, 1170, 3.2);
+  // тло — світле, весільне (біле з ніжним рум'янцем)
+  const bgg = g.createLinearGradient(0,0,0,1280);
+  bgg.addColorStop(0,'#ffffff'); bgg.addColorStop(.5,'#fdf6f8'); bgg.addColorStop(1,'#fff8ef');
+  g.fillStyle = bgg; g.fillRect(0,0,720,1280);
+  // золоті блискітки по всьому полю (делікатно)
+  let sd = 11; const rnd = ()=>{ sd=(sd*1103515245+12345)&0x7fffffff; return sd/0x7fffffff; };
+  for(let i=0;i<90;i++){
+    g.fillStyle = ['rgba(212,175,90,','rgba(255,255,255,','rgba(230,180,200,'][i%3] + (0.3+rnd()*0.4) + ')';
+    g.beginPath(); g.arc(rnd()*720, rnd()*1280, rnd()*1.8+0.4, 0, 7); g.fill();
+  }
+  // тонка золота рамка
+  g.strokeStyle = '#d4af5a'; g.lineWidth = 3; g.strokeRect(26,26,668,1228);
+  g.strokeStyle = 'rgba(200,150,180,.6)'; g.lineWidth = 1; g.strokeRect(34,34,652,1212);
+  // гіпсофіла — дрібні білі суцвіття (кластери крапок)
+  const gyps = (cx,cy,n)=>{ for(let i=0;i<n;i++){ const a=rnd()*7,r=rnd()*16;
+    g.fillStyle='rgba(255,255,255,.95)'; g.beginPath(); g.arc(cx+Math.cos(a)*r, cy+Math.sin(a)*r, 1.6,0,7); g.fill();
+    g.fillStyle='rgba(220,225,235,.7)'; g.beginPath(); g.arc(cx+Math.cos(a+1)*r*.7, cy+Math.sin(a+1)*r*.7, 1,0,7); g.fill(); } };
+  // верхня та нижня гірлянди: голуби, троянди, гіпсофіла, янголи
+  g.textAlign='center'; g.font='34px serif';
+  g.fillText('👼', 92, 96); g.fillText('👼', 628, 96);
+  g.font='30px serif';
+  ['🕊️','🌹','🌷','🌹','🕊️'].forEach((e,i)=> g.fillText(e, 210+i*75, 92));
+  ['🌹','🕊️','🌷','🕊️','🌹'].forEach((e,i)=> g.fillText(e, 210+i*75, 1210));
+  for(let i=0;i<6;i++){ gyps(180+i*72, 70, 10); gyps(180+i*72, 1234, 10); }
 
   g.textAlign = 'center';
   const d = invitationData();
   // вітання — це запросини
-  g.fillStyle = '#b8912e'; g.font = 'bold 22px Georgia, serif';
-  g.fillText('🍞 ЗАПРОСИНИ 🍞', 360, 138);
-  g.fillStyle = '#a8323c'; g.font = 'bold 28px Georgia, serif';
-  g.fillText(d.greeting ? (d.greeting + ', тебе кличуть на весілля') : 'тебе кличуть на весілля', 360, 174);
+  g.fillStyle = '#c99'; g.font = 'italic 20px Georgia, serif';
+  g.fillText('~ наші запросини на весілля ~', 360, 150);
+  g.fillStyle = '#a8506a'; g.font = 'bold 27px Georgia, serif';
+  g.fillText(d.greeting ? (d.greeting + ', тебе кличуть! 🕊️') : 'тебе кличуть на весілля 🕊️', 360, 184);
 
   // фото-голови у кружечках
   const heads = [['katya', 250], ['dima', 470]];
@@ -3991,26 +3993,42 @@ function viberSparkle(){                                     // блискітк
   box.appendChild(s);
   setTimeout(()=> s.remove(), 1400);
 }
-function openViber(){
-  const nm = (rsvp && rsvp.plusOne && rsvp.plusOne.name) || (GUEST && GUEST.name) || playerName || '';
-  document.getElementById('viber-hello').textContent = nm ? ('Дорог' + (/а$/.test(nm)?'а':'ий') + ' ' + nm + '!') : 'Дорогі рідні!';
+let viberGender = 'f';                                       // 'f' жінка / 'm' чоловік
+let viberFrom = 'end';                                       // звідки відкрили (title/end)
+function viberVenue(){
+  const s = GUEST ? SLOTS[GUEST.slot] : null;
+  return s ? (s.where + ' · ' + s.when) : '6 вересня 2026 · Київ';
+}
+function viberRefresh(){
+  document.getElementById('viber-hello').textContent =
+    (viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '! 💐';
+  document.getElementById('viber-venue').textContent = '📍 ' + viberVenue();
+}
+function openViber(fromTitle){
+  viberFrom = fromTitle ? 'title' : 'end';
+  viberRefresh();
   document.getElementById('end-screen').classList.add('hidden');
+  elTitle.classList.add('hidden');
   document.getElementById('viber-invite').classList.remove('hidden');
   document.getElementById('viber-emojis').innerHTML = '';
   for(let i=0;i<16;i++) setTimeout(viberSpawn, i*90);       // одразу рясно
   clearInterval(viberTimer); viberTimer = setInterval(viberSpawn, 170);
   clearInterval(viberSpark); viberSpark = setInterval(viberSparkle, 130);
-  playShtolnya();                                            // «їхній» трек із фільму
+  playChip('love');                                         // весела поліфонія
 }
 function closeViber(){
   clearInterval(viberTimer); viberTimer = null;
   clearInterval(viberSpark); viberSpark = null;
-  stopShtolnya();
+  stopChip();
   document.getElementById('viber-invite').classList.add('hidden');
+  if(viberFrom==='title'){ elTitle.classList.remove('hidden'); return; }
   document.getElementById('end-screen').classList.remove('hidden');
 }
-document.getElementById('btn-viber').addEventListener('click', openViber);
+document.getElementById('btn-viber').addEventListener('click', ()=> openViber(false));
+document.getElementById('btn-viber-title').addEventListener('click', ()=> openViber(true));
 document.getElementById('viber-close').addEventListener('click', closeViber);
+document.getElementById('viber-f').addEventListener('click', ()=>{ viberGender='f'; viberRefresh(); });
+document.getElementById('viber-m').addEventListener('click', ()=>{ viberGender='m'; viberRefresh(); });
 /* збереження: кічова картинка (золотий блиск + троянди + рамка сердечками) */
 function buildViberCard(){
   const c = document.createElement('canvas'); c.width = 720; c.height = 1000;
@@ -4030,9 +4048,8 @@ function buildViberCard(){
   const top = ['🌹','💖','🌷','✨','🌸','💫','🌺','⭐'];
   for(let i=0;i<11;i++){ g.fillText(top[i%top.length], 40+i*64, 46); g.fillText(top[(i+3)%top.length], 40+i*64, 986); }
   for(let i=0;i<14;i++){ g.fillText(['🌹','💖','🌷','✨'][i%4], 30, 90+i*62); g.fillText(['💐','🌸','💫','🌺'][i%4], 690, 90+i*62); }
-  const d = invitationData();
   g.fillStyle = '#ffd7f0'; g.font = 'italic 30px Georgia, serif';
-  g.fillText(d.greeting ? ('Дорог' + (/а$/.test(d.greeting)?'а':'ий') + ' ' + d.greeting + '!') : 'Дорогі рідні!', 360, 150);
+  g.fillText((viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '! 💐', 360, 150);
   // золотий блискучий заголовок
   const grad = g.createLinearGradient(120,0,600,0);
   grad.addColorStop(0,'#b8860b'); grad.addColorStop(.5,'#fff3b0'); grad.addColorStop(1,'#b8860b');
@@ -4041,10 +4058,12 @@ function buildViberCard(){
   g.fillStyle = '#ff8fd0'; g.font = 'bold 52px Georgia, serif';
   g.fillText('Катерина 💍 Дмитро', 360, 440);
   g.fillStyle = '#ffe9a8'; g.font = 'bold 34px Georgia, serif';
-  g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 510);
+  g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 505);
+  g.fillStyle = '#ffd7f0'; g.font = 'bold 26px Georgia, serif';
+  g.fillText('📍 ' + viberVenue(), 360, 552);
   g.fillStyle = '#f0d6ff'; g.font = 'italic 26px Georgia, serif';
   ['Нехай ваша присутність','принесе нам щастя й любов!',"З любов'ю та повагою 💖🙏"].forEach((ln,i)=>
-    g.fillText(ln, 360, 600+i*40));
+    g.fillText(ln, 360, 620+i*38));
   g.font = '40px serif'; g.fillText('🌹🌹🌹 💒 🌹🌹🌹', 360, 780);
   g.fillText('💐🥂😍💐🕊️✨💖', 360, 850);
   return c;
@@ -4065,7 +4084,7 @@ document.getElementById('viber-save').addEventListener('click', ()=>{
 
 /* тайтл-музика: браузер дозволяє звук лише після жесту — вмикаємо з першого дотику */
 document.addEventListener('pointerdown', ()=>{
-  if(game.state==='title' && !chipKey) playChip('planeta');
+  if(game.state==='title' && !chipKey) playChip('love');
 });
 
 /* імʼя гравця: питаємо один раз, гра звертається на імʼя */
@@ -4321,16 +4340,12 @@ function update(){
         // без персонального коду — показуємо обидва по черзі
         game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
         game.wedBoth = !GUEST;
-        setPhase('wed');
-        // Хвильовий → «Штольня» (їхній трек), Софі → «Горіла сосна» (народна)
-        if(game.wedLoc==='khv'){ playShtolnya(); } else { startMusic(MELODY_WED, BASS_WED); }
+        setPhase('wed');                         // музика — «Горіла сосна» (через chipForPhase)
       }
       break;
 
     case 'wed':
-      if(game.wedBoth && game.phaseT === 230){   // Софі → Хвильовий: міняємо й музику
-        game.wedLoc = 'khv'; shake(2,8); stopMusic(); playShtolnya();
-      }
+      if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); }
       if(game.phaseT === (game.wedBoth ? 460 : 230)) setPhase('credits');
       break;
 
@@ -4481,7 +4496,7 @@ function render(){
       drawRun();
       break;
     case 'capK':
-      drawCaption('ОСІНЬ 2023 · ДВІР ДАНА', 'тут вас знайшла Кітана');
+      drawCaption('ОСІНЬ 2023 · БІЛОГОРОДКА', 'у друга Дана вас знайшла Кітана');
       break;
     case 'kitana':
       drawKitanaScene();
@@ -4697,6 +4712,7 @@ document.getElementById('s-back').addEventListener('click', ()=>{
   }
 });
 document.getElementById('btn-sampler').addEventListener('click', ()=>{
+  stopChip();                              // фон не заважає гратися нотами
   elTitle.classList.add('hidden');
   document.getElementById('sampler-screen').classList.remove('hidden');
 });
@@ -4829,6 +4845,14 @@ async function loadMemories(){
     });
   }catch(e){}
 }
+// тост знизу (працює з будь-якого екрана)
+let memToastTimer = null;
+function memToast(msg, keep){
+  const el = document.getElementById('memory-status');
+  el.textContent = msg; el.classList.remove('hidden');
+  clearTimeout(memToastTimer);
+  if(!keep) memToastTimer = setTimeout(()=> el.classList.add('hidden'), 5000);
+}
 document.getElementById('btn-memory').addEventListener('click', ()=>{
   document.getElementById('memory-file').click();
 });
@@ -4836,8 +4860,7 @@ document.getElementById('memory-file').addEventListener('change', e=>{
   const f = e.target.files && e.target.files[0];
   e.target.value = '';
   if(!f) return;
-  const st = document.getElementById('memory-status');
-  st.textContent = 'готую фото…';
+  memToast('готую фото…', true);
   const url = URL.createObjectURL(f);
   const im = new Image();
   im.onload = async ()=>{
@@ -4845,14 +4868,14 @@ document.getElementById('memory-file').addEventListener('change', e=>{
     const data = pixelateToDataURL(im, 128);          // 8-біт, легке
     let name = localStorage.getItem('wed-player-name') || '';
     if(!name){
-      name = (prompt('Як тебе підписати під фото?')||'').trim();
-      if(!name){ st.textContent=''; return; }
+      name = (prompt("Як тебе підписати під фото? (це ж ти на фото з нами)")||'').trim();
+      if(!name){ document.getElementById('memory-status').classList.add('hidden'); return; }
       localStorage.setItem('wed-player-name', name);
     }
-    st.textContent = 'надсилаю…';
+    memToast('надсилаю…', true);
     if(TEST_MODE){                          // тест: показуємо в заставці, не зберігаючи
       const pim = new Image(); pim.src = data; SITCOM_EXTRA.push({img:pim, name});
-      st.textContent = '✓ (тест) додано в заставку локально, не збережено'; return;
+      memToast('✓ (тест) фото додано в заставку локально, не збережено'); return;
     }
     try{
       const r = await fetch(FS_BASE+'memories?key='+FB.apiKey, {
@@ -4862,14 +4885,14 @@ document.getElementById('memory-file').addEventListener('change', e=>{
         }}),
       });
       if(r.ok){
-        st.textContent = '✓ дякуємо! твоє фото зʼявиться у заставці гри 💛';
+        memToast('✓ дякуємо! ваше з тобою фото зʼявиться у заставці гри 💛');
         const pim = new Image(); pim.src = data; SITCOM_EXTRA.push({img:pim, name});
       } else {
-        st.textContent = 'поки не приймається — спробуй пізніше (Катя ще відкриває скриньку)';
+        memToast('поки не приймається — спробуй пізніше (Катя ще відкриває скриньку)');
       }
-    }catch(err){ st.textContent = 'не надіслалось — перевір інтернет.'; }
+    }catch(err){ memToast('не надіслалось — перевір інтернет.'); }
   };
-  im.onerror = ()=>{ st.textContent = 'не вдалося прочитати фото 😔'; };
+  im.onerror = ()=>{ memToast('не вдалося прочитати фото 😔'); };
   im.src = url;
 });
 loadMemories();   // підвантажити спільні фото гостей на старті
@@ -5026,8 +5049,10 @@ function startKitana(){
 }
 function kitanaIntroScript(pov){
   return [
-    {who:null, emo:null, text:'Осінній двір у Дана. Катя перша:\n«беремо». Кітана й сама побігла в коробку.'},
-    {who:null, emo:null, text:'🎤 Нявкай — Кітана побіжить!\nЧастіше нявкаєш — швидше біжить.\n(або тапай / ПРОБІЛ)'},
+    {who:null, emo:null, text:'Білогородка. У друга Каті — Дана —\nу дворі вуличка окотила кошенят.'},
+    {who:null, emo:null, text:'Катя побачила найручніше в його сторіз\nі одразу: «це вона». Господиня дозволила котика.'},
+    {who:null, emo:null, text:'Щоб покликати Кітану — увімкни мікрофон\nі нявкай (гра «чує» твій голос).'},
+    {who:null, emo:null, text:'🎤 Нявкай — Кітана біжить до вас!\nЧастіше нявкаєш — швидше. (або тап / ПРОБІЛ)'},
   ];
 }
 function kitanaMeow(){
