@@ -565,7 +565,7 @@ function chatScript(pov){
   // між 2021 і 2022 — вирва: війна, і в обох позаду по пʼять років стосунків
   const war = [
     {who:null, emo:null, text:'Між тими зйомками і цим свайпом —\nвійна. Все, що було, лишилось «до».'},
-    {who:null, emo:null, text:'В обох позаду — по пʼять років стосунків.\nІ от посеред усього цього двоє\nраптом ідуть пити пиво.'},
+    {who:null, emo:null, text:'І от посеред усього цього двоє\nраптом ідуть пити пиво.'},
   ];
   const intro = pov==='katya' ? [
     {who:'katya', emo:'wow',   text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
@@ -612,7 +612,7 @@ function dateScript(pov){
   const beer = pov==='katya' ? [
     {who:'dima',  emo:'shy', text:'І ще. Тримай.'},
     {who:'katya', emo:'wow', text:'Андервуд коконат?! Я ж один раз згадала…'},
-    {who:null,    emo:null,  text:'Він запамʼятав із чату той рядок —\nі цим зробив до серця перший крок.'},
+    {who:null,    emo:null,  text:'Запамʼятав із чату слово те —\nі в серденько поклав, як зерно золоте.'},
   ] : [
     {who:null,    emo:null,  text:'УВАЖНІСТЬ [підготовка]: вона любить\nкокосове темне. З Хвильового.'},
     {who:'dima',  emo:'shy', text:'І ще. Тримай.'},
@@ -623,29 +623,29 @@ function dateScript(pov){
     ...beer,
     {who:null, emo:null, text:'(Запамʼятай і ти цей бар — «Хвильовий».\nВін ще зіграє свою роль.)'},
     {who:'dima', emo:'shy', text:'…а можна, я проведу тебе додому?'},
-    {who:null, emo:null, text:'Пейзажка, пиво, ліхтарів вогні —\nі перший поцілунок, мов у сні.'},
-    {who:null, emo:null, text:'Ішлося ніби про несерйозне —\nта вже любов підкрадалась грізно…'},
+    {who:null, emo:null, text:'Світять над кручею ліхтарики дрібні,\nа вустонька зійшлися вперше — мов у сні.'},
+    {who:null, emo:null, text:'Казали двоє: пиво, й більш нічого, ні, —\nа вже любов вилася по стерні.'},
   ];
 }
 function battleOutroScript(pov){
   return [
-    {who:null, emo:null, text:'Несерйозність тане, як весняний сніг —\nвід справжнього ще жоден не утік.'},
+    {who:null, emo:null, text:'Розтало «несерйозно», мов той сніг, —\nвід судженого ще ніхто не втік.'},
   ];
 }
 function tetrisIntroScript(pov){
   return pov==='katya' ? [
     {who:'katya', emo:'normal',text:'Місяць у Лондоні — заради візи.'},
-    {who:null,    emo:null,   text:'У Лондоні дощі, і Біг-Бен б’є,\nа серце в Києві — давно уже твоє.'},
+    {who:null,    emo:null,   text:'Ой у Лондоні тумани та дощі,\nа серце в Києві — хоч плач, хоч не проси.'},
   ] : [
     {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
-    {who:null,   emo:null,   text:'А в Лондоні — валіза й ліхтарі,\nі думка лиш одна: скоріш вертись.'},
+    {who:null,   emo:null,   text:'В чужім краю валіза й ліхтарі,\nа дума в серці: швидше повернись.'},
   ];
 }
 function tetrisOutroScript(pov){
   return pov==='katya' ? [
-    {who:null, emo:null, text:'Потяг рушив, місяць — не досиджено:\nлюбов і візи — речі несумісні.'},
+    {who:null, emo:null, text:'Рушив потяг, місяць не добуто:\nлюбов із візою докупи не зшито.'},
   ] : [
-    {who:null, emo:null, text:'Вернулась раніше — на місяць, на щастя.\n«Це не через мене» (це через нас, ясно).'},
+    {who:null, emo:null, text:'Вернулась раніше — на місяць, на долю.\n«Не через тебе» (та через нас, з любові).'},
   ];
 }
 function pingIntroScript(pov){
@@ -683,7 +683,7 @@ function svatOutroScript(pov){
 }
 function propChessOutroScript(pov){
   return [
-    {who:'katya', emo:'happy', text:'Мат. І тримай подарунок —\n«Шахи для дибілів».'},
+    {who:'katya', emo:'happy', text:'Мат. І тримай подарунок —\n«Шахмати для дибілів».'},
     {who:'dima',  emo:'tired', text:'Азаза.'},
     {who:'dima',  emo:'shy',   text:'Теж маю щось… десь тут…'},
   ];
@@ -1043,8 +1043,8 @@ function drawKitana(x, y, dir){
   if(headReady(HEAD_KIT)){
     // справжня голова Кітани (фото)
     ctx.imageSmoothingEnabled = false;
-    const hh = 14, hw = Math.round(hh*HEAD_KIT.width/HEAD_KIT.height);
-    ctx.drawImage(HEAD_KIT, 6 - hw/2, -18, hw, hh);
+    const hh = 18, hw = Math.round(hh*HEAD_KIT.width/HEAD_KIT.height);
+    ctx.drawImage(HEAD_KIT, 4 - hw/2, -22, hw, hh);
   } else {
     px(2, -14, 8, 8, grey);                        // голова (піксельний фолбек)
     px(2, -14, 3, 3, peach);
@@ -2277,10 +2277,19 @@ function startProposal(){
   setPhase('prop');
 }
 const CHESS_MOVES = [
-  {label:'Сxb7?',  good:false, note:'слон нічого не вирішує'},
-  {label:'Фd8#',   good:true,  note:'мат!'},
-  {label:'e4??',   good:false, note:'це взагалі як'},
+  {label:'Слоном побити пішака', sub:'Сxb7',  good:false, note:'слон нічого не вирішує'},
+  {label:'Ферзем на d8 — це МАТ', sub:'Фd8#',  good:true,  note:'мат!'},
+  {label:'Пішаком уперед, навмання', sub:'e4', good:false, note:'це взагалі як'},
 ];
+/* спільний layout кнопок-ходів (щоб малювання й тапи збігались) */
+function chessBtn(i){
+  if(PORTRAIT_MODE){
+    const w = W-40, h = 46, gap = 12, y0 = Math.round(H*0.46);
+    return { x:20, y:y0 + i*(h+gap), w, h };
+  }
+  const w = 92, h = 34, gap = 8, x0 = Math.round(W/2 - (3*w+2*gap)/2);
+  return { x:x0 + i*(w+gap), y:H-44, w, h };
+}
 function updateProp(){
   const p = game.prop; if(!p) return;
 
@@ -2293,9 +2302,12 @@ function updateProp(){
     }
     if(keys['ArrowLeft'] && !p._l){ p.sel = (p.sel+2)%3; } p._l = keys['ArrowLeft'];
     if(keys['ArrowRight'] && !p._r){ p.sel = (p.sel+1)%3; } p._r = keys['ArrowRight'];
+    if(keys['ArrowUp'] && !p._u){ p.sel = (p.sel+2)%3; } p._u = keys['ArrowUp'];
+    if(keys['ArrowDown'] && !p._d){ p.sel = (p.sel+1)%3; } p._d = keys['ArrowDown'];
     if(game._tapPos){
-      p.sel = Math.max(0, Math.min(2, Math.floor((game._tapPos.x-40)/80)));
-      game._tapPos = null; input.actionEdge = true;
+      const tp = game._tapPos; game._tapPos = null;
+      for(let i=0;i<3;i++){ const b=chessBtn(i);
+        if(tp.x>=b.x && tp.x<=b.x+b.w && tp.y>=b.y && tp.y<=b.y+b.h){ p.sel=i; input.actionEdge=true; break; } }
     }
     if(input.actionEdge){ input.actionEdge = false; confirmChess(); }
     return;
@@ -2429,29 +2441,45 @@ function drawProp(){
   drawPerson(206, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false, DIMA_FEB26);
 
   if(p.step==='chess'){
-    ctx.fillStyle = 'rgba(10,10,20,.8)'; ctx.fillRect(30,16,260,86);
-    ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-    ctx.fillText(game.pov==='katya' ? 'ТВІЙ ХІД. ДЕСЬ ТУТ МАТ.' : 'ТВІЙ ХІД. (ШАНСІВ НЕМАЄ)', W/2, 32);
-    // мінідошка з позицією
+    const isP = PORTRAIT_MODE;
+    ctx.fillStyle = 'rgba(18,14,24,.55)'; ctx.fillRect(0,0,W,H);   // затемнити кабіну — фокус на шахах
+    // банер-підказка
+    ctx.fillStyle = 'rgba(10,10,20,.82)'; ctx.fillRect(16, isP?58:12, W-32, isP?52:24);
+    ctx.fillStyle = COL.gold; ctx.font='bold '+(isP?12:10)+'px monospace'; ctx.textAlign='center';
+    ctx.fillText(game.pov==='katya' ? 'ТВІЙ ХІД — ЗНАЙДИ МАТ' : 'ТВІЙ ХІД (ШАНСІВ НЕМАЄ)', W/2, isP?78:26);
+    if(isP){ ctx.fillStyle='#b9b3a4'; ctx.font='9px monospace';
+      ctx.fillText('підказуй собі книжкою «Шахмати для дибілів»', W/2, 94); }
+    // дошка
+    const cell = isP ? 15 : 8, bx = Math.round(W/2 - cell*4), by = isP ? 116 : 38;
+    ctx.fillStyle = 'rgba(18,14,24,.96)'; ctx.fillRect(0, by-10, W, cell*8+20);   // смуга ховає декор (кругле вікно) за дошкою
     for(let r=0;r<8;r++) for(let c2=0;c2<8;c2++){
       ctx.fillStyle = (r+c2)%2 ? '#8a6a46' : '#f0e6cc';
-      ctx.fillRect(96+c2*8, 38+r*6, 8, 6);
+      ctx.fillRect(bx+c2*cell, by+r*cell, cell, cell);
     }
-    ctx.fillStyle = '#1a1a24'; ctx.font='11px sans-serif';
-    ctx.fillText('♚', 132, 48);                               // король Діми
-    ctx.fillStyle = '#A8505F';
-    ctx.fillText('♛', 116, 66); ctx.fillText('♜', 148, 84);   // Катині фігури
-    // варіанти ходів
+    // зелена мітка «куди мат» (d8)
+    if(game.pov==='katya'){ ctx.strokeStyle='rgba(63,174,84,.9)'; ctx.lineWidth=2; ctx.strokeRect(bx+3*cell, by, cell, cell); }
+    const sq=(c,r)=>({x:bx+c*cell+cell/2, y:by+r*cell+cell*0.78});
+    ctx.textAlign='center'; ctx.font=(cell+3)+'px sans-serif';
+    let s=sq(4,1); ctx.fillStyle='#1a1a24'; ctx.fillText('♚', s.x, s.y);        // король Діми
+    ctx.fillStyle='#A8505F';
+    s=sq(2,3); ctx.fillText('♛', s.x, s.y);                                      // ферзь Каті
+    s=sq(6,6); ctx.fillText('♜', s.x, s.y);                                      // тура Каті
+    // великі кнопки-ходи
     CHESS_MOVES.forEach((m,i)=>{
-      const mx = 44+i*80;
-      ctx.fillStyle = i===p.sel ? (p.wrongT>0 ? '#7d3a46' : COL.rose) : '#2b2b38';
-      ctx.fillRect(mx, 88, 72, 12);
-      ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace';
-      ctx.fillText(m.label, mx+36, 97);
+      const b = chessBtn(i), on = i===p.sel;
+      ctx.fillStyle = on ? (p.wrongT>0 ? '#7d3a46' : COL.rose) : '#2b2b38';
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.strokeStyle = on ? '#fff' : 'rgba(255,255,255,.22)'; ctx.lineWidth = on?2:1;
+      ctx.strokeRect(b.x, b.y, b.w, b.h);
+      ctx.fillStyle = '#fff'; ctx.font='bold '+(isP?12:8)+'px monospace'; ctx.textAlign='center';
+      ctx.fillText(m.label, b.x+b.w/2, b.y+(isP?21:14));
+      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font=(isP?10:7)+'px monospace';
+      ctx.fillText('('+m.sub+')', b.x+b.w/2, b.y+(isP?37:24));
     });
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font=(isP?10:9)+'px monospace'; ctx.textAlign='center';
     ctx.fillText(p.wrongT>0 ? CHESS_MOVES[p.sel].note+'… ще раз' :
-      (game.watch?'':(isTouch?'тапни хід':'← → і ПРОБІЛ')), W/2, H-6);
+      (game.watch?'':(isTouch?'тапни свій хід':'↑ ↓ і ПРОБІЛ')), W/2, H-6);
+    ctx.textAlign='left';
     return;
   }
 
@@ -3271,6 +3299,18 @@ const BGM_TRACKS = {
 let musicMuted = localStorage.getItem('wed-mute') === '1';
 const bgmEls = {};
 let chipKey = null;
+const BGM_VOL = 0.2;
+/* iOS Safari ІГНОРУЄ el.volume для <audio>. Щоб гучність реально працювала
+   (і тиха музика лишалась тихою), проводимо звук через WebAudio GainNode. */
+let bgmGain = null;
+function bgmMaster(){
+  if(!bgmGain){ ensureAudio(); bgmGain = audioCtx.createGain(); bgmGain.gain.value = BGM_VOL; bgmGain.connect(audioCtx.destination); }
+  return bgmGain;
+}
+function routeBgm(el){
+  try{ ensureAudio(); const s = audioCtx.createMediaElementSource(el); s.connect(bgmMaster()); el._routed = true; }
+  catch(_){ el.volume = BGM_VOL; }   // запасний варіант (десктоп)
+}
 /* фаза → трек; kitana = тиша (мікрофон). Капшни не мапимо — грає далі поточний. */
 const CHIP_MAP = {
   prolog:'planeta', sitcom:'planeta', set:'planeta', montage:'planeta',
@@ -3288,7 +3328,8 @@ function playChip(key){
   stopChip();
   const src = BGM_TRACKS[key]; if(!src){ chipKey = null; return; }
   let el = bgmEls[key];
-  if(!el){ el = new Audio(src); el.loop = true; el.volume = 0.32; bgmEls[key] = el; }
+  if(!el){ el = new Audio(src); el.loop = true; el.volume = BGM_VOL; bgmEls[key] = el; routeBgm(el); }
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   el.currentTime = 0; el.play().catch(()=>{});
   chipKey = key;
 }
@@ -3425,7 +3466,7 @@ function novelData(){
       N('Він не впізнав, що це вона. Та симпатичну\nрежисерку-блондинку — запамʼятав.'),
     ]},
     {bg:1, cap:['СЕРПЕНЬ 2022 · вже інше життя','Тіндер'], lines:[
-      N('Між тими зйомками — війна.\nВ обох позаду по пʼять років стосунків.'),
+      N('Між тими зйомками — війна.\nВсе, що було, лишилось «до».'),
       N('І от посеред усього цього двоє\nраптом ідуть пити пиво.'),
       {who:'dima', emo:'happy', text:'Йоу! Як трєня?)'},
       {who:'katya', emo:'wow',  text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
@@ -3434,7 +3475,7 @@ function novelData(){
       N('Обоє ніби «просто на пиво».'),
       {who:'dima', emo:'shy', text:'І ще. Тримай.'},
       {who:'katya', emo:'wow', text:'Андервуд коконат?! Ти ЗАПАМʼЯТАВ?'},
-      N('Пейзажка, пиво, ліхтарів вогні —\nі перший поцілунок, мов у сні.'),
+      N('Світять над кручею ліхтарики дрібні,\nа вустонька зійшлися вперше — мов у сні.'),
     ]},
     {bg:3, cap:['ЖОВТЕНЬ 2022','Київ ↔ Лондон'], lines:[
       {who:'dima', emo:'shy', text:'Вона за 2500 км. Я був закоханий\nі — чесно — скучав.'},
@@ -3455,13 +3496,13 @@ function novelData(){
       {who:'katya', emo:'happy', text:'Я нічого не бачила. Нічогісінько.'},
     ]},
     {bg:7, cap:['14.02.2026 · Мінімаліст','освідчення'], lines:[
-      {who:'katya', emo:'happy', text:'Мат. І тримай подарунок —\n«Шахи для дибілів».'},
+      {who:'katya', emo:'happy', text:'Мат. І тримай подарунок —\n«Шахмати для дибілів».'},
       {who:'dima', emo:'shy', text:'Хочу, щоб ти стала… Катериною Лютою.'},
       {who:'dima', emo:'shy', text:'І попри те, що ти мене часом бісиш —\nхочу з тобою жити.'},
       {who:'katya', emo:'happy', text:'Так!'},
     ]},
     {bg:8, cap:['06.09.2026 · Київ','весілля'], lines:[
-      N('Від свайпу вправо — до весільних дзвонів.'),
+      N('Од свайпу вправо — та до рушничка.'),
       N('06 · 09 · 2026. Ми вас кличемо. 💛'),
     ]},
   ];
@@ -4146,8 +4187,8 @@ function buildInvitationCard(){
 
   // вірш унизу
   g.fillStyle = '#8a8470'; g.font = 'italic 22px Georgia, serif';
-  g.fillText('Від свайпу вправо — до весільних дзвонів.', 360, 1148);
-  g.fillText('Приходь на свято — без зайвих церемоній!', 360, 1176);
+  g.fillText('Од свайпу вправо — та до рушничка,', 360, 1148);
+  g.fillText('приходь на свято, доки грає скрипочка!', 360, 1176);
   return c;
 }
 function saveInvitation(){
@@ -5388,8 +5429,6 @@ function drawKitanaScene(){
   ctx.fillStyle = k.boostT>0 ? '#8d88a0' : '#7d7888';   // тіло (світлішає на бусті)
   ctx.fillRect(-8,-6,16,11);
   ctx.fillStyle = '#c9967a'; ctx.fillRect(-6,-4,4,4);   // персикова пляма
-  ctx.fillStyle = '#7d7888'; ctx.fillRect(-10,-9,4,4); ctx.fillRect(4,-9,4,4);  // вушка
-  ctx.fillStyle = '#5a8c4e'; ctx.fillRect(-5,-3,2,2); ctx.fillRect(3,-3,2,2);   // очі
   // лапки: галоп у русі, сидить — коли стоїть
   ctx.fillStyle = '#615c6e';
   if(running){
@@ -5397,13 +5436,21 @@ function drawKitanaScene(){
     ctx.fillRect(-7+l1, 5, 3, 5); ctx.fillRect(4+l2, 5, 3, 5);
   } else {
     ctx.fillRect(-7, 5, 3, 4); ctx.fillRect(4, 5, 3, 4);
-    // сидить і показує язик (сімейне)
-    if(((k.t>>5)&3)===1){ ctx.fillStyle = '#d97a8a'; ctx.fillRect(-1, 1, 2, 3); }
   }
   // хвіст майорить від швидкості
   ctx.fillStyle = '#615c6e';
   const tailUp = running ? Math.sin(k.t*0.2)*3 : -2;
   ctx.fillRect(8, -4+tailUp, 6, 3);
+  // голова — справжнє фото Кітани, нарочито велика (bobblehead)
+  const bob = running ? Math.sin(k.dist*0.25)*1.6 : Math.sin(k.t*0.08);
+  if(headReady(HEAD_KIT)){
+    ctx.imageSmoothingEnabled = false;
+    const hh = 20, hw = Math.round(hh*HEAD_KIT.width/HEAD_KIT.height);
+    ctx.drawImage(HEAD_KIT, 4 - hw/2, -3 - hh + bob, hw, hh);
+  } else {
+    ctx.fillStyle = '#7d7888'; ctx.fillRect(-10,-9,4,4); ctx.fillRect(4,-9,4,4);
+    ctx.fillStyle = '#5a8c4e'; ctx.fillRect(-5,-3,2,2); ctx.fillRect(3,-3,2,2);
+  }
   ctx.restore();
   // «?» коли стоїть і тиша
   if(!running && !k.reached){
@@ -5771,7 +5818,7 @@ const QUIZ = [
    opts:['На зйомках ШТОРМНАДО','У Тіндері','На власному весіллі'],
    ok:0, notes:['Так! Але Діма це успішно забув 🌝','Це вже вдруге. Вперше — на зйомках!','Ще ні. Але 6 вересня — так.']},
   {q:'Що Катя подарувала Дімі 14 лютого 2026?',
-   opts:['Каблучку','Книжку «Шахи для дибілів»','Гарбуза'],
+   opts:['Каблучку','Книжку «Шахмати для дибілів»','Гарбуза'],
    ok:1, notes:['Каблучка була з іншого боку столу)','Так! Бо він постійно програвав 😂','Гарбуз — то на сватанні, і то жарт.']},
   {q:'Хто такий SPACE SPICE BOY?',
    opts:['Гурт Діми','Кіт із двору Дана','Синтезатор Каті'],
