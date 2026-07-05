@@ -315,7 +315,7 @@ const SLOTS = {
   B: {what:'Вечірня частина · свято',   when:'6 вересня 2026 · 17:30',        where:'«Хвильовий», Київ',
       ics:{start:'20260906T173000', end:'20260906T235900', loc:'Хвильовий, Київ'}},
 };
-const DRESS_CODE = 'святкове вбрання';   // TODO: точне формулювання від Каті
+const DRESS_CODE = '—';                  // Катя дасть формулювання — поки прочерк
 const FLOWERS_NOTE = 'Замість букета — принеси квітку-дві:\nз них зберемо декор свята 🌸';
 
 /* ---------------- досягнення 🏆 ---------------- */
@@ -3016,7 +3016,7 @@ document.getElementById('btn-ics').addEventListener('click', ()=>{
   const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//katya-dima-wedding//UA',
     'BEGIN:VEVENT','UID:wedding-katya-dima-20260906', ...ev,
     'SUMMARY:Весілля Каті і Діми 🥂',
-    'DESCRIPTION:Дрес-код: '+DRESS_CODE+'. Принеси квітку для декору 🌸',
+    'DESCRIPTION:'+(DRESS_CODE!=='—' ? 'Дрес-код: '+DRESS_CODE+'. ' : '')+'Принеси квітку для декору 🌸',
     'END:VEVENT','END:VCALENDAR'].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
