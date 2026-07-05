@@ -163,8 +163,18 @@
   #viber-invite.hidden{display:none}
   #viber-emojis{position:absolute;inset:0;pointer-events:none;overflow:hidden}
   #viber-emojis span{position:absolute;bottom:-10%;font-size:26px;animation:vfloat linear forwards;will-change:transform,opacity}
+  #viber-emojis span.v-spark{bottom:auto;animation:vtwinkle 1.4s ease-in-out forwards;
+    filter:drop-shadow(0 0 4px #fff3b0)}
   @keyframes vfloat{0%{transform:translateY(0) rotate(0);opacity:0}
     10%{opacity:1}90%{opacity:1}100%{transform:translateY(-115vh) rotate(40deg);opacity:0}}
+  @keyframes vtwinkle{0%{transform:scale(0) rotate(0);opacity:0}
+    40%{transform:scale(1.3) rotate(90deg);opacity:1}100%{transform:scale(0) rotate(180deg);opacity:0}}
+  /* квіткові кути картки */
+  #viber-card::before,#viber-card::after{content:"🌹";position:absolute;font-size:30px;
+    animation:vwiggle 2s ease-in-out infinite}
+  #viber-card::before{top:-14px;left:-10px;transform:rotate(-20deg)}
+  #viber-card::after{bottom:-14px;right:-10px;transform:rotate(20deg)}
+  @keyframes vwiggle{50%{transform:scale(1.15) rotate(0)}}
   #viber-card{position:relative;z-index:2;width:min(92vw,360px);text-align:center;
     padding:18px 16px 16px;border-radius:18px;
     background:linear-gradient(160deg,#fff7fb,#ffe6f2 45%,#fff2d6);
@@ -515,7 +525,7 @@ function setScript(pov){
     {who:'katya', emo:'tired',  text:'Той, з міліруванням. В камеру. Дубль три!'},
     {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
     {who:'katya', emo:'shy',    text:'(в камеру, Дімо.)'},
-    {who:null,    emo:null,     text:'Шоу ніхто так і не побачив.'},
+    {who:null,    emo:null,     text:'(Той сезон так і не вийшов у ефір.\nАле це вже потім.)'},
   ];
   return [
     {who:null,   emo:null,   text:'Офіс агенції. Бриф — метаверс для старших.\nУ парі зі мною стратег Макс.'},
@@ -563,12 +573,13 @@ function chatScript(pov){
   return [...war, ...intro, ...common, ...outro];
 }
 function dateScript(pov){
+  // обоє щойно з довгих стосунків — ішли ніби «просто на пиво» (без обіцянок)
   const first = pov==='katya' ? [
-    {who:'katya', emo:'normal',text:'Щоб ти розумів: у мене все несерйозно.'},
-    {who:'dima',  emo:'happy', text:'Абсолютно. Максимально несерйозно.'},
+    {who:null,    emo:null,  text:'Обоє щойно з довгих стосунків.\nТож — ніби просто пиво на Пейзажці.'},
+    {who:'katya', emo:'happy',text:'Нічого такого. Правда ж?'},
   ] : [
-    {who:'dima',  emo:'normal',text:'Щоб ти розуміла: у мене все несерйозно.'},
-    {who:'katya', emo:'happy', text:'Ідеально. У мене тим більше.'},
+    {who:null,    emo:null,  text:'Обоє щойно з довгих стосунків.\nТож — ніби просто пиво на Пейзажці.'},
+    {who:'dima',  emo:'happy',text:'Абсолютно. Просто пиво.'},
   ];
   // кокосове Андервуд: спитав у чаті — приніс на побачення (реальна історія)
   const beer = pov==='katya' ? [
@@ -586,7 +597,7 @@ function dateScript(pov){
     {who:null, emo:null, text:'(Запамʼятай і ти цей бар — «Хвильовий».\nВін ще зіграє свою роль.)'},
     {who:'dima', emo:'shy', text:'…а можна, я проведу тебе додому?'},
     {who:null, emo:null, text:'Пейзажка, пиво, ліхтарів вогні —\nі перший поцілунок, мов у сні.'},
-    {who:null, emo:null, text:'Умовились: усе це — несерйозно.\nТа вже любов підкрадалася грізно…'},
+    {who:null, emo:null, text:'Ішлося ніби про несерйозне —\nта вже любов підкрадалась грізно…'},
   ];
 }
 function battleOutroScript(pov){
@@ -3056,12 +3067,15 @@ function drawRun(){
 /* ================= ЕКСКЛЮЗИВ КАТІ: МОНТАЖ ================= */
 function montageIntroScript(){
   return [
-    {who:'katya', emo:'normal', text:'Далі — моя робота. Монтаж.'},
+    {who:'katya', emo:'normal', text:'Монтаж — це вже моя стихія.'},
     {who:null,    emo:null,     text:'Ріж таймлайн, коли бігунець на ▸ мітці.\n(тап / ПРОБІЛ)'},
   ];
 }
 function montageOutroScript(){
-  return [{who:'katya', emo:'happy', text:'Готово. Випуск ніхто не побачить —\nале монтаж чистий.'}];
+  return [
+    {who:'katya', emo:'happy', text:'Ідеальний рез.'},
+    {who:null,    emo:null,     text:'(Цей випуск Катя так і не монтувала.\nАле в грі можна все.)'},
+  ];
 }
 function startMontage(){
   game.montage = {x:0, cuts:0, need:5, marks:[], done:false, doneT:0, flashT:0, started:false};
@@ -3373,13 +3387,8 @@ function drawShyshka(cx, cy, s){
 /* Пролог-рамка: пояснюємо, що ця гра — і є наші запросини на весілля */
 function drawProlog(){
   ctx.fillStyle = '#0e0c14'; ctx.fillRect(0,0,W,H);
-  drawOrnament(16); drawOrnament(H-22);
-  const cy = H/2;
+  drawOrnament(PORTRAIT_MODE?16:5); drawOrnament(H-(PORTRAIT_MODE?22:12));
   ctx.textAlign = 'center';
-  ctx.fillStyle = COL.gold; ctx.font = 'bold 20px monospace';
-  ctx.fillText('ЗАПРОСИНИ', W/2, cy-78);
-  drawShyshka(W/2, cy-40, 1.5);
-  ctx.fillStyle = '#d8d4c4'; ctx.font = '9px monospace';
   const lines = [
     'Колись молода з дружками обходила хати —',
     'з весільною шишкою кликала рідних на весілля.',
@@ -3390,9 +3399,23 @@ function drawProlog(){
     'Пройди наш шлях — і в кінці',
     'поклич себе на наше свято. 💛',
   ];
-  lines.forEach((ln,i)=> ctx.fillText(ln, W/2, cy+2 + i*15));
-  ctx.fillStyle = 'rgba(216,212,196,.5)'; ctx.font = '8px monospace';
-  ctx.fillText(game.watch ? '' : 'тап — далі', W/2, H-30);
+  if(PORTRAIT_MODE){
+    ctx.fillStyle = COL.gold; ctx.font = 'bold 20px monospace';
+    ctx.fillText('ЗАПРОСИНИ', W/2, H/2-78);
+    drawShyshka(W/2, H/2-40, 1.5);
+    ctx.fillStyle = '#d8d4c4'; ctx.font = '9px monospace';
+    lines.forEach((ln,i)=> ctx.fillText(ln, W/2, H/2+2 + i*15));
+  } else {
+    // ландшафт (комп): компактно, шишка збоку, увесь текст влазить
+    ctx.fillStyle = COL.gold; ctx.font = 'bold 14px monospace';
+    ctx.fillText('ЗАПРОСИНИ', W/2, 24);
+    drawShyshka(28, H/2+8, 1.0);
+    ctx.fillStyle = '#d8d4c4'; ctx.font = '7px monospace';
+    const shown = lines.filter(l=>l!=='');
+    shown.forEach((ln,i)=> ctx.fillText(ln, W/2+14, 46 + i*13));
+  }
+  ctx.fillStyle = 'rgba(216,212,196,.5)'; ctx.font = (PORTRAIT_MODE?8:7)+'px monospace';
+  ctx.fillText(game.watch ? '' : 'тап — далі', W/2, H-(PORTRAIT_MODE?30:5));
   ctx.textAlign = 'left';
 }
 
@@ -3941,18 +3964,32 @@ function saveInvitation(){
 document.getElementById('btn-save-inv').addEventListener('click', saveInvitation);
 
 /* ---------------- кічове запрошення «для тьоті у Viber» ---------------- */
-const VIBER_EMOJI = ['🌹','🕊️','💖','✨','💍','🌸','💐','🥂','😍','💒','🌺','❣️','🙏','⭐'];
-let viberTimer = null;
+const VIBER_EMOJI = ['🌹','🕊️','💖','✨','💍','🌸','💐','🥂','😍','💒','🌺','❣️','🙏','⭐','🌷','🌻','🌼','💫','🌟','🎀','💝','🕯️','🌸','✨','🌹'];
+const VIBER_SPARK = ['✨','💫','⭐','🌟','❇️','💖'];
+let viberTimer = null, viberSpark = null, vSeed = 1;
+function vrand(){ vSeed = (vSeed*1103515245 + 12345) & 0x7fffffff; return vSeed/0x7fffffff; }
 function viberSpawn(){
   const box = document.getElementById('viber-emojis');
   const s = document.createElement('span');
-  s.textContent = VIBER_EMOJI[(performance.now()|0) % VIBER_EMOJI.length];
-  s.style.left = (Math.round(performance.now()*7)%96) + 'vw';
-  const dur = 4 + (Math.round(performance.now())%40)/10;   // 4–8с
-  s.style.animationDuration = dur + 's';
-  s.style.fontSize = (18 + (Math.round(performance.now())%22)) + 'px';
+  s.textContent = VIBER_EMOJI[(vrand()*VIBER_EMOJI.length)|0];
+  s.style.left = (vrand()*96) + 'vw';
+  const dur = 4 + vrand()*4;                                // 4–8с
+  s.style.animationDuration = dur.toFixed(2) + 's';
+  s.style.fontSize = (18 + vrand()*24|0) + 'px';
   box.appendChild(s);
   setTimeout(()=> s.remove(), dur*1000 + 100);
+}
+function viberSparkle(){                                     // блискітки, що мерехтять на місці
+  const box = document.getElementById('viber-emojis');
+  const s = document.createElement('span');
+  s.className = 'v-spark';
+  s.textContent = VIBER_SPARK[(vrand()*VIBER_SPARK.length)|0];
+  s.style.left = (vrand()*94) + 'vw';
+  s.style.top = (vrand()*88) + 'vh';
+  s.style.bottom = 'auto';
+  s.style.fontSize = (10 + vrand()*16|0) + 'px';
+  box.appendChild(s);
+  setTimeout(()=> s.remove(), 1400);
 }
 function openViber(){
   const nm = (rsvp && rsvp.plusOne && rsvp.plusOne.name) || (GUEST && GUEST.name) || playerName || '';
@@ -3960,12 +3997,14 @@ function openViber(){
   document.getElementById('end-screen').classList.add('hidden');
   document.getElementById('viber-invite').classList.remove('hidden');
   document.getElementById('viber-emojis').innerHTML = '';
-  for(let i=0;i<10;i++) setTimeout(viberSpawn, i*120);      // одразу трохи
-  clearInterval(viberTimer); viberTimer = setInterval(viberSpawn, 260);
+  for(let i=0;i<16;i++) setTimeout(viberSpawn, i*90);       // одразу рясно
+  clearInterval(viberTimer); viberTimer = setInterval(viberSpawn, 170);
+  clearInterval(viberSpark); viberSpark = setInterval(viberSparkle, 130);
   playShtolnya();                                            // «їхній» трек із фільму
 }
 function closeViber(){
   clearInterval(viberTimer); viberTimer = null;
+  clearInterval(viberSpark); viberSpark = null;
   stopShtolnya();
   document.getElementById('viber-invite').classList.add('hidden');
   document.getElementById('end-screen').classList.remove('hidden');
@@ -3979,11 +4018,18 @@ function buildViberCard(){
   const bg = g.createRadialGradient(360,300,60, 360,300,760);
   bg.addColorStop(0,'#6b1f80'); bg.addColorStop(.7,'#33104a'); bg.addColorStop(1,'#180626');
   g.fillStyle = bg; g.fillRect(0,0,720,1000);
-  // рамка з троянд і сердечок
+  // золоті блискітки-крапки по всьому тлу
+  let seed = 7; const rnd = ()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  for(let i=0;i<140;i++){
+    const x=rnd()*720, y=rnd()*1000, r=rnd()*2+0.5;
+    g.fillStyle = ['rgba(255,243,176,','rgba(255,255,255,','rgba(255,180,230,'][i%3] + (0.4+rnd()*0.5) + ')';
+    g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+  }
+  // рамка з квітів, сердечок і блискіток
   g.font = '34px serif'; g.textAlign='center';
-  const border = '🌹💖'.repeat(11);
-  for(let i=0;i<11;i++){ g.fillText(['🌹','💖','🕊️','✨'][i%4], 40+i*64, 46); g.fillText(['💖','🌹','✨','🕊️'][i%4], 40+i*64, 986); }
-  for(let i=0;i<14;i++){ g.fillText(['🌹','💖'][i%2], 30, 90+i*62); g.fillText(['💖','🌹'][i%2], 690, 90+i*62); }
+  const top = ['🌹','💖','🌷','✨','🌸','💫','🌺','⭐'];
+  for(let i=0;i<11;i++){ g.fillText(top[i%top.length], 40+i*64, 46); g.fillText(top[(i+3)%top.length], 40+i*64, 986); }
+  for(let i=0;i<14;i++){ g.fillText(['🌹','💖','🌷','✨'][i%4], 30, 90+i*62); g.fillText(['💐','🌸','💫','🌺'][i%4], 690, 90+i*62); }
   const d = invitationData();
   g.fillStyle = '#ffd7f0'; g.font = 'italic 30px Georgia, serif';
   g.fillText(d.greeting ? ('Дорог' + (/а$/.test(d.greeting)?'а':'ий') + ' ' + d.greeting + '!') : 'Дорогі рідні!', 360, 150);
