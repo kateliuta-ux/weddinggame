@@ -827,7 +827,7 @@ function drawSecret(){
   ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fillRect(80,H-16,160*Math.min(1,s.t/640),4);
   if(!s.done){
     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace'; ctx.textAlign='center';
-    ctx.fillText(game.watch?'':(isTouch?'тримай палець на екрані':'тримай ПРОБІЛ'), W/2, H-4);
+    drawHint(game.watch?'':(isTouch?'тримай палець на екрані':'тримай ПРОБІЛ'), W/2, H-4);
   } else {
     ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.textAlign='center';
     ctx.fillText(me==='dima'?'НЕ СПАЛИВСЯ!':'«НІЧОГО НЕ БАЧИЛА»', W/2, H/2-40);
@@ -1773,7 +1773,7 @@ function drawBattle(){
         ctx.fillText(label, ox+66, oy+13);
       });
       ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font='9px monospace';
-      ctx.fillText(game.watch?'':(isTouch?'тапни варіант':'← → і ПРОБІЛ'), W/2, BOX.y+BOX.h+52);
+      drawHint(game.watch?'':(isTouch?'тапни варіант':'← → і ПРОБІЛ'), W/2, BOX.y+BOX.h+52);
     }
     if(b.chosen){
       ctx.fillStyle = COL.gold; ctx.font='bold 11px monospace';
@@ -1822,7 +1822,7 @@ function drawBattle(){
   }
   // підказка
   ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace'; ctx.textAlign='center';
-  ctx.fillText(game.watch ? '' : (isTouch ? 'тягни серце (ухилятись необовʼязково)' : 'стрілки — рухатись (ухилятись необовʼязково)'), W/2, H-6);
+  drawHint(game.watch ? '' : (isTouch ? 'тягни серце (ухилятись необовʼязково)' : 'стрілки — рухатись (ухилятись необовʼязково)'), W/2, H-6);
 }
 
 /* ================= Лондон-тетріс ================= */
@@ -2060,7 +2060,7 @@ function drawTetris(){
     ctx.fillText('достроково', W/2, 100);
   } else if(t.started && !game.watch){
     ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font='9px monospace'; ctx.textAlign='center';
-    ctx.fillText(isTouch ? '◀ ▶ рухати · A — крутити · ▼ — швидше' : '◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше', W/2, H-5);
+    drawHint(isTouch ? '◀ ▶ рухати · A — крутити · ▼ — швидше' : '◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше', W/2, H-5);
   }
 }
 
@@ -2269,7 +2269,7 @@ function drawSvat(){
     ctx.fillStyle = me==='katya' ? COL.rose : COL.sage;
     ctx.fillRect(80,24,160*Math.min(1,s.meter/100),8);
     ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
-    ctx.fillText(game.watch?'':(isTouch?'тапай А швидко-швидко':'тисни ПРОБІЛ швидко-швидко'), W/2, H-6);
+    drawHint(game.watch?'':(isTouch?'тапай А швидко-швидко':'тисни ПРОБІЛ швидко-швидко'), W/2, H-6);
     // часточки побілки/крихти
     ctx.fillStyle = me==='katya' ? '#f4efe2' : '#e0a85a';
     s.particles.forEach(p=> ctx.fillRect(p.x, p.y, 2, 2));
@@ -2295,7 +2295,7 @@ function drawSvat(){
       ctx.fillText('ГАРБУЗ! …жартую. Ще раз)', W/2, 84);
     } else {
       ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font='9px monospace';
-      ctx.fillText(game.watch?'':(isTouch?'тап — зупинити на рушнику':'ПРОБІЛ — зупинити на рушнику'), W/2, 84);
+      drawHint(game.watch?'':(isTouch?'тап — зупинити на рушнику':'ПРОБІЛ — зупинити на рушнику'), W/2, 84);
     }
   }
 
@@ -2314,7 +2314,7 @@ function drawSvat(){
     });
     ctx.fillStyle = e.wrongT>0 ? '#f4c46a' : 'rgba(255,255,255,.6)';
     ctx.font='9px monospace';
-    ctx.fillText(e.wrongT>0 ? q.no : (game.watch?'':(isTouch?'тапни відповідь':'← → і ПРОБІЛ')), W/2, py+146);
+    drawHint(e.wrongT>0 ? q.no : (game.watch?'':(isTouch?'тапни відповідь':'← → і ПРОБІЛ')), W/2, py+146);
     ctx.textAlign='left';
   }
 
@@ -2541,8 +2541,8 @@ function drawProp(){
       ctx.fillText('('+m.sub+')', b.x+b.w/2, b.y+(isP?37:24));
     });
     ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font=(isP?10:9)+'px monospace'; ctx.textAlign='center';
-    ctx.fillText(p.wrongT>0 ? CHESS_MOVES[p.sel].note+'… ще раз' :
-      (game.watch?'':(isTouch?'тапни свій хід':'↑ ↓ і ПРОБІЛ')), W/2, H-6);
+    drawHint(p.wrongT>0 ? CHESS_MOVES[p.sel].note+'… ще раз' :
+      (game.watch?'':(isTouch?'тапни свій хід':'↑ ↓ і ПРОБІЛ')), W/2, H-6, isP?10:9);
     ctx.textAlign='left';
     return;
   }
@@ -2561,7 +2561,7 @@ function drawProp(){
     ctx.fillStyle = '#c9c4b4';
     p.particles.forEach(q=> ctx.fillRect(q.x, q.y, 2, 2));      // шкарпетки і зарядки летять
     ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
-    ctx.fillText(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
+    drawHint(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
     return;
   }
 
@@ -2623,7 +2623,7 @@ function drawProp(){
     }
     if(p.finger<0){
       ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
-      ctx.fillText(game.watch?'':(isTouch?'тапни палець':'← → і ПРОБІЛ'), W/2, H-34);
+      drawHint(game.watch?'':(isTouch?'тапни палець':'← → і ПРОБІЛ'), W/2, H-34);
     }
   }
 }
@@ -2717,7 +2717,7 @@ function drawDiia(){
       ctx.fillText(s.note, px+pw/2, oy+20);
     });
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='9px monospace';
-    ctx.fillText(game.watch?'':'обери прізвище після весілля', W/2, H-6);
+    drawHint(game.watch?'':'обери прізвище після весілля', W/2, H-6);
   } else if(d.step==='submit'){
     ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24'; ctx.textAlign='center';
     ctx.fillText('💍', px+pw/2, py+50);
@@ -2737,7 +2737,7 @@ function drawDiia(){
     const st = d.hold>5 ? DIIA_STATUSES[Math.min(3, Math.floor(d.hold/28))] : '';
     ctx.fillText(st, px+pw/2, py+146);
     ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.fillText(game.watch?'':(isTouch?'утримуй палець на екрані':'утримуй ПРОБІЛ'), W/2, H-6);
+    drawHint(game.watch?'':(isTouch?'утримуй палець на екрані':'утримуй ПРОБІЛ'), W/2, H-6);
   } else {
     ctx.fillStyle = '#3F7C77'; ctx.font='26px sans-serif';
     ctx.fillText('✓', px+pw/2, py+64);
@@ -3194,7 +3194,7 @@ function drawRun(){
   ctx.fillText('/ 11 223 за жовтень', mid, 71);
   if(!r.done){
     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace';
-    ctx.fillText(game.watch?'':(isTouch?'тапай — відповідай на все!':'ПРОБІЛ — відповідай на все!'), W/2, H-8);
+    drawHint(game.watch?'':(isTouch?'тапай — відповідай на все!':'ПРОБІЛ — відповідай на все!'), W/2, H-8);
   } else {
     ctx.fillStyle=COL.gold; ctx.font='bold 13px monospace';
     ctx.fillText('РЕКОРД ЧАТУ ВСТАНОВЛЕНО!', W/2, H/2+70);
@@ -3260,7 +3260,7 @@ function drawMontage(){
   ctx.fillStyle = COL.rose; ctx.fillRect(px-4, ty-16, 9, 5);
   ctx.textAlign='center';
   if(!m.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
-    ctx.fillText(game.watch?'':(isTouch?'тап — різати':'ПРОБІЛ — різати'), W/2, H-8); }
+    drawHint(game.watch?'':(isTouch?'тап — різати':'ПРОБІЛ — різати'), W/2, H-8); }
   else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ЗМОНТОВАНО!', W/2, ty+th+30); }
   ctx.textAlign='left';
 }
@@ -3330,7 +3330,7 @@ function drawBand(){
   ctx.fillStyle=COL.gold; ctx.font='bold 10px monospace';
   ctx.fillText(b.hits+'/'+b.need, W/2, 46);
   if(!b.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
-    ctx.fillText(game.watch?'':(isTouch?'тап у колонці':'A S D — лови ноти'), W/2, H-8); }
+    drawHint(game.watch?'':(isTouch?'тап у колонці':'A S D — лови ноти'), W/2, H-8); }
   else { ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ХІТ ЗАПИСАНО!', W/2, H/2); }
   ctx.textAlign='left';
 }
@@ -3449,6 +3449,18 @@ function drawOrnament(cy, x0, x1, patIdx){
     }
   }
 }
+/* підказка-правило з темною підкладкою — читабельна на будь-якому фоні */
+function drawHint(txt, x, y, size){
+  if(!txt) return;
+  ctx.save();
+  ctx.font = (size||9)+'px monospace'; ctx.textAlign = 'center';
+  const w = Math.ceil(ctx.measureText(txt).width);
+  ctx.fillStyle = 'rgba(12,9,16,.68)';
+  ctx.fillRect(x - w/2 - 7, y - (size||9) - 2, w + 14, (size||9) + 8);
+  ctx.fillStyle = '#f6f1e6';
+  ctx.fillText(txt, x, y);
+  ctx.restore();
+}
 function drawCaption(line1, line2){
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
   ctx.textAlign='center';
@@ -3527,35 +3539,35 @@ function novelData(){
     {bg:0, cap:['КИЇВ · 2021 · ще до війни','зйомка ШТОРМНАДО'], lines:[
       {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nБриф — метаверс для старших.'},
       {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
-      N('Він не впізнав, що це вона. Та симпатичну\nрежисерку-блондинку — запамʼятав.'),
+      N('Не впізнав, що поряд ходить доля,\nта блондинку ту згадав — і мимоволі.'),
     ]},
     {bg:1, cap:['СЕРПЕНЬ 2022 · вже інше життя','Тіндер'], lines:[
-      N('Між тими зйомками — війна.\nВсе, що було, лишилось «до».'),
-      N('І от посеред усього цього двоє\nраптом ідуть пити пиво.'),
+      N('Проміж тих зйомок — впала нам війна,\nусе, що «до», накрила та стіна.'),
+      N('А серед того всього, ой леле,\nдвоє на пиво крокують веселі.'),
       {who:'dima', emo:'happy', text:'Йоу! Як трєня?)'},
       {who:'katya', emo:'wow',  text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
     ]},
     {bg:2, cap:['ПЕЙЗАЖКА','перше побачення'], lines:[
-      N('Обоє ніби «просто на пиво».'),
+      N('Ой ішли обоє ніби «просто пива»,\nа доля вже вінок їм тихо вила.'),
       {who:'dima', emo:'shy', text:'І ще. Тримай.'},
       {who:'katya', emo:'wow', text:'Андервуд коконат?! Ти ЗАПАМʼЯТАВ?'},
       N('Світять над кручею ліхтарики дрібні,\nа вустонька зійшлися вперше — мов у сні.'),
     ]},
     {bg:3, cap:['ЖОВТЕНЬ 2022','Київ ↔ Лондон'], lines:[
       {who:'dima', emo:'shy', text:'Вона за 2500 км. Я був закоханий\nі — чесно — скучав.'},
-      N('11 223 повідомлення за місяць — рекорд.\nВона повернулась раніше строку.'),
+      N('Одинадцять тисяч листів — за місяць лік,\nвернулась раніш, бо серцю невтерпік.'),
     ]},
     {bg:4, cap:['ОСІНЬ 2023 · Білогородка','Кітана'], lines:[
-      N('У друга Дана окотилась вуличка.\nКатя побачила найручніше в сторіз.'),
+      N('У Даниному дворі — кошенята,\nнайручніше для Каті стало свято.'),
       {who:'katya', emo:'happy', text:'Це вона.'},
-      N('Приїхали за нею — а вона сама\nстрибнула у вашу коробку. Назавжди. 🐈'),
+      N('Приїхали по неї — а вона\nсама в коробку скік, і вже рідна. 🐈'),
     ]},
     {bg:5, cap:['СВАТАННЯ','(робимо вигляд, що було)'], lines:[
       N('— У вас куниця, у нас мисливець!'),
-      N('Рушники на сватах — отже, згода.\n(Насправді не було. Але тепер — було.)'),
+      N('Подали рушники — вже й до вінця,\n(сватань не було — та збулось до кінця.)'),
     ]},
     {bg:6, cap:['ЛЮТИЙ 2026 · Позняки','щось задумав'], lines:[
-      N('Позняки — Дімине місце сили.\nТепер це їхній дім на двох.'),
+      N('Позняки — де Діма зріс малим,\nтепер це їхній спільний рідний дім.'),
       {who:'dima', emo:'normal', text:'Головне — щоб вона не побачила.'},
       {who:'katya', emo:'happy', text:'Я нічого не бачила. Нічогісінько.'},
     ]},
@@ -3567,7 +3579,7 @@ function novelData(){
     ]},
     {bg:8, cap:['06.09.2026 · Київ','весілля'], lines:[
       N('Од свайпу вправо — та до рушничка.'),
-      N('06 · 09 · 2026. Ми вас кличемо. 💛'),
+      N('Шостого вересня вінчання, їй-бо, —\nприходьте, любі: буде вам тепло. 💛'),
     ]},
   ];
 }
@@ -5593,8 +5605,7 @@ function drawKitanaScene(){
       ctx.fillStyle = lvl>0.05?'#3fae54':'#B58A2E'; ctx.fillRect(W-44,20,40*Math.min(1,lvl*8),8);
       ctx.fillStyle='#fff'; ctx.font='6px monospace'; ctx.textAlign='right'; ctx.fillText('🎤', W-46, 27);
     }
-    ctx.fillStyle = 'rgba(26,26,36,.5)'; ctx.font='8px monospace'; ctx.textAlign='center';
-    ctx.fillText(micAnalyser ? '🐈 нявкай частіше — біжить швидше!' :
+    drawHint(micAnalyser ? '🐈 нявкай частіше — біжить швидше!' :
       (isTouch?'тапай — кожен тап це «няв»':'ПРОБІЛ — кожне натискання це «няв»'), W/2, H-4);
   } else {
     ctx.fillStyle = COL.rose; ctx.font='bold 12px monospace'; ctx.textAlign='center';
