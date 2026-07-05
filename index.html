@@ -3306,15 +3306,34 @@ function playShtolnya(){
 function stopShtolnya(){ if(shtolnyaAudio) shtolnyaAudio.pause(); }
 
 /* ================= титри сцен ================= */
-function drawOrnament(cy, x0, x1){
-  /* вишиванковий ряд: червоно-чорні ромбики (як на рушниках) */
+/* один хрестик — літера Х із пікселів (як стібок вишивки) */
+function xStitch(px, py, s, col){
+  ctx.fillStyle = col;
+  for(let i=0;i<s;i++){ ctx.fillRect(px+i, py+i, 1, 1); ctx.fillRect(px+s-1-i, py+i, 1, 1); }
+}
+/* рапорти вишивки хрестиком (R червоне, B чорне, . порожньо) — кілька для різноманіття */
+const ORN_PATTERNS = [
+  // ромб із «рогами» + зірка-ружа, чергуються
+  ['.R...R.R...', 'RBR..B.B..R', '.R...R.R...'],
+  // безкінечник-меандр (класичний хвилястий)
+  ['R...R...R..', '.RBR.RBR.RB', '..R...R...R'],
+  // ряд восьмипроменевих зірочок
+  ['R.R..R.R..R', '.B....B....', 'R.R..R.R..R'],
+];
+function drawOrnament(cy, x0, x1, patIdx){
+  /* справжня вишивка хрестиком: кожен елемент — стібок Х, червоно-чорний */
   if(x0===undefined) x0 = 28;
   if(x1===undefined) x1 = W-32;
-  for(let x=x0; x<x1-4; x+=16){
-    ctx.fillStyle = '#b3323c';
-    ctx.fillRect(x+2, cy, 2, 2); ctx.fillRect(x, cy+2, 6, 2); ctx.fillRect(x+2, cy+4, 2, 2);
-    ctx.fillStyle = '#221c26';
-    ctx.fillRect(x+10, cy+2, 2, 2);
+  const s = 3;                                     // розмір хрестика (px)
+  const P = ORN_PATTERNS[(patIdx==null ? (cy|0) : patIdx) % ORN_PATTERNS.length];
+  const cols = P[0].length;
+  const R = '#b3323c', B = '#241c26';
+  for(let x=x0, c=0; x < x1 - s; x += s, c++){
+    for(let r=0;r<P.length;r++){
+      const ch = P[r][c % cols];
+      if(ch==='.') continue;
+      xStitch(x, cy + r*s, s, ch==='R' ? R : B);
+    }
   }
 }
 function drawCaption(line1, line2){
@@ -3769,12 +3788,22 @@ function invitationData(){
   };
 }
 /* вишиванковий ряд на довільному контексті */
+/* хрестик Х на картці (для canvas g) */
+function cardXStitch(g, px, py, st, col){
+  g.fillStyle = col;
+  for(let i=0;i<st;i++){ g.fillRect(px+i, py+i, 1, 1); g.fillRect(px+st-1-i, py+i, 1, 1); }
+}
 function cardOrnament(g, y, w, s){
-  for(let x=40; x<w-44; x+=16*s){
-    g.fillStyle = '#a8323c';
-    g.fillRect(x+2*s, y, 2*s, 2*s); g.fillRect(x, y+2*s, 6*s, 2*s); g.fillRect(x+2*s, y+4*s, 2*s, 2*s);
-    g.fillStyle = '#2f5d4a';
-    g.fillRect(x+10*s, y+2*s, 2*s, 2*s);
+  /* справжня вишивка хрестиком: ромб-із-рогами + зірка, червоно-чорні */
+  const st = Math.max(3, Math.round(2*s));          // розмір хрестика
+  const P = ['.R...R.R...', 'RBR..B.B..R', '.R...R.R...'];
+  const cols = P[0].length, R = '#a8323c', B = '#241c26';
+  for(let x=40, c=0; x < w-40 - st; x += st, c++){
+    for(let r=0;r<P.length;r++){
+      const ch = P[r][c % cols];
+      if(ch==='.') continue;
+      cardXStitch(g, x, y + r*st, st, ch==='R' ? R : B);
+    }
   }
 }
 /* гілочка калини (три ягоди + листок) */
