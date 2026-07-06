@@ -596,7 +596,7 @@ function chatScript(pov){
     {who:'katya', emo:'wow',   text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
   ] : [
     {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
-    {who:null,    emo:null,    text:'ПАМʼЯТЬ [провал]: …ну майже точно.'},
+    {who:null,    emo:null,    text:'(Насправді не згадав. Але майже.)'},
   ];
   const common = [
     {who:null, emo:null, text:'Тіндер швидко переїхав у Телеграм.\nПерше збережене повідомлення — 11.08.2022:'},
@@ -639,7 +639,7 @@ function dateScript(pov){
     {who:'katya', emo:'wow', text:'Андервуд коконат?! Я ж один раз згадала…'},
     {who:null,    emo:null,  text:'Запамʼятав із чату слово те —\nі в серденько поклав, як зерно золоте.'},
   ] : [
-    {who:null,    emo:null,  text:'УВАЖНІСТЬ [підготовка]: вона любить\nкокосове темне. З Хвильового.'},
+    {who:null,    emo:null,  text:'Він запамʼятав: вона любить\nкокосове темне. З «Хвильового».'},
     {who:'dima',  emo:'shy', text:'І ще. Тримай.'},
     {who:'katya', emo:'wow', text:'Андервуд коконат?! Ти ЗАПАМʼЯТАВ?'},
   ];
@@ -698,7 +698,7 @@ function svatIntroScript(pov){
   if(localStorage.getItem('wed-harbuz')){
     lines.push({who:null, emo:null, text:'(Старости памʼятають минулий гарбуз.\nПильнують.)'});
   }
-  lines.push({who:null, emo:null, text:'ЕТНОГРАФІЯ [успіх]: гарбуз означає «ні».\nГоловне — не переплутати.'});
+  lines.push({who:null, emo:null, text:'За традицією гарбуз означає «ні».\nГоловне — не переплутати.'});
   return lines;
 }
 function svatOutroScript(pov){
@@ -715,8 +715,8 @@ function propChessOutroScript(pov){
 }
 function propBoxScript(pov){
   const voice = pov==='katya'
-    ? {who:null, emo:null, text:'ЕМПАТІЯ [успіх]: ти знала ще зранку.\nАле серце все одно гупає.'}
-    : {who:null, emo:null, text:'КОНСПІРАЦІЯ [провал]: вона знає.\nБайдуже. Вперед.'};
+    ? {who:null, emo:null, text:'Ти знала ще зранку.\nАле серце все одно гупає.'}
+    : {who:null, emo:null, text:'Вона все знає. Байдуже —\nвперед.'};
   return [
     voice,
     {who:'dima', emo:'shy', text:'Хочу, щоб ти стала… Катериною Лютою.'},
@@ -747,10 +747,10 @@ function secretIntroScript(pov){
 function secretOutroScript(pov){
   return pov==='dima' ? [
     {who:'dima', emo:'happy', text:'Фух. Операція «Коробочка» — успіх.'},
-    {who:null,   emo:null,   text:'КОНСПІРАЦІЯ [здалося]: успіх.'},
+    {who:null,   emo:null,   text:'(Здається, обійшлось. Здається.)'},
   ] : [
     {who:'katya', emo:'shy', text:'Нічого не бачила. Нічогісінько.'},
-    {who:null,    emo:null,  text:'АКТОРСЬКА ГРА [успіх]: він і не здогадується,\nщо ти здогадуєшся.'},
+    {who:null,    emo:null,  text:'Він і не здогадується,\nщо ти вже все знаєш. 😏'},
   ];
 }
 function startSecret(){
