@@ -94,6 +94,14 @@
   #darrow{position:absolute;right:12px;bottom:6px;color:var(--rose);font-size:clamp(10px,2.4cqw,16px);animation:bob .6s steps(2) infinite}
   @keyframes bob{50%{transform:translateY(3px)}}
   .name-katya{color:var(--rose)!important} .name-dima{color:var(--sage)!important}
+  /* десктоп/ландшафт: субтитри компактні, щоб не перекривати короткий кадр */
+  @media (orientation: landscape){
+    #dialog{ min-height:0; padding:10px 14px; bottom:3%; gap:12px; }
+    #dtext{ font-size:clamp(12px,2.6cqh,16px); line-height:1.3; }
+    #dname{ font-size:11px }
+    canvas#portrait{ width:44px; height:44px }
+    #darrow{ font-size:12px; right:10px; bottom:4px }
+  }
 
   /* ---------- touch controls ---------- */
   #controls{position:absolute;inset:0;pointer-events:none}
@@ -4186,6 +4194,8 @@ function finishGame(){
   document.getElementById('watch-hint').classList.add('hidden');
   document.getElementById('watch-play').classList.add('hidden');
   updateHudAndControls();
+  // анкета гостя зʼявляється автоматично (один раз), відповіси → повертає запрошення
+  if(!rsvp.sent && !rsvpAutoShown){ rsvpAutoShown = true; setTimeout(openRsvp, 700); }
 }
 document.getElementById('btn-ics').addEventListener('click', ()=>{
   // календар з реальним часом і локацією твого потоку
@@ -5848,6 +5858,7 @@ const RSVP_QUESTIONS = [
   {q:'Пісня, під яку ти точно танцюєш?', input:true},
 ];
 const rsvp = {idx:0, answers:[]};
+let rsvpAutoShown = false;                 // анкета авто-зʼявляється раз за сесію
 const elRsvp = document.getElementById('rsvp-screen');
 const elRsvpQ = document.getElementById('rsvp-q');
 const elRsvpOpts = document.getElementById('rsvp-opts');
@@ -5991,13 +6002,14 @@ function rsvpFinish(){
     elEnd.classList.remove('hidden');
   });
 }
-document.getElementById('btn-rsvp').addEventListener('click', ()=>{
+function openRsvp(){
   rsvp.idx = 0; rsvp.answers = []; rsvp.pickedGuest = null; rsvp.sent = false;
   rsvp.plusOne = null; rsvp.plusMode = null; rsvp._plusHost = null;
   elEnd.classList.add('hidden');
   elRsvp.classList.remove('hidden');
   rsvpShow();
-});
+}
+document.getElementById('btn-rsvp').addEventListener('click', openRsvp);
 
 /* ================= КВІЗ ПРО ПАРУ 🧠 ================= */
 const QUIZ = [
