@@ -2537,6 +2537,12 @@ function drawSvat(){
       ctx.fillStyle = '#b3323c'; ctx.fillRect(sx-10, FLOOR_Y-42, 7, 3); ctx.fillRect(sx-10, FLOOR_Y-28, 7, 3);
     }
   });
+  // батьки спостерігають за сватанням (обличчя з'являються, коли додадуть селфі)
+  const pf = pat => { const f=GUEST_FACES.find(g=>(g.name||'').toLowerCase().includes(pat)); return f?f.img:null; };
+  drawGuest(24,  FLOOR_Y+2, '#7a5c8a', false, game.t,     pf('леся')||pf('мама'));   // мама Каті
+  drawGuest(48,  FLOOR_Y+2, '#6a4c7a', false, game.t+45,  pf('паша')||pf('папа'));   // тато Каті
+  drawGuest(206, FLOOR_Y+2, '#5a7c6a', false, game.t+90,  pf('світлан'));            // мама Діми
+  drawGuest(228, FLOOR_Y+2, '#4a6c5a', false, game.t+135, pf('олег'));               // тато Діми
   // Катя біля печі, Діма з хлібом посередині, Кітана гріється при печі
   drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
   drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
