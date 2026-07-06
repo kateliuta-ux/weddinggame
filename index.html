@@ -635,8 +635,8 @@ const SITCOM_PH = [
 const SITCOM_EXTRA = [];
 const CHARS = {
   // Катя — блондинка з каре, Діма — шатен із чубчиком-шторкою (за фото)
-  katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, cls:'name-katya', style:'bob'    },
-  dima: { name:'ДІМА', hair:'#4a3423', top:COL.sage, topD:COL.sageD, cls:'name-dima',  style:'fringe' },
+  katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, topH:'#c9788c', cls:'name-katya', style:'bob'    },
+  dima: { name:'ДІМА', hair:'#4a3423', top:COL.sage, topD:COL.sageD, topH:'#5fa89c', cls:'name-dima',  style:'fringe' },
   starosta:{ name:'СТАРОСТА', hair:'#9a9488', top:'#7a5c3e', topD:'#5f462e', cls:'', style:'fringe' },
   // креативник-напарник у кадрі Штормнадо (2021)
   guy:{ name:'КРЕАТИВНИК', hair:'#2e2a26', top:'#3a4a5a', topD:'#2a3644', cls:'', style:'fringe' },
@@ -1067,34 +1067,44 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
   const fx = 1 + stride*3, bx = -6 - stride*2;     // передня/задня нога
   const liftF = (ph===3) ? 2 : 0, liftB = (ph===1) ? 2 : 0;   // підтягування стопи
 
-  // ЗАДНЯ нога (темніша) + кед
-  add(bx, -14+bob, 5, 14-bob-liftB, COL.jeansD);
-  add(bx-1, -4-liftB, 7, 4, '#2e2a36');
-  add(bx-1, -1-liftB, 7, 1, '#9a96a4', true);      // підошва
-  // ПЕРЕДНЯ нога + кед
-  add(fx, -14+bob, 5, 14-bob-liftF, COL.jeans);
-  add(fx-1, -4-liftF, 7, 4, '#3a3646');
-  add(fx-1, -1-liftF, 7, 1, '#b8b4c2', true);
+  const topH = c.topH || c.top;
+  // ── НОГИ: джинси з коліном + кеди з підошвою і шнурком ──
+  add(bx, -14+bob, 5, 14-bob-liftB, COL.jeansD);         // ЗАДНЯ нога
+  add(bx+3, -13+bob, 1, 10-bob, '#3a4468', true);        // бокове світло
+  add(bx-1, -4-liftB, 7, 4, '#2a2632');                  // кед
+  add(bx-1, -1-liftB, 7, 1, '#9a96a4', true);            // підошва
+  add(fx, -14+bob, 5, 14-bob-liftF, COL.jeans);          // ПЕРЕДНЯ нога
+  add(fx, -14+bob, 1, 13-bob, '#5a689c', true);          // рим-світло спереду
+  add(fx+1, -9+bob, 3, 1, '#3a4468', true);              // складка коліна
+  add(fx-1, -4-liftF, 7, 4, '#3a3646');                  // кед
+  add(fx-1, -4-liftF, 7, 1, '#5a5666', true);            // язик/світло
+  add(fx+1, -3-liftF, 4, 1, '#c9c4b4', true);            // шнурок
+  add(fx-1, -1-liftF, 7, 1, '#b8b4c2', true);            // підошва
 
-  // КОРПУС: одяг з боковою тінню, кантом і складками
-  add(-8, -35+bob, 16, 22, c.top);
-  add(-8, -35+bob, 4, 22, c.topD);                 // тінь з боку спини
-  add(-8, -15+bob, 16, 2, c.topD, true);           // низ/кант
-  add(-1, -28+bob, 1, 7, c.topD, true);            // складка
-  add(4, -24+bob, 1, 5, c.topD, true);
-  add(2, -34+bob, 4, 1, '#ffffff22', true);        // відблиск плеча
-  add(0, -34+bob, 3, 3, SK);                       // виріз/шия
+  // ── КОРПУС: 3-тонове затінення, пояс, лацкани, складки ──
+  add(-8, -35+bob, 16, 22, c.top);                       // база
+  add(-8, -35+bob, 4, 22, c.topD);                       // тінь зі спини
+  add(4, -34+bob, 3, 19, topH, true);                    // світлий бік (об'єм)
+  add(-3, -35+bob, 2, 20, topH, true);                   // лацкан-край (сучасний жакет)
+  add(1, -35+bob, 2, 20, topH, true);                    // другий край вирізу
+  add(-8, -15+bob, 16, 2, c.topD, true);                 // низ/кант
+  add(-8, -18+bob, 16, 3, '#2e2833');                    // пояс
+  add(-1, -18+bob, 3, 3, '#c9a24a', true);               // пряжка
+  add(-1, -30+bob, 1, 9, c.topD, true);                  // складка
+  add(4, -26+bob, 1, 6, c.topD, true);
+  add(1, -34+bob, 5, 1, '#ffffff2e', true);              // відблиск плеча
+  add(0, -35+bob, 3, 3, SK);                             // виріз/шия
 
-  // ЗАДНЯ рука (махає протилежно до ніг)
+  // ── РУКИ: 3 тони, лікоть, долоня ──
   const sw = -stride*3;
-  add(-11, -34+bob, 4, 10, c.topD);
-  add(-11, -25+bob+sw, 4, 6, c.topD);              // передпліччя
-  add(-11, -20+bob+sw, 4, 4, SK);                  // долоня
-  // ПЕРЕДНЯ рука
-  add(7, -34+bob, 4, 10, c.top);
+  add(-11, -34+bob, 4, 10, c.topD);                      // задня рука
+  add(-11, -25+bob+sw, 4, 6, c.topD);
+  add(-11, -20+bob+sw, 4, 4, SK); add(-11, -20+bob+sw, 4, 1, SKS, true);
+  add(7, -34+bob, 4, 10, c.top);                         // передня рука
+  add(7, -34+bob, 1, 9, topH, true);                     // рим-світло рукава
   add(7, -25+bob-sw, 4, 6, c.top);
-  add(7, -20+bob-sw, 4, 4, SK);
-  add(7, -25+bob-sw, 4, 1, c.topD, true);          // згин ліктя
+  add(7, -25+bob-sw, 4, 1, c.topD, true);                // згин ліктя
+  add(7, -20+bob-sw, 4, 4, SK); add(7, -20+bob-sw, 4, 1, SKS, true);  // долоня + тінь
 
   // ГОЛОВА: фото (South Park) або піксельний фолбек
   const headImg = headOf(who);
@@ -1453,6 +1463,18 @@ function drawSet(camX){
   for(let yy=0; yy<76; yy++){ const step = 2 + (yy>>3); for(let xx=W-96+((yy)&1); xx<W; xx+=step) ctx.fillRect(xx, yy, 1, 1); }
   ctx.fillStyle = '#cfc9bc'; ctx.fillRect(0,FLOOR_Y-4,W,4);            // плінтус
   ctx.fillStyle = 'rgba(90,86,78,.12)'; ctx.fillRect(0,FLOOR_Y-10,W,6);
+  // вивіска агенції «iamidea» на стіні (тут знімали ШТОРМНАДО)
+  { const ax=Math.round(44-camX);
+    if(ax>-92 && ax<W){
+      ctx.fillStyle='#fbfaf5'; ctx.fillRect(ax,26,86,22);
+      ctx.strokeStyle='#d6d0c2'; ctx.lineWidth=1; ctx.strokeRect(ax+0.5,26.5,85,21);
+      ctx.fillStyle='#1a1a24'; ctx.font='bold 13px monospace'; ctx.textAlign='left';
+      ctx.fillText('iam', ax+9, 42);
+      ctx.fillStyle=COL.rose; ctx.fillText('idea', ax+41, 42);
+      ctx.fillStyle='#f4c84a'; ctx.beginPath(); ctx.arc(ax+78,32,3,0,7); ctx.fill();  // лампочка-ідея
+      ctx.fillStyle='#1a1a24'; ctx.fillRect(ax+77,35,3,2);
+      ctx.textAlign='left';
+    } }
   // мʼяка тінь від рослини на стіні (низько, ледь помітна)
   ctx.fillStyle = 'rgba(120,118,108,.06)';
   const shx = Math.round(150-camX*0.6);
