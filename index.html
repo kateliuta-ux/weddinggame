@@ -3538,6 +3538,16 @@ function drawRun(){
   ctx.fillRect(mid+14,FLOOR_Y-66,26,66); ctx.fillRect(mid+50,FLOOR_Y-48,22,48);
   ctx.fillStyle = 'rgba(160,190,230,.35)';                // дощ тільки в Лондоні
   for(let i=0;i<12;i++){ const rx=mid+(i*23+(game.t*4))%(mid-8); const ry=(i*53+game.t*6)%FLOOR_Y; ctx.fillRect(rx,ry,1,6); }
+  // Київ: місяць + більше теплих вікон
+  ctx.fillStyle='rgba(246,236,200,.9)'; ctx.beginPath(); ctx.arc(30,26,7,0,7); ctx.fill();
+  ctx.fillStyle='rgba(255,220,140,.7)';
+  [[20,FLOOR_Y-58],[58,FLOOR_Y-58],[88,FLOOR_Y-30],[114,FLOOR_Y-88]].forEach(([wx,wy])=> ctx.fillRect(wx,wy,3,3));
+  // Лондон: туман + червоний даблдекер унизу
+  ctx.fillStyle='rgba(200,205,215,.10)'; ctx.fillRect(mid,FLOOR_Y-40,mid,40);
+  { const busx=mid+30; ctx.fillStyle='#b3252c'; ctx.fillRect(busx,FLOOR_Y-20,40,18);
+    ctx.fillStyle='#8a1a20'; ctx.fillRect(busx,FLOOR_Y-20,40,3);
+    ctx.fillStyle='#cbd9e0'; for(let k=0;k<5;k++) ctx.fillRect(busx+3+k*7,FLOOR_Y-16,5,5);
+    ctx.fillStyle='#1a1a24'; ctx.beginPath(); ctx.arc(busx+9,FLOOR_Y-2,3,0,7); ctx.arc(busx+31,FLOOR_Y-2,3,0,7); ctx.fill(); }
   // розділювач-відстань
   ctx.fillStyle = 'rgba(255,255,255,.15)';
   for(let y=0;y<FLOOR_Y;y+=14) ctx.fillRect(mid-1,y,2,8);
@@ -6423,6 +6433,19 @@ function drawKitanaScene(){
     const lx=(i*61 + game.t)%(W+20)-10, ly=40+(i*29+game.t*0.6)%(H-50);
     ctx.fillStyle = ['#b5652e','#c98a3e','#8a6b2e'][i%3]; ctx.fillRect(lx,ly,3,3);
   }
+  // осінні дерева (парлакс, повільніше за паркан)
+  for(let tx=-Math.round((k.dist*0.7)%140); tx<W+40; tx+=140){
+    ctx.fillStyle='#6a4a2a'; ctx.fillRect(tx+34,H-92,5,36);
+    ctx.fillStyle=['#c98a3e','#b5652e','#d9a83a'][(((tx+420)/140)|0)%3];
+    ctx.beginPath(); ctx.arc(tx+36,H-98,17,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,230,150,.22)'; ctx.beginPath(); ctx.arc(tx+30,H-104,6,0,7); ctx.fill();
+  }
+  // мазанка Дана з солом'яним дахом (двір, куди біжить Кітана)
+  { const hx=W-72; ctx.fillStyle='#ece0c4'; ctx.fillRect(hx,H-74,56,60);
+    ctx.fillStyle='#b58a4a'; ctx.beginPath(); ctx.moveTo(hx-6,H-74); ctx.lineTo(hx+28,H-98); ctx.lineTo(hx+62,H-74); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+23,H-44,14,30);
+    ctx.fillStyle='#bfe0e8'; ctx.fillRect(hx+7,H-64,12,12); ctx.fillRect(hx+40,H-64,12,12);
+    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+12,H-64,2,12); ctx.fillRect(hx+45,H-64,2,12); }
   // паркан-тло прокручується зі швидкістю бігу
   ctx.fillStyle = '#8a6b46';
   for(let px = -((k.dist*2)%46); px < W; px += 46){
