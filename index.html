@@ -261,9 +261,9 @@
       <button class="btn small" id="btn-viber-title" style="background:#7a2f8a">🌹 Запрошення «для тьоті» 🕊</button>
     </div>
     <div class="menu hidden" id="play-pov-menu">
-      <div class="sub" style="margin-bottom:2px">За кого граєш?</div>
-      <button class="btn katya" data-pov="katya">Грати за Катю</button>
-      <button class="btn dima" data-pov="dima">Грати за Діму</button>
+      <div class="sub" style="margin-bottom:2px">З чиєї ви сторони?</div>
+      <button class="btn katya" data-pov="katya">👰 З боку нареченої<br><span style="font-weight:normal;font-size:.8em;opacity:.85">граєте за Катю</span></button>
+      <button class="btn dima" data-pov="dima">🤵 З боку нареченого<br><span style="font-weight:normal;font-size:.8em;opacity:.85">граєте за Діму</span></button>
       <button class="btn small" id="play-pov-back" style="background:#55515f">← Назад</button>
     </div>
     <div class="menu hidden" id="watch-pov-menu">
@@ -374,12 +374,14 @@
     </div>
   </div>
 
-  <div id="name-screen" class="overlay hidden" style="background:rgba(12,12,20,.94);gap:14px">
-    <div class="s-head">Привіт! Як тебе звати?<span>гра звертатиметься до тебе на імʼя</span></div>
-    <input id="name-input" type="text" maxlength="24" placeholder="твоє імʼя"
-      style="font-family:inherit;font-size:16px;padding:.6em;width:min(75%,300px);text-align:center;
+  <div id="name-screen" class="overlay hidden" style="background:rgba(12,12,20,.94);gap:12px">
+    <div class="s-head">Як тебе звати?<span>почни вводити імʼя або прізвище — підкажемо зі списку гостей</span></div>
+    <input id="name-input" type="text" maxlength="28" placeholder="напр. Оля або Приймак…" autocomplete="off"
+      style="font-family:inherit;font-size:16px;padding:.6em;width:min(80%,320px);text-align:center;
              background:#f8f8f3;border:3px solid #000;color:#1a1a24">
-    <button class="btn katya" id="name-go">ГРАТИ</button>
+    <div id="name-suggest" style="display:flex;flex-direction:column;gap:5px;width:min(80%,320px);max-height:38vh;overflow-y:auto"></div>
+    <button class="btn katya" id="name-go">ГРАТИ ▶</button>
+    <div style="color:#b9b3a4;font-size:12px;max-width:80%;text-align:center;line-height:1.4">немає в списку? просто впиши своє імʼя і тисни «Грати»</div>
   </div>
 
   <div id="quiz-screen" class="overlay hidden" style="background:#14121c;gap:2.4%">
@@ -4719,25 +4721,48 @@ document.addEventListener('pointerdown', ()=>{
 /* імʼя гравця: питаємо один раз, гра звертається на імʼя */
 let playerName = localStorage.getItem('wed-player-name') || '';
 let pendingPov = null;
+let myGuest = null;                 // гість, обраний на старті → переноситься в кінцеву анкету
+/* сторону вже обрано (→ POV), тепер гравець називається */
+function startFromSide(pov){
+  pendingPov = pov;
+  elTitle.classList.add('hidden');
+  document.getElementById('name-screen').classList.remove('hidden');
+  const inp = document.getElementById('name-input');
+  inp.value = ''; renderNameSuggest('');
+  setTimeout(()=> inp.focus(), 60);
+}
 document.querySelectorAll('#title-screen .btn[data-pov]').forEach(b=>{
   b.addEventListener('click', ()=>{
     const p = b.dataset.pov;
     tryFullscreen();
-    if(p==='watch'){
-      // візуальна новела — та сама історія, без ігор
-      startNovel();
-      return;
-    }
-    if(!playerName){
-      pendingPov = p;
-      elTitle.classList.add('hidden');
-      document.getElementById('name-screen').classList.remove('hidden');
-      setTimeout(()=> document.getElementById('name-input').focus(), 50);
-      return;
-    }
-    startGame(p, false);
+    if(p==='watch'){ startNovel(); return; }
+    startFromSide(p);               // сторона обрана → спершу назвись
   });
 });
+/* автопідказка імені: гравець вводить ім'я/прізвище — випадають варіанти зі списку */
+function renderNameSuggest(q){
+  const box = document.getElementById('name-suggest'); if(!box) return;
+  box.innerHTML = '';
+  q = (q||'').toLowerCase().trim(); if(!q) return;
+  const hits = RSVP_GUEST_LIST.filter(g=>{
+    const n = g.name.toLowerCase();
+    return n.includes(q) || n.split(/\s+/).some(w=>w.startsWith(q));
+  }).slice(0, 7);
+  hits.forEach(g=>{
+    const btn = document.createElement('button');
+    btn.className='btn small'; btn.style.background='#2b2b38'; btn.textContent = g.name;
+    btn.addEventListener('click', ()=> pickGuestAndPlay(g));
+    box.appendChild(btn);
+  });
+}
+function pickGuestAndPlay(g){
+  myGuest = g; playerName = g.name;
+  localStorage.setItem('wed-player-name', playerName);
+  document.getElementById('name-screen').classList.add('hidden');
+  const box=document.getElementById('name-suggest'); if(box) box.innerHTML='';
+  startGame(pendingPov || 'katya', false);
+  pendingPov = null;
+}
 function resetTitleMenus(){
   document.getElementById('main-menu').classList.remove('hidden');
   document.getElementById('play-pov-menu').classList.add('hidden');
@@ -4763,13 +4788,17 @@ document.getElementById('watch-pov-back').addEventListener('click', ()=>{
 document.getElementById('btn-lazy').addEventListener('click', lazyToEnd);
 function nameSubmit(){
   const v = document.getElementById('name-input').value.trim();
-  playerName = v || 'Гість';
+  const exact = RSVP_GUEST_LIST.find(g=> g.name.toLowerCase() === v.toLowerCase());
+  if(exact){ pickGuestAndPlay(exact); return; }       // точний збіг = гість зі списку
+  playerName = v || 'Гість'; myGuest = null;           // своє ім'я (немає в списку)
   localStorage.setItem('wed-player-name', playerName);
   document.getElementById('name-screen').classList.add('hidden');
+  const box=document.getElementById('name-suggest'); if(box) box.innerHTML='';
   startGame(pendingPov || 'katya', false);
   pendingPov = null;
 }
 document.getElementById('name-go').addEventListener('click', nameSubmit);
+document.getElementById('name-input').addEventListener('input', e=> renderNameSuggest(e.target.value));
 document.getElementById('name-input').addEventListener('keydown', e=>{ if(e.key==='Enter') nameSubmit(); });
 document.getElementById('btn-restart').addEventListener('click', ()=>{
   game.state = 'title';
@@ -6201,7 +6230,8 @@ function rsvpFinish(){
   });
 }
 function openRsvp(){
-  rsvp.idx = 0; rsvp.answers = []; rsvp.pickedGuest = null; rsvp.sent = false;
+  rsvp.idx = 0; rsvp.answers = []; rsvp.sent = false;
+  rsvp.pickedGuest = myGuest || null;        // гість обраний ще на старті — не питаємо «хто ти» вдруге
   rsvp.plusOne = null; rsvp.plusMode = null; rsvp._plusHost = null;
   elEnd.classList.add('hidden');
   elRsvp.classList.remove('hidden');
