@@ -4340,14 +4340,35 @@ function novelCloseup(who, emo, talking){
   const dg=ctx.createLinearGradient(0,H*0.6,0,H); dg.addColorStop(0,'rgba(10,8,14,0)'); dg.addColorStop(1,'rgba(10,8,14,.75)');
   ctx.fillStyle=dg; ctx.fillRect(0,H*0.6,W,H*0.4);
 }
+// ── новела вся в стилі Game Boy: кольоровий фон novelBg → 4 бірюзові тони (кеш на розділ) ──
+const _gbNovBg = {};
+function drawNovelBgGB(i, boxY){
+  if(!_gbNovBg[i]){
+    novelBg(i);                                          // намалювати кольоровий фон у ctx
+    const im = ctx.getImageData(0,0,W,boxY), d = im.data;
+    for(let p=0; p<d.length; p+=4){
+      const px=(p>>2)%W, py=(p>>2)/W|0;
+      const L = 0.299*d[p] + 0.587*d[p+1] + 0.114*d[p+2];
+      const band = L/85, lo = Math.floor(band), frac = band-lo;
+      const t = (GB_BAYER[py&3][px&3]+0.5)/16;
+      const c = GB_PAL[Math.min(3, lo+(frac>t?1:0))];
+      d[p]=c[0]; d[p+1]=c[1]; d[p+2]=c[2];
+    }
+    const cvs = document.createElement('canvas'); cvs.width=W; cvs.height=boxY;
+    cvs.getContext('2d').putImageData(im,0,0);
+    _gbNovBg[i] = cvs;
+  }
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(_gbNovBg[i], 0, 0);
+}
 function drawNovel(){
   const n = game.nov; if(!n){ finishGame(); return; }
   const chap = n.chapters[n.ch]; if(!chap){ finishGame(); return; }
   const ln = chap.lines[n.li];
   const talking = n.shown < ln.text.length;
   const boxY = H - (PORTRAIT_MODE?132:70), boxH = PORTRAIT_MODE?112:56;
-  // МАНГА-ПАНЕЛЬ: сцена + аніме-персонажі просто в ній (без порожніх фонів)
-  novelBg(chap.bg);
+  // GB-панель: фон у бірюзовому монохромі + GB-бюсти зверху
+  drawNovelBgGB(chap.bg, boxY);
   ctx.fillStyle='rgba(10,8,14,.3)'; ctx.fillRect(0,0,W,boxY);
   const bob = talking?((game.t>>3)&1):0;
   if(ln.who){
