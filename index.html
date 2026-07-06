@@ -37,7 +37,7 @@
   .hidden{display:none !important}
 
   /* ---------- title screen ---------- */
-  #title-screen{gap:2.2%;background:transparent;pointer-events:none;padding:2.5% 0 6cqh;justify-content:center}
+  #title-screen{gap:2.2%;background:transparent;pointer-events:none;padding:2.5% 0 13cqh;justify-content:center}
   #title-screen .btn, #title-screen #ach-btn{pointer-events:auto}
   #title-screen h1{
     color:#fff;font-size:clamp(20px,5.2cqw,42px);letter-spacing:2px;
@@ -272,9 +272,9 @@
       <button class="btn dima" data-watch-pov="dima">🍿 Очима Діми</button>
       <button class="btn" id="watch-pov-back" style="background:#55515f">← Назад</button>
     </div>
-    <div style="display:flex;gap:16px;justify-content:center">
-      <div id="ach-btn" style="color:#B58A2E;cursor:pointer;font-size:clamp(10px,2.2cqw,14px);letter-spacing:1px">🏆 0/8</div>
-      <div id="rating-btn" style="color:#B58A2E;cursor:pointer;font-size:clamp(10px,2.2cqw,14px);letter-spacing:1px">📊 Рейтинг</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px">
+      <div id="ach-btn" style="color:#f4cf5e;cursor:pointer;font-size:clamp(11px,2.4cqw,15px);letter-spacing:1px;background:rgba(16,12,22,.9);padding:5px 13px;border-radius:12px;border:1px solid rgba(181,138,46,.55)">🏆 0/8</div>
+      <div id="rating-btn" style="color:#f4cf5e;cursor:pointer;font-size:clamp(11px,2.4cqw,15px);letter-spacing:1px;background:rgba(16,12,22,.9);padding:5px 13px;border-radius:12px;border:1px solid rgba(181,138,46,.55)">📊 Рейтинг</div>
     </div>
   </div>
 
@@ -1576,13 +1576,24 @@ function drawPeizazhka(camX){
     const sx=(i*53)%W, sy=(i*71)%(HOR-40);
     ctx.fillStyle='rgba(255,240,200,.5)'; ctx.fillRect(sx,sy,2,2);
   }
-  // пагорби лівого берега + вогники (паралакс 0.3)
-  ctx.fillStyle = '#241d3a';
+  // заграва міста над горизонтом
+  const cg = ctx.createLinearGradient(0,HOR-46,0,HOR); cg.addColorStop(0,'rgba(201,106,78,0)'); cg.addColorStop(1,'rgba(232,140,96,.4)');
+  ctx.fillStyle = cg; ctx.fillRect(0,HOR-46,W,46);
+  // далекий силует міста (глибший паралакс)
+  ctx.fillStyle = '#1c1730';
+  for(let hx=0; hx<LEVEL_W+300; hx+=58){ const sx=Math.round(hx-camX*0.18); if(sx<-60||sx>W) continue;
+    const bh = 14+((hx/58)%4)*7; ctx.fillRect(sx, HOR-bh, 42, bh); }
+  // ближчі пагорби лівого берега + вікна, що світяться (паралакс 0.3)
   for(let hx=0; hx<LEVEL_W+200; hx+=90){
     const sx = Math.round(hx - camX*0.3);
     if(sx<-100||sx>W) continue;
+    ctx.fillStyle = '#241d3a';
     ctx.fillRect(sx,HOR-24,100,24);
     ctx.fillRect(sx+18,HOR-32,50,10);
+    for(let wy=HOR-21; wy<HOR-3; wy+=5) for(let wx=sx+4; wx<sx+96; wx+=7){
+      ctx.fillStyle = (((wx+wy)>>2)&1) ? '#ffd27a' : 'rgba(255,210,122,.22)';
+      ctx.fillRect(wx, wy, 2, 3);
+    }
   }
   // парапет із мозаїкою (фішка Пейзажки)
   ctx.fillStyle = '#4a4456'; ctx.fillRect(0,HOR,W,14);
@@ -1591,6 +1602,8 @@ function drawPeizazhka(camX){
     const sx = Math.round(mx-camX); if(sx<-8||sx>W) continue;
     ctx.fillStyle = mosaicCols[(mx/8)%5|0];
     ctx.fillRect(sx+1,HOR+2,6,5);
+    ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(sx+1,HOR+2,6,1);   // блік зверху (об'єм)
+    ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(sx+1,HOR+6,6,1);          // тінь знизу
   }
   // бруківка
   ctx.fillStyle = '#5a5461'; ctx.fillRect(0,HOR+14,W,H-HOR-14);
