@@ -1671,22 +1671,41 @@ function drawPeizazhka(camX){
   // заграва міста над горизонтом — дизер, а не плавно
   ctx.fillStyle = 'rgba(232,140,96,.5)';
   for(let yy=0; yy<44; yy++){ const step = Math.max(2, 13-(yy>>2)); for(let xx=((yy)&1); xx<W; xx+=step) ctx.fillRect(xx, HOR-44+yy, 1, 1); }
-  // далекі пагорби (дальній парлакс)
-  ctx.fillStyle='#2a2246';
-  for(let hx=0; hx<LEVEL_W+400; hx+=76){
-    const sx=Math.round(hx - camX*0.08); if(sx<-70||sx>W+50) continue;
-    const hh=7+((hx/76|0)%4)*3;
-    ctx.beginPath(); ctx.moveTo(sx-34,HOR-8); ctx.lineTo(sx,HOR-8-hh); ctx.lineTo(sx+34,HOR-8); ctx.closePath(); ctx.fill();
+  // ЛІВИЙ БЕРЕГ КИЄВА — реальний вид: спальні райони, прямокутні висотки (без гір!)
+  // далекий шар — ледь видима гряда висоток у серпанку
+  ctx.fillStyle='#2a2348';
+  for(let hxx=0; hxx<LEVEL_W+400; hxx+=22){
+    const sx=Math.round(hxx - camX*0.08); if(sx<-16||sx>W+8) continue;
+    const bh=5+((hxx/22|0)%5)*3;
+    ctx.fillRect(sx, HOR-9-bh, 9, bh);
   }
-  // лівий берег через Дніпро — щільніший силует із вікнами й дзвіницями-орієнтирами
+  // берегова лінія
   ctx.fillStyle = '#241d3a'; ctx.fillRect(0, HOR-9, W, 9);
-  for(let hx=0; hx<LEVEL_W+300; hx+=58){
-    const sx = Math.round(hx - camX*0.2); if(sx<-30||sx>W) continue;
-    const idx=(hx/58)|0; const bh = 9 + (idx%4)*7;
-    ctx.fillStyle='#1e1832'; ctx.fillRect(sx, HOR-9-bh, 14, bh);
-    for(let wy=0; wy<bh-3; wy+=5){ if((idx+(wy/5|0))%3===0){ ctx.fillStyle=(idx%2?'#ffd27a':'#ffb060'); ctx.fillRect(sx+3, HOR-9-bh+3+wy, 2, 2); ctx.fillRect(sx+8, HOR-9-bh+3+wy, 2, 2);} }
-    if(idx%5===2){ ctx.fillStyle='#1e1832'; ctx.fillRect(sx+5,HOR-9-bh-9,4,9); ctx.fillStyle='#c9a24a'; ctx.fillRect(sx+5,HOR-9-bh-12,4,3); ctx.fillRect(sx+6,HOR-9-bh-15,2,3);} // дзвіниця + шпиль
+  // основний силует — прямокутні висотки із сіткою вікон (тепле вечірнє світло)
+  for(let hxx=0; hxx<LEVEL_W+300; hxx+=38){
+    const sx = Math.round(hxx - camX*0.2); if(sx<-26||sx>W) continue;
+    const idx=(hxx/38)|0;
+    const tall = (idx%7===3);                                   // подекуди «свічка» вища
+    const bw = 16 + (idx%3)*4;
+    const bh = tall ? 32 + (idx%2)*8 : 12 + (idx%4)*6;
+    ctx.fillStyle='#1e1832'; ctx.fillRect(sx, HOR-9-bh, bw, bh);
+    ctx.fillStyle='#171126'; ctx.fillRect(sx, HOR-9-bh, bw, 2);  // темніший дах
+    for(let wy=3; wy<bh-2; wy+=4){
+      for(let wx=2; wx<bw-2; wx+=4){
+        const lit = ((idx*7 + wx*3 + wy) % 5) < 2;
+        ctx.fillStyle = lit ? (idx%2 ? '#ffd27a' : '#ffb45a') : '#151026';
+        ctx.fillRect(sx+wx, HOR-9-bh+wy, 2, 2);
+      }
+    }
   }
+  // Київська телевежа — впізнаваний орієнтир (ґратчастий конус із маячком)
+  { const tvx=Math.round(206 - camX*0.2);
+    if(tvx>-12 && tvx<W+12){
+      const th=52; ctx.strokeStyle='#1a1530'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(tvx-7,HOR-9); ctx.lineTo(tvx,HOR-9-th); ctx.lineTo(tvx+7,HOR-9); ctx.stroke();
+      for(let ty=HOR-9-th+6; ty<HOR-9; ty+=7){ const wch=7*(HOR-9-ty)/th; ctx.beginPath(); ctx.moveTo(tvx-wch,ty); ctx.lineTo(tvx+wch,ty); ctx.stroke(); }
+      ctx.fillStyle = ((game.t>>4)&1) ? '#ff5a4a' : '#7a2620'; ctx.fillRect(tvx-1,HOR-9-th-3,2,3);  // червоний маячок мигтить
+    } }
   // місток-силует через ріку (легка дуга з опорами)
   { const bxc=Math.round(120 - camX*0.15);
     ctx.strokeStyle='#181329'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(bxc-58,HOR-8); ctx.quadraticCurveTo(bxc,HOR-17,bxc+58,HOR-8); ctx.stroke();
