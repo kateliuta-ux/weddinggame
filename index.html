@@ -57,7 +57,7 @@
   }
   .btn:active{transform:translateY(2px);box-shadow:0 0 0 3px #000, inset 0 -2px 0 rgba(0,0,0,.35)}
   .btn.katya{background:var(--rose)} .btn.dima{background:var(--sage)} .btn.watch{background:var(--terra)}
-  #title-screen .hint{color:#8a8878;font-size:clamp(8px,1.8cqw,13px)}
+  #title-screen .hint{color:#bcb7a8;font-size:clamp(10px,2cqw,13px)}
 
   /* ---------- dialogue ---------- */
   #dialog{
@@ -98,7 +98,7 @@
   @media (orientation: landscape){
     #dialog{ min-height:0; padding:10px 14px; bottom:3%; gap:12px; }
     #dtext{ font-size:clamp(12px,2.6cqh,16px); line-height:1.3; }
-    #dname{ font-size:11px }
+    #dname{ font-size:12.5px }
     canvas#portrait{ width:44px; height:44px }
     #darrow{ font-size:12px; right:10px; bottom:4px }
   }
@@ -139,18 +139,18 @@
     background:rgba(0,0,0,.55);padding:.15em .45em;
     border:2px solid rgba(255,255,255,.35);user-select:none;
   }
-  #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(8px,1.8cqw,12px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
+  #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(10px,2cqw,13px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
 
   /* ---------- семплер ---------- */
   #sampler-screen{background:#14121c;gap:2.2%;padding:2%}
   .s-head{color:#fff;font-weight:bold;font-size:clamp(11px,2.6cqw,18px);letter-spacing:1px;text-align:center}
-  .s-head span{display:block;color:#8a8878;font-weight:normal;font-size:clamp(8px,1.8cqw,12px);margin-top:2px}
+  .s-head span{display:block;color:#bcb7a8;font-weight:normal;font-size:clamp(10px,2cqw,13px);margin-top:2px}
   #s-grid{
     display:grid;gap:2px;
     grid-template-columns:auto repeat(16,1fr);
     width:min(94%,700px);
   }
-  .s-label{color:#8a8878;font-size:clamp(7px,1.6cqw,11px);align-self:center;padding-right:4px;text-align:right}
+  .s-label{color:#bcb7a8;font-size:clamp(7px,1.6cqw,11px);align-self:center;padding-right:4px;text-align:right}
   .s-cell{
     aspect-ratio:1;background:#2b2b38;border:1px solid #3c3a4a;cursor:pointer;border-radius:2px;
   }
@@ -279,9 +279,9 @@
   </div>
 
   <div id="rating-screen" class="overlay hidden" style="background:#14121c;gap:2%">
-    <div class="s-head">📊 РЕЙТИНГ ГРАВЦІВ <span>найкращий отримає супер-приз на весіллі 🎁</span></div>
+    <div class="s-head">📊 РЕЙТИНГ ГРАВЦІВ <span>бал = 🏆 за кожне досягнення (їх видно на тайтлі) + 3 за обидві історії · найбільше балів = супер-приз на весіллі 🎁</span></div>
     <div id="rating-list" style="display:flex;flex-direction:column;gap:5px;width:min(88%,420px);max-height:62%;overflow-y:auto"></div>
-    <div id="rating-status" style="color:#8a8878;font-size:11px"></div>
+    <div id="rating-status" style="color:#bcb7a8;font-size:12.5px"></div>
     <button class="btn s-btn" id="rating-back" style="background:#55515f">НАЗАД</button>
   </div>
 
@@ -301,13 +301,13 @@
       <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-back">НАЗАД</button>
     </div>
-    <div id="s-status" style="color:#8a8878;font-size:11px;min-height:14px"></div>
+    <div id="s-status" style="color:#bcb7a8;font-size:12.5px;min-height:14px"></div>
   </div>
 
   <div id="playlist-screen" class="overlay hidden" style="background:#14121c;gap:2%">
     <div class="s-head">🎧 ВЕСІЛЬНИЙ ПЛЕЙЛИСТ <span>мелодії гостей · з них зберемо трек на весілля</span></div>
     <div id="pl-list" style="display:flex;flex-direction:column;gap:6px;width:min(88%,420px);max-height:60%;overflow-y:auto"></div>
-    <div id="pl-status" style="color:#8a8878;font-size:11px"></div>
+    <div id="pl-status" style="color:#bcb7a8;font-size:12.5px"></div>
     <button class="btn s-btn" id="pl-back" style="background:#55515f">НАЗАД</button>
   </div>
 
@@ -366,7 +366,7 @@
         <text x="68" y="74" font-size="5" fill="#A8505F">рот</text>
       </svg>
     </div>
-    <div id="selfie-status" style="color:#8a8878;font-size:11px;min-height:14px;max-width:86%;text-align:center"></div>
+    <div id="selfie-status" style="color:#bcb7a8;font-size:12.5px;min-height:14px;max-width:86%;text-align:center"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btn s-btn" id="selfie-snap" style="background:var(--rose)">📸 КЛАЦ</button>
       <button class="btn s-btn" id="selfie-send" style="background:var(--sage)" disabled>⬆ НАДІСЛАТИ</button>
@@ -387,7 +387,7 @@
   <div id="quiz-screen" class="overlay hidden" style="background:#14121c;gap:2.4%">
     <div class="s-head" id="quiz-q">?</div>
     <div class="menu" id="quiz-opts"></div>
-    <div id="quiz-dots" style="color:#8a8878;font-size:12px;letter-spacing:4px"></div>
+    <div id="quiz-dots" style="color:#bcb7a8;font-size:12px;letter-spacing:4px"></div>
     <div id="quiz-note" style="color:#B58A2E;font-size:clamp(10px,2.4cqw,14px);max-width:86%;text-align:center;min-height:2em"></div>
   </div>
 
@@ -397,7 +397,7 @@
     <input id="rsvp-input" class="hidden" type="text" maxlength="60" placeholder="напиши тут…"
       style="font-family:inherit;font-size:16px;padding:.6em;width:min(80%,340px);
              background:#f8f8f3;border:3px solid #000;color:#1a1a24">
-    <div id="rsvp-dots" style="color:#8a8878;font-size:12px;letter-spacing:4px"></div>
+    <div id="rsvp-dots" style="color:#bcb7a8;font-size:12px;letter-spacing:4px"></div>
     <pre id="rsvp-summary" class="hidden"
       style="color:#c9c4b4;font-size:clamp(9px,2cqw,13px);text-align:left;line-height:1.6;max-width:85%;white-space:pre-wrap"></pre>
   </div>
@@ -519,10 +519,10 @@ function drawAchToasts(){
     tt.t--;
     const y = base + i*16 - Math.min(18, tt.t>158 ? (tt.t-158)*1.4 : 0);
     ctx.fillStyle = 'rgba(0,0,0,.8)';
-    ctx.fillRect(W/2-72, y, 144, 13);
-    ctx.strokeStyle = 'rgba(181,138,46,.7)'; ctx.lineWidth=1; ctx.strokeRect(W/2-72, y, 144, 13);
+    ctx.fillRect(W/2-86, y, 172, 13);
+    ctx.strokeStyle = 'rgba(181,138,46,.7)'; ctx.lineWidth=1; ctx.strokeRect(W/2-86, y, 172, 13);
     ctx.fillStyle = COL.gold; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-    ctx.fillText('🏆 '+tt.text, W/2, y+9);
+    ctx.fillText('🏆 '+tt.text+'  +1 бал', W/2, y+9);
     ctx.textAlign='left';
   });
   for(let i=achToasts.length-1;i>=0;i--) if(achToasts[i].t<=0) achToasts.splice(i,1);
@@ -940,7 +940,7 @@ function drawCollect(camX){
       ctx.fillStyle = 'rgba(255,232,140,.25)'; ctx.fillRect(sx-5,sy-6,12,14);   // сяйво
       ctx.fillStyle = '#f4d46a'; ctx.fillRect(sx-3,sy-4,8,7);                    // колба
       ctx.fillStyle = '#fff8d8'; ctx.fillRect(sx-1,sy-2,3,3);
-      ctx.fillStyle = '#8a8878'; ctx.fillRect(sx-1,sy+3,4,3);                    // цоколь
+      ctx.fillStyle = '#bcb7a8'; ctx.fillRect(sx-1,sy+3,4,3);                    // цоколь
     } else {
       ctx.fillStyle = COL.rose;
       ctx.fillRect(sx-4,sy-3,3,3); ctx.fillRect(sx+1,sy-3,3,3);
@@ -2085,7 +2085,7 @@ function drawTetris(){
   // рахунок
   ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='right';
   ctx.fillText('РЯДКИ '+Math.min(t.lines,TET.WIN_LINES)+'/'+TET.WIN_LINES, W-6, fy+10);
-  ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
+  ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
   ctx.fillText('жовтень', W-6, fy+24);
   ctx.fillText('тягнеться…', W-6, fy+33);
   ctx.textAlign='left';
@@ -2600,7 +2600,7 @@ function drawProp(){
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(50,8,220,36);
     ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
     ctx.fillText(label, W/2, 20);
-    ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
+    ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
     ctx.fillText(sub, W/2, 30);
     ctx.fillStyle = '#333'; ctx.fillRect(80,34,160,7);
     ctx.fillStyle = game.pov==='dima' ? COL.sage : COL.rose;
@@ -2648,7 +2648,7 @@ function drawProp(){
     ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
     ctx.fillText(p.finger<0 ? 'НА ЯКИЙ ПАЛЕЦЬ??' : 'ПІДХОДИТЬ!', W/2, 26+FZ);
     if(p.finger<0){
-      ctx.fillStyle = '#8a8878'; ctx.font='9px monospace';
+      ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
       ctx.fillText('(і яка рука? хтозна. обирай)', W/2, 36+FZ);
     }
     // долоня
@@ -3238,7 +3238,7 @@ function drawRun(){
   ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(mid-76, 44, 152, 30);
   ctx.fillStyle = COL.gold; ctx.font='bold 14px monospace'; ctx.textAlign='center';
   ctx.fillText('✉ ' + r.count.toLocaleString('uk-UA'), mid, 63);
-  ctx.fillStyle = '#8a8878'; ctx.font='8px monospace';
+  ctx.fillStyle = '#bcb7a8'; ctx.font='8px monospace';
   ctx.fillText('/ 11 223 за жовтень', mid, 71);
   if(!r.done){
     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace';
@@ -4545,7 +4545,7 @@ function buildInvitationCard(){
   } else {
     g.fillStyle = '#4a4636'; g.font = '26px Georgia, serif';
     g.fillText('6 вересня 2026 · Київ', 360, y); y += 40;
-    g.fillStyle = '#8a8470'; g.font = 'italic 22px Georgia, serif';
+    g.fillStyle = '#bcb7a8'; g.font = 'italic 22px Georgia, serif';
     g.fillText('точний час і місце — у твоєму', 360, y); y += 30;
     g.fillText('персональному запрошенні', 360, y); y += 46;
   }
@@ -4569,7 +4569,7 @@ function buildInvitationCard(){
   GIFT_NOTE.split('\n').forEach((ln,i)=>{ g.fillText((i===0?'🎁 ':'') + ln, 360, y); y += 27; });
 
   // вірш унизу
-  g.fillStyle = '#8a8470'; g.font = 'italic 22px Georgia, serif';
+  g.fillStyle = '#bcb7a8'; g.font = 'italic 22px Georgia, serif';
   g.fillText('Од свайпу вправо — та до рушничка,', 360, 1148);
   g.fillText('приходь на свято, доки грає скрипочка!', 360, 1176);
   return c;
@@ -5631,7 +5631,7 @@ async function openLeaderboard(){
   if(!rows){ st.textContent='рейтинг ще не відкрито (Катя додасть правило)'; return; }
   if(!rows.length){ st.textContent='поки порожньо — стань першим!'; return; }
   const myName = localStorage.getItem('wed-player-name')||'';
-  st.textContent = 'твої очки: ' + computeScore() + ' · досягнень зібрано ' + achDone.size + '/' + ACHS.length;
+  st.textContent = 'Твої бали: ' + computeScore() + ' 🏆  (' + achDone.size + '/' + ACHS.length + ' досягнень' + (computeScore()>achDone.size?' + 3 за обидві історії':'') + ')';
   rows.slice(0,25).forEach((r,i)=>{
     const row = document.createElement('div');
     const medal = ['🥇','🥈','🥉'][i] || (i+1)+'.';
