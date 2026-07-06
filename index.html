@@ -5093,8 +5093,13 @@ function render(){
     drawOrnament(10);                       // вишиванковий кант тайтла
     drawOrnament(H-16);
     const bob = (game.t>>4)&1;
-    drawPerson(120, FLOOR_Y+2-bob, 'katya', 0, 1, false);
-    drawPerson(200, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false);
+    // святкове вбрання: Катя в ошатній сукні, Діма в костюмі з метеликом
+    drawPerson(120, FLOOR_Y+2-bob, 'katya', 0, 1, false, {top:'#e7a9bd', topD:'#c9819a'});
+    drawPerson(200, FLOOR_Y+2-(1-bob), 'dima', 0, -1, false, {top:'#33333f', topD:'#1e1e28'});
+    // букетик у Каті + метелик-краватка у Діми
+    ctx.fillStyle='#a8323c'; ctx.fillRect(126, FLOOR_Y-16-bob, 3,3); ctx.fillRect(123, FLOOR_Y-14-bob,3,3); ctx.fillRect(129, FLOOR_Y-14-bob,3,3);
+    ctx.fillStyle='#3f6b3a'; ctx.fillRect(126, FLOOR_Y-11-bob, 2,5);
+    ctx.fillStyle='#a8323c'; ctx.fillRect(197, FLOOR_Y-24-(1-bob), 3,2); ctx.fillRect(201, FLOOR_Y-24-(1-bob), 3,2);
     // Кітана більша, щоб було видно, що це кішка
     ctx.save();
     ctx.translate(160, FLOOR_Y+2); ctx.scale(1.8,1.8); ctx.translate(-160, -(FLOOR_Y+2));
