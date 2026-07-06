@@ -433,6 +433,8 @@ const ctx = cv.getContext('2d');
 /* Режим за орієнтацією: телефон (портрет) — вертикальна канва на весь екран,
    компʼютер (ландшафт) — класична широка 16:9. */
 const PORTRAIT_MODE = matchMedia('(orientation:portrait)').matches;
+// на мобільному (портрет) верхні банери-умови рівня опускаємо нижче від краю екрана / чубчика
+const HUD_Y = PORTRAIT_MODE ? 44 : 0;
 const W = 320, H = PORTRAIT_MODE ? 568 : 180;
 const LEVEL_W = 560;
 const FLOOR_Y = PORTRAIT_MODE ? 420 : 152;
@@ -725,7 +727,9 @@ function svatOutroScript(pov){
 }
 function propChessOutroScript(pov){
   return [
-    {who:'katya', emo:'happy', text:'Мат. І тримай подарунок —\n«Шахмати для дибілів».'},
+    {who:'dima',  emo:'tired', text:'Все. Здаюсь. Ходити нема куди.'},
+    {who:'katya', emo:'happy', text:'Шах і мат.'},
+    {who:'katya', emo:'happy', text:'І тримай подарунок —\n«Шахмати для дибілів».'},
     {who:'dima',  emo:'tired', text:'Азаза.'},
     {who:'dima',  emo:'shy',   text:'Теж маю щось… десь тут…'},
   ];
@@ -848,15 +852,15 @@ function drawSecret(){
   }
   // шкала
   const label = me==='dima' ? 'ПІДОЗРА КАТІ' : 'ТВОЯ ЦІКАВІСТЬ';
-  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(60,10,200,26);
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(60,10+HUD_Y,200,26);
   ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
-  ctx.fillText(label, W/2, 21);
-  ctx.fillStyle = '#333'; ctx.fillRect(80,25,160,7);
+  ctx.fillText(label, W/2, 21+HUD_Y);
+  ctx.fillStyle = '#333'; ctx.fillRect(80,25+HUD_Y,160,7);
   ctx.fillStyle = s.meter>65 ? '#c0392b' : COL.gold;
-  ctx.fillRect(80,25,160*Math.min(1,s.meter/100),7);
+  ctx.fillRect(80,25+HUD_Y,160*Math.min(1,s.meter/100),7);
   if(s.failT>0){
     ctx.fillStyle = '#f4c46a'; ctx.font='bold 9px monospace';
-    ctx.fillText(me==='dima' ? '«Що це в тебе?» — «НІЧОГО!»' : '«Ти чого дивишся?» — «Я? Нікуди!»', W/2, 50);
+    ctx.fillText(me==='dima' ? '«Що це в тебе?» — «НІЧОГО!»' : '«Ти чого дивишся?» — «Я? Нікуди!»', W/2, 50+HUD_Y);
   }
   // прогрес часу
   ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(80,H-16,160,4);
@@ -963,9 +967,9 @@ function drawCollect(camX){
     }
   });
   // лічильник
-  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(W-64,4,60,13);
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(W-64,4+HUD_Y,60,13);
   ctx.fillStyle = '#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='right';
-  ctx.fillText((c.kind==='idea'?'💡 ':'♥ ') + c.got + '/' + c.items.length, W-8, 14);
+  ctx.fillText((c.kind==='idea'?'★ ':'♥ ') + c.got + '/' + c.items.length, W-8, 14+HUD_Y);
   ctx.textAlign='left';
   // тост за повний збір
   if(c.toastT > 0){
@@ -2319,12 +2323,12 @@ function drawSvat(){
   if(s.step==='mash'){
     // шкала і підказка
     const label = me==='katya' ? 'КОЛУПАЙ ПІЧ!' : 'ТРИМАЙ ХЛІБ РІВНО!';
-    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(60,8,200,30);
+    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(60,8+HUD_Y,200,30);
     ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
-    ctx.fillText(label, W/2, 19);
-    ctx.fillStyle = '#333'; ctx.fillRect(80,24,160,8);
+    ctx.fillText(label, W/2, 19+HUD_Y);
+    ctx.fillStyle = '#333'; ctx.fillRect(80,24+HUD_Y,160,8);
     ctx.fillStyle = me==='katya' ? COL.rose : COL.sage;
-    ctx.fillRect(80,24,160*Math.min(1,s.meter/100),8);
+    ctx.fillRect(80,24+HUD_Y,160*Math.min(1,s.meter/100),8);
     ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
     drawHint(game.watch?'':(isTouch?'тапай А швидко-швидко':'тисни ПРОБІЛ швидко-швидко'), W/2, H-6);
     // часточки побілки/крихти
@@ -2395,10 +2399,12 @@ function startProposal(){
   };
   setPhase('prop');
 }
+// Реальний back-rank мат: король Діми на g8 затиснутий власними пішаками f7-g7-h7,
+// тура Каті з d1 йде на d8 — і це чистий лінійний мат, тікати нікуди.
 const CHESS_MOVES = [
-  {label:'Слоном побити пішака', sub:'Сxb7',  good:false, note:'слон нічого не вирішує'},
-  {label:'Ферзем на d8 — це МАТ', sub:'Фd8#',  good:true,  note:'мат!'},
-  {label:'Пішаком уперед, навмання', sub:'e4', good:false, note:'це взагалі як'},
+  {label:'Турою на d7 — тисну', sub:'Тd7',   good:false, note:'це навіть не шах'},
+  {label:'Тура на d8 — це МАТ', sub:'Тd8#',  good:true,  note:'мат!'},
+  {label:'Королем ближче',      sub:'Крf2',  good:false, note:'король тут ні до чого — час матувати'},
 ];
 /* спільний layout кнопок-ходів (щоб малювання й тапи збігались) */
 function chessBtn(i){
@@ -2415,8 +2421,19 @@ function updateProp(){
   if(p.step==='chess'){
     if(p.solved || game.dialog) return;
     if(p.wrongT>0){ p.wrongT--; return; }
+    // ── ПОВ Діми: виходу з мату нема, єдина кнопка — «Здатися» ──
+    if(game.pov==='dima'){
+      if(game.watch){ if(game.phaseT>150) confirmChess(); return; }
+      if(game._tapPos){
+        const tp = game._tapPos, b = chessBtn(1);   // кнопка «Здатися» на позиції 1
+        game._tapPos = null;
+        if(tp.x>=b.x && tp.x<=b.x+b.w && tp.y>=b.y && tp.y<=b.y+b.h) input.actionEdge = true;
+      }
+      if(input.actionEdge){ input.actionEdge = false; confirmChess(); }
+      return;
+    }
     if(game.watch){
-      if(game.phaseT>160){ p.sel = game.pov==='katya' ? 1 : 0; confirmChess(); }
+      if(game.phaseT>160){ p.sel = 1; confirmChess(); }
       return;
     }
     if(keys['ArrowLeft'] && !p._l){ p.sel = (p.sel+2)%3; } p._l = keys['ArrowLeft'];
@@ -2489,8 +2506,8 @@ function confirmChess(){
   const move = CHESS_MOVES[p.sel];
   if(game.pov==='katya' && !move.good){ p.wrongT = 70; p._missed = true; shake(2); return; }
   p.solved = true;
-  if(game.pov==='katya'){ flashHyper('katya', {frame:3, dur:58, tint:'#2a1a3a', label:'МАТ.'}); }
-  else { flashHyper('dima', {frame:0, dur:58, tint:'#1a2438', label:'…шансів не було'}); }
+  if(game.pov==='katya'){ flashHyper('katya', {frame:3, dur:58, tint:'#2a1a3a', label:'ШАХ І МАТ.'}); }
+  else { flashHyper('dima', {frame:0, dur:58, tint:'#1a2438', label:'ЗДАЮСЬ.'}); }
   if(game.pov==='katya' && !p._missed) achUnlock('mate1');
   startDialog(propChessOutroScript(game.pov), ()=>{ game.prop.step='rummage'; game.prop.meter=0; });
 }
@@ -2577,14 +2594,40 @@ function drawProp(){
       ctx.fillStyle = (r+c2)%2 ? '#8a6a46' : '#f0e6cc';
       ctx.fillRect(bx+c2*cell, by+r*cell, cell, cell);
     }
-    // зелена мітка «куди мат» (d8)
-    if(game.pov==='katya'){ ctx.strokeStyle='rgba(63,174,84,.9)'; ctx.lineWidth=2; ctx.strokeRect(bx+3*cell, by, cell, cell); }
+    // червоним підсвітити клітки-втечі короля (усі зайняті власними пішаками — тікати нікуди)
+    ctx.fillStyle='rgba(180,60,70,.28)';
+    [[5,0],[7,0],[5,1],[6,1],[7,1]].forEach(([c,r])=> ctx.fillRect(bx+c*cell, by+r*cell, cell, cell));
+    // зелена мітка «куди мат» (d8) + пунктир по лінії тури d1→d8
+    if(game.pov==='katya'){
+      ctx.strokeStyle='rgba(63,174,84,.9)'; ctx.lineWidth=2; ctx.strokeRect(bx+3*cell, by, cell, cell);
+      ctx.setLineDash([3,3]); ctx.strokeStyle='rgba(63,174,84,.55)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(bx+3*cell+cell/2, by+7*cell); ctx.lineTo(bx+3*cell+cell/2, by+cell*0.6); ctx.stroke();
+      ctx.setLineDash([]);
+    }
     const sq=(c,r)=>({x:bx+c*cell+cell/2, y:by+r*cell+cell*0.78});
     ctx.textAlign='center'; ctx.font=(cell+3)+'px sans-serif';
-    let s=sq(4,1); ctx.fillStyle='#1a1a24'; ctx.fillText('♚', s.x, s.y);        // король Діми
+    let s;
+    ctx.fillStyle='#1a1a24';
+    s=sq(6,0); ctx.fillText('♚', s.x, s.y);                                      // король Діми (g8)
+    [[5,1],[6,1],[7,1]].forEach(([c,r])=>{ const q=sq(c,r); ctx.fillText('♟', q.x, q.y); });  // його ж пішаки f7-g7-h7 (клітка)
     ctx.fillStyle='#A8505F';
-    s=sq(2,3); ctx.fillText('♛', s.x, s.y);                                      // ферзь Каті
-    s=sq(6,6); ctx.fillText('♜', s.x, s.y);                                      // тура Каті
+    s=sq(3,7); ctx.fillText('♜', s.x, s.y);                                      // тура Каті (d1)
+    if(game.pov==='dima'){
+      // єдина кнопка — здатися (виходу з мату нема)
+      const b = chessBtn(1);
+      const pulse = 0.5 + 0.5*Math.sin(game.t*0.12);
+      ctx.fillStyle = '#7d3a46'; ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.strokeStyle = 'rgba(255,255,255,'+(0.5+0.5*pulse)+')'; ctx.lineWidth = 2;
+      ctx.strokeRect(b.x, b.y, b.w, b.h);
+      ctx.fillStyle = '#fff'; ctx.font='bold '+(isP?14:10)+'px monospace'; ctx.textAlign='center';
+      ctx.fillText('ЗДАТИСЯ', b.x+b.w/2, b.y+(isP?20:14));
+      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font=(isP?10:7)+'px monospace';
+      ctx.fillText('легального ходу немає', b.x+b.w/2, b.y+(isP?37:24));
+      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font=(isP?10:9)+'px monospace';
+      drawHint(game.watch?'':(isTouch?'тапни, щоб здатись':'ПРОБІЛ — здатись'), W/2, H-6, isP?10:9);
+      ctx.textAlign='left';
+      return;
+    }
     // великі кнопки-ходи
     CHESS_MOVES.forEach((m,i)=>{
       const b = chessBtn(i), on = i===p.sel;
@@ -2607,14 +2650,14 @@ function drawProp(){
   if(p.step==='rummage'){
     const label = game.pov==='dima' ? 'КОПОШИСЬ У РЮКЗАКУ!' : 'РОБИ ЗДИВОВАНЕ ОБЛИЧЧЯ!';
     const sub = game.pov==='dima' ? 'вона ж нічого не підозрює (підозрює)' : 'ти ж нічого не знала (знала)';
-    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(50,8,220,36);
+    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(50,8+HUD_Y,220,36);
     ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
-    ctx.fillText(label, W/2, 20);
+    ctx.fillText(label, W/2, 20+HUD_Y);
     ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
-    ctx.fillText(sub, W/2, 30);
-    ctx.fillStyle = '#333'; ctx.fillRect(80,34,160,7);
+    ctx.fillText(sub, W/2, 30+HUD_Y);
+    ctx.fillStyle = '#333'; ctx.fillRect(80,34+HUD_Y,160,7);
     ctx.fillStyle = game.pov==='dima' ? COL.sage : COL.rose;
-    ctx.fillRect(80,34,160*Math.min(1,p.meter/100),7);
+    ctx.fillRect(80,34+HUD_Y,160*Math.min(1,p.meter/100),7);
     ctx.fillStyle = '#c9c4b4';
     p.particles.forEach(q=> ctx.fillRect(q.x, q.y, 2, 2));      // шкарпетки і зарядки летять
     ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
@@ -3327,7 +3370,7 @@ function drawMontage(){
 /* ================= ЕКСКЛЮЗИВ ДІМИ: SPACE SPICE BOY ================= */
 function bandIntroScript(){
   return [
-    {who:'dima', emo:'happy', text:'А в мене гурт — SPACE SPICE BOY.\nЯ, Лана Чубаха і Влад. З 2013-го.'},
+    {who:'dima', emo:'happy', text:'Оце — моя стихія. Тримай ритм зі мною!'},
     {who:null,   emo:null,    text:'Лови ноти на лінії! (тап у колонці / A S D)'},
   ];
 }
@@ -3416,6 +3459,17 @@ function sfxScore(pitch){
   try{ ensureAudio(); const t = audioCtx.currentTime; pitch = pitch || 660;
     playNote(pitch, t, 0.11, 'square', 0.05);
     playNote(pitch*1.5, t+0.05, 0.10, 'square', 0.045);
+  }catch(_){}
+}
+/* Undertale-«голос»: короткий блип на символ. Катя — вищий тон, Діма — нижчий. */
+let _lastBlip = 0;
+function sfxBlip(who){
+  if(musicMuted) return;
+  try{ ensureAudio(); const t = audioCtx.currentTime;
+    if(t - _lastBlip < 0.05) return;                     // ~20 блипів/сек (як в Undertale)
+    _lastBlip = t;
+    const base = who==='katya' ? 560 : who==='dima' ? 300 : 420;
+    playNote(base, t, 0.05, 'square', 0.03);
   }catch(_){}
 }
 /* ---------------- BGM: справжні україномовні треки SSB ----------------
@@ -3878,7 +3932,8 @@ function updateNovel(){
   const n = game.nov; if(!n) return;
   const chap = n.chapters[n.ch]; if(!chap){ finishGame(); return; }
   const ln = chap.lines[n.li];
-  if(n.shown < ln.text.length){ n.shown = Math.min(ln.text.length, n.shown + 1.2); }
+  if(n.shown < ln.text.length){ const prev=Math.floor(n.shown); n.shown = Math.min(ln.text.length, n.shown + 1.2);
+    const now=Math.floor(n.shown); if(now>prev){ const ch=ln.text[now-1]||''; if(ch.trim()) sfxBlip(ln.who); } }
 }
 function novelAdvance(){
   const n = game.nov; if(!n) return;
@@ -4212,8 +4267,11 @@ function updateDialog(){
   const d = game.dialog; if(!d) return;
   const ln = d.lines[d.idx];
   if(d.shown < ln.text.length){
+    const prev = Math.floor(d.shown);
     d.shown = Math.min(ln.text.length, d.shown + 1.4);   // друк трохи повільніший
-    elText.textContent = ln.text.slice(0, Math.floor(d.shown));
+    const now = Math.floor(d.shown);
+    elText.textContent = ln.text.slice(0, now);
+    if(now > prev){ const ch = ln.text[now-1]||''; if(ch.trim()) sfxBlip(ln.who); }  // Undertale-голос
     // South Park: рот циклить фази закритий→пів→відкритий→пів, поки говорить
     if(ln.who) drawPortraitInto(pctx, ln.who, ln.emo, [0,1,2,1][(game.t>>2)&3]);
     if(Math.floor(d.shown) === ln.text.length){
@@ -5925,10 +5983,10 @@ function drawKitanaScene(){
     ctx.fillText('?', 52, H-46 - ((k.t>>4)&1)*2);
   }
   // прогрес-смуга «додому»
-  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(40,8,240,8);
-  ctx.fillStyle = COL.rose; ctx.fillRect(40,8,240*Math.min(1,k.dist/k.goal),8);
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(40,8+HUD_Y,240,8);
+  ctx.fillStyle = COL.rose; ctx.fillRect(40,8+HUD_Y,240*Math.min(1,k.dist/k.goal),8);
   ctx.fillStyle = '#fff'; ctx.font='9px monospace'; ctx.textAlign='center';
-  ctx.fillText('🏠 додому', W/2, 14);
+  ctx.fillText('до хати ▸', W/2, 14+HUD_Y);
   // індикатор гучності + підказка
   if(!k.reached){
     const lvl = micLevel();
@@ -6136,63 +6194,39 @@ function rsvpShow(){
   // «хто ти?» зі списку гостей (коли список є, а персонального коду нема)
   const needIdentify = rsvp.idx===0 && !rsvp.pickedGuest && !rsvp.plusOne && !(GUEST && GUEST.id) && RSVP_GUEST_LIST.length;
   if(needIdentify){
+    // ПРИВАТНІСТЬ: жодного списку інших гостей. Просто представся — введи ім'я,
+    // підказки випадають лише під те, що ти набираєш; далі — анкета.
     elRsvpSummary.classList.add('hidden');
     elRsvpDots.textContent = '';
-    elRsvpOpts.innerHTML = '';
-
-    // під-крок А: «я чийсь +1» → обрати, чий саме
-    if(rsvp.plusMode === 'host'){
-      elRsvpInput.classList.add('hidden');
-      elRsvpQ.textContent = 'Чий ти +1?';
-      RSVP_GUEST_LIST.forEach(g=>{
-        const b = document.createElement('button');
-        b.className = 'btn'; b.style.background = '#2b2b38'; b.textContent = g.name;
-        b.addEventListener('click', ()=>{ rsvp._plusHost = g; rsvp.plusMode = 'name'; rsvpShow(); });
-        elRsvpOpts.appendChild(b);
-      });
-      const back = document.createElement('button');
-      back.className = 'btn'; back.style.background = '#55515f'; back.textContent = '← Назад';
-      back.addEventListener('click', ()=>{ rsvp.plusMode = null; rsvpShow(); });
-      elRsvpOpts.appendChild(back);
-      return;
-    }
-    // під-крок Б: вписати своє імʼя
-    if(rsvp.plusMode === 'name'){
-      elRsvpQ.textContent = 'А як тебе звати?';
-      elRsvpInput.classList.remove('hidden');
-      elRsvpInput.value = localStorage.getItem('wed-player-name') || '';
-      const b = document.createElement('button');
-      b.className = 'btn katya'; b.textContent = 'Далі';
-      b.addEventListener('click', ()=>{
-        const nm = elRsvpInput.value.trim();
-        if(!nm) return;
-        localStorage.setItem('wed-player-name', nm);
-        rsvp.plusOne = {name:nm, hostId:rsvp._plusHost.id, hostName:rsvp._plusHost.name};
-        rsvp.plusMode = null;
-        elRsvpInput.classList.add('hidden');
-        rsvpShow();
-      });
-      elRsvpOpts.appendChild(b);
-      return;
-    }
-
-    // головний крок: обрати себе зі списку
-    elRsvpInput.classList.add('hidden');
-    elRsvpQ.textContent = 'Хто ти у списку гостей?';
-    const nm = (localStorage.getItem('wed-player-name')||'').toLowerCase();
-    const sorted = [...RSVP_GUEST_LIST].sort((a,b)=>
-      (nm && b.name.toLowerCase().startsWith(nm)) - (nm && a.name.toLowerCase().startsWith(nm)));
-    sorted.forEach(g=>{
-      const b = document.createElement('button');
-      b.className = 'btn'; b.style.background = '#2b2b38'; b.textContent = g.name;
-      b.addEventListener('click', ()=>{ rsvp.pickedGuest = g; rsvpShow(); });
-      elRsvpOpts.appendChild(b);
-    });
-    // варіант для невідомого +1
-    const p1 = document.createElement('button');
-    p1.className = 'btn'; p1.style.background = 'var(--gold)'; p1.textContent = '🙋 Мене нема тут — я чийсь +1';
-    p1.addEventListener('click', ()=>{ rsvp.plusMode = 'host'; rsvpShow(); });
-    elRsvpOpts.appendChild(p1);
+    elRsvpQ.textContent = 'Спершу представся 🙂';
+    elRsvpInput.classList.remove('hidden');
+    elRsvpInput.placeholder = 'введи своє імʼя або прізвище…';
+    if(document.activeElement !== elRsvpInput) elRsvpInput.value = localStorage.getItem('wed-player-name') || '';
+    const pick = g => { rsvp.pickedGuest = g; localStorage.setItem('wed-player-name', g.name); elRsvpInput.classList.add('hidden'); elRsvpInput.oninput=null; rsvpShow(); };
+    const submitTyped = () => {
+      const nm = elRsvpInput.value.trim(); if(!nm) return;
+      const exact = RSVP_GUEST_LIST.find(g=> g.name.toLowerCase() === nm.toLowerCase());
+      if(exact) return pick(exact);
+      rsvp.plusOne = {name:nm, hostId:null, hostName:null};    // немає в списку — просто гість/+1
+      localStorage.setItem('wed-player-name', nm);
+      elRsvpInput.classList.add('hidden'); elRsvpInput.oninput=null; rsvpShow();
+    };
+    const renderSug = () => {
+      elRsvpOpts.innerHTML = '';
+      const q = (elRsvpInput.value||'').toLowerCase().trim();
+      if(q.length >= 1){
+        RSVP_GUEST_LIST.filter(g=>{ const n=g.name.toLowerCase(); return n.includes(q) || n.split(/\s+/).some(w=>w.startsWith(q)); })
+          .slice(0, 5).forEach(g=>{
+            const b = document.createElement('button'); b.className='btn'; b.style.background='#2b2b38'; b.textContent = g.name;
+            b.addEventListener('click', ()=> pick(g)); elRsvpOpts.appendChild(b);
+          });
+      }
+      const go = document.createElement('button'); go.className='btn katya'; go.textContent='Це я ▶';
+      go.addEventListener('click', submitTyped); elRsvpOpts.appendChild(go);
+    };
+    elRsvpInput.oninput = renderSug;
+    elRsvpInput.onkeydown = e => { if(e.key==='Enter') submitTyped(); };
+    renderSug();
     return;
   }
   const item = RSVP_QUESTIONS[rsvp.idx];
