@@ -195,8 +195,8 @@
   @keyframes vtwinkle{0%{transform:scale(0) rotate(0);opacity:0}
     40%{transform:scale(1.3) rotate(90deg);opacity:1}100%{transform:scale(0) rotate(180deg);opacity:0}}
   /* квіткові кути картки */
-  #viber-card::before,#viber-card::after{content:"🌹";position:absolute;font-size:30px;
-    animation:vwiggle 2s ease-in-out infinite}
+  #viber-card::before,#viber-card::after{content:"✿";position:absolute;font-size:30px;color:#e05aa0;
+    text-shadow:0 0 6px rgba(224,90,160,.6);animation:vwiggle 2s ease-in-out infinite}
   #viber-card::before{top:-14px;left:-10px;transform:rotate(-20deg)}
   #viber-card::after{bottom:-14px;right:-10px;transform:rotate(20deg)}
   @keyframes vwiggle{50%{transform:scale(1.15) rotate(0)}}
@@ -351,20 +351,20 @@
   <div id="viber-invite" class="hidden">
     <div id="viber-emojis"></div>
     <div id="viber-card">
-      <div class="v-top">🕊️✨🌹 ✿ 🌹✨🕊️</div>
-      <div class="v-hello" id="viber-hello">Дорога тьотю! 💐</div>
+      <div class="v-top">❧&nbsp;⋆&nbsp;✿&nbsp;⋆&nbsp;❧</div>
+      <div class="v-hello" id="viber-hello">Дорога тьотю!</div>
       <div class="v-title">ЗАПРОШУЄМО<br>НА ВЕСІЛЛЯ!!!</div>
-      <div class="v-names">Катерина 💍 Дмитро</div>
+      <div class="v-names">Катерина&nbsp;♥&nbsp;Дмитро</div>
       <div class="v-date">✧ 06.09.2026 ✧ Київ ✧</div>
-      <div class="v-venue" id="viber-venue" style="font-family:Georgia,serif;font-size:14px;color:#7a2f8a">📍 6 вересня 2026 · Київ</div>
-      <div class="v-wish">Нехай ваша присутність<br>принесе нам щастя й любов!<br>З любов'ю та повагою 💖🙏</div>
-      <div class="v-bottom">🌹🕊️🌹 💒 🌹🕊️🌹</div>
+      <div class="v-venue" id="viber-venue" style="font-family:Georgia,serif;font-size:14px;color:#7a2f8a">6 вересня 2026 · Київ</div>
+      <div class="v-wish">Нехай ваша присутність<br>принесе нам щастя й любов!<br>З любов'ю та повагою</div>
+      <div class="v-bottom">❧&nbsp;⋆&nbsp;✿&nbsp;⋆&nbsp;❧</div>
       <div class="v-gender" style="display:flex;gap:8px;justify-content:center;margin:6px 0">
-        <button class="btn" id="viber-f" style="padding:6px 10px;font-size:12px;background:#c02a7a">👩 для жінки</button>
-        <button class="btn" id="viber-m" style="padding:6px 10px;font-size:12px;background:#7a2f8a">👨 для чоловіка</button>
+        <button class="btn" id="viber-f" style="padding:6px 10px;font-size:12px;background:#c02a7a">для жінки</button>
+        <button class="btn" id="viber-m" style="padding:6px 10px;font-size:12px;background:#7a2f8a">для чоловіка</button>
       </div>
       <div class="v-buttons">
-        <button class="btn" id="viber-save" style="background:#c02a7a">💾 Зберегти</button>
+        <button class="btn" id="viber-save" style="background:#c02a7a">Зберегти</button>
         <button class="btn" id="viber-close" style="background:#55515f">Закрити</button>
       </div>
     </div>
@@ -5029,14 +5029,18 @@ function saveInvitation(){
 document.getElementById('btn-save-inv').addEventListener('click', saveInvitation);
 
 /* ---------------- кічове запрошення «для тьоті у Viber» ---------------- */
-const VIBER_EMOJI = ['🌹','🕊️','💖','✨','💍','🌸','💐','🥂','😍','💒','🌺','❣️','🙏','⭐','🌷','🌻','🌼','💫','🌟','🎀','💝','🕯️','🌸','✨','🌹'];
-const VIBER_SPARK = ['✨','💫','⭐','🌟','❇️','💖'];
+// монохромні дингбати (не айфон-емоджі), розфарбовані під Територію-А (глам 90х)
+const VIBER_EMOJI = ['✿','❀','♥','★','✧','❁','✽','❧','⋆','✤','❦','✾','✻','❣'];
+const VIBER_SPARK = ['✧','⋆','★','✦','✩','♥','❋'];
+const VIBER_COLORS = ['#e05aa0','#f4c84a','#ff8fce','#c02a7a','#ffd98a','#a0248a','#ff5aa0'];
 let viberTimer = null, viberSpark = null, vSeed = 1;
 function vrand(){ vSeed = (vSeed*1103515245 + 12345) & 0x7fffffff; return vSeed/0x7fffffff; }
 function viberSpawn(){
   const box = document.getElementById('viber-emojis');
   const s = document.createElement('span');
   s.textContent = VIBER_EMOJI[(vrand()*VIBER_EMOJI.length)|0];
+  s.style.color = VIBER_COLORS[(vrand()*VIBER_COLORS.length)|0];
+  s.style.textShadow = '0 0 6px currentColor';
   s.style.left = (vrand()*96) + 'vw';
   const dur = 4 + vrand()*4;                                // 4–8с
   s.style.animationDuration = dur.toFixed(2) + 's';
@@ -5049,6 +5053,8 @@ function viberSparkle(){                                     // блискітк
   const s = document.createElement('span');
   s.className = 'v-spark';
   s.textContent = VIBER_SPARK[(vrand()*VIBER_SPARK.length)|0];
+  s.style.color = VIBER_COLORS[(vrand()*VIBER_COLORS.length)|0];
+  s.style.textShadow = '0 0 5px currentColor';
   s.style.left = (vrand()*94) + 'vw';
   s.style.top = (vrand()*88) + 'vh';
   s.style.bottom = 'auto';
@@ -5064,8 +5070,8 @@ function viberVenue(){
 }
 function viberRefresh(){
   document.getElementById('viber-hello').textContent =
-    (viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '! 💐';
-  document.getElementById('viber-venue').textContent = '📍 ' + viberVenue();
+    (viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '!';
+  document.getElementById('viber-venue').textContent = viberVenue();
 }
 function openViber(fromTitle){
   viberFrom = fromTitle ? 'title' : 'end';
@@ -5106,29 +5112,30 @@ function buildViberCard(){
     g.fillStyle = ['rgba(255,243,176,','rgba(255,255,255,','rgba(255,180,230,'][i%3] + (0.4+rnd()*0.5) + ')';
     g.beginPath(); g.arc(x,y,r,0,7); g.fill();
   }
-  // рамка з квітів, сердечок і блискіток
-  g.font = '34px serif'; g.textAlign='center';
-  const top = ['🌹','💖','🌷','✨','🌸','💫','🌺','⭐'];
-  for(let i=0;i<11;i++){ g.fillText(top[i%top.length], 40+i*64, 46); g.fillText(top[(i+3)%top.length], 40+i*64, 986); }
-  for(let i=0;i<14;i++){ g.fillText(['🌹','💖','🌷','✨'][i%4], 30, 90+i*62); g.fillText(['💐','🌸','💫','🌺'][i%4], 690, 90+i*62); }
+  // рамка з дингбатів-квітів (Територія-А глам, без айфон-емоджі)
+  const dbTop=['✿','♥','❀','✧','❁','✽','❦','★'], dbCol=['#e05aa0','#f4c84a','#ff8fce','#ffd98a'];
+  g.font = 'bold 34px serif'; g.textAlign='center';
+  for(let i=0;i<11;i++){ g.fillStyle=dbCol[i%4]; g.fillText(dbTop[i%dbTop.length], 40+i*64, 46); g.fillStyle=dbCol[(i+1)%4]; g.fillText(dbTop[(i+3)%dbTop.length], 40+i*64, 986); }
+  for(let i=0;i<14;i++){ g.fillStyle=dbCol[i%4]; g.fillText(['✿','♥','❀','✧'][i%4], 30, 90+i*62); g.fillStyle=dbCol[(i+2)%4]; g.fillText(['❁','✽','⋆','❦'][i%4], 690, 90+i*62); }
   g.fillStyle = '#ffd7f0'; g.font = 'italic 30px Georgia, serif';
-  g.fillText((viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '! 💐', 360, 150);
+  g.fillText((viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '!', 360, 150);
   // золотий блискучий заголовок
   const grad = g.createLinearGradient(120,0,600,0);
   grad.addColorStop(0,'#b8860b'); grad.addColorStop(.5,'#fff3b0'); grad.addColorStop(1,'#b8860b');
   g.fillStyle = grad; g.font = 'bold 62px Georgia, serif';
   g.fillText('ЗАПРОШУЄМО', 360, 250); g.fillText('НА ВЕСІЛЛЯ!!!', 360, 320);
   g.fillStyle = '#ff8fd0'; g.font = 'bold 52px Georgia, serif';
-  g.fillText('Катерина 💍 Дмитро', 360, 440);
+  g.fillText('Катерина  ♥  Дмитро', 360, 440);
   g.fillStyle = '#ffe9a8'; g.font = 'bold 34px Georgia, serif';
   g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 505);
   g.fillStyle = '#ffd7f0'; g.font = 'bold 26px Georgia, serif';
-  g.fillText('📍 ' + viberVenue(), 360, 552);
+  g.fillText(viberVenue(), 360, 552);
   g.fillStyle = '#f0d6ff'; g.font = 'italic 26px Georgia, serif';
-  ['Нехай ваша присутність','принесе нам щастя й любов!',"З любов'ю та повагою 💖🙏"].forEach((ln,i)=>
+  ['Нехай ваша присутність','принесе нам щастя й любов!',"З любов'ю та повагою"].forEach((ln,i)=>
     g.fillText(ln, 360, 620+i*38));
-  g.font = '40px serif'; g.fillText('🌹🌹🌹 💒 🌹🌹🌹', 360, 780);
-  g.fillText('💐🥂😍💐🕊️✨💖', 360, 850);
+  g.fillStyle = '#ff8fce'; g.font = 'bold 40px serif';
+  g.fillText('❧  ⋆  ✿  ⋆  ❧', 360, 782);
+  g.fillStyle = '#f4c84a'; g.fillText('✿  ♥  ❀  ♥  ✿', 360, 852);
   return c;
 }
 document.getElementById('viber-save').addEventListener('click', ()=>{
