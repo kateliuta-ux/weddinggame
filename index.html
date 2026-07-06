@@ -319,6 +319,7 @@
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
       <button class="btn" id="btn-save-inv" style="background:var(--terra)">💾 Зберегти запрошення</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
+      <button class="btn" id="btn-stream" style="background:#2f6f8a">📺 Дивитись трансляцію</button>
       <button class="btn" id="btn-viber" style="background:#7a2f8a">🌹 Версія «для тьоті» 🕊</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
@@ -1326,32 +1327,39 @@ function drawCassette(cx, cy, w){
 }
 
 function drawBrain(cx, cy, r){
-  /* Справжнє лого Штормнадо (Asset 1.png): рожевий мозок із блискавок у колі,
-     центральний стовбур зі стрілкою вгору і штепселем-вилкою внизу. */
+  /* Лого ШТОРМНАДО — саме МОЗОК: дві рожеві півкулі зі звивинами + мозочок. */
   r = r || 10;
-  const P = '#d976ae';
-  ctx.strokeStyle = P; ctx.lineWidth = Math.max(1, r*0.12);
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  const u = r/10;
+  const P = '#e07ab0', PD = '#b8558c', PL = '#f4aad0';
+  ctx.save(); ctx.translate(cx, cy);
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  // силует мозку — дві півкулі
   ctx.fillStyle = P;
-  const u = r/10;                                    // одиниця масштабу
-  // центральний стовбур
-  ctx.fillRect(cx-u, cy-4*u, 2*u, 9*u);
-  // стрілка вгору
-  ctx.fillRect(cx-2*u, cy-5*u, 4*u, u);
-  ctx.fillRect(cx-u, cy-6.5*u, 2*u, 1.6*u);
-  // вилка-штепсель унизу
-  ctx.fillRect(cx-2*u, cy+5*u, 4*u, u);
-  ctx.fillRect(cx-1.8*u, cy+6*u, u, 1.6*u); ctx.fillRect(cx+0.8*u, cy+6*u, u, 1.6*u);
-  // блискавки-півкулі (зигзаги)
-  [[-1,0],[1,0]].forEach(([s])=>{
-    ctx.fillRect(cx+s*2*u, cy-4*u, 2*u*s||2*u, u);   // від стовбура вбік
-    ctx.fillRect(cx+s*3.6*u-u, cy-4.4*u, 2*u, u);
-    ctx.fillRect(cx+s*4.4*u-u, cy-3*u, u, 2.4*u);    // вниз
-    ctx.fillRect(cx+s*5.4*u-u, cy-1.2*u, u, 2*u);
-    ctx.fillRect(cx+s*4.6*u-u, cy+0.6*u, 2*u, u);    // зигзаг усередину
-    ctx.fillRect(cx+s*3.4*u-u, cy+1.8*u, u, 2*u);
-    ctx.fillRect(cx+s*4.2*u-u, cy+3.4*u, 1.6*u, u);  // стрілки вниз
+  ctx.beginPath();
+  ctx.ellipse(-3*u, -1*u, 5.2*u, 5*u, 0, 0, 7);
+  ctx.ellipse( 3*u, -1*u, 5.2*u, 5*u, 0, 0, 7);
+  ctx.fill();
+  // мозочок унизу
+  ctx.beginPath(); ctx.ellipse(0, 4*u, 4*u, 2.6*u, 0, 0, 7); ctx.fill();
+  // стовбур
+  ctx.fillRect(-0.8*u, 5.4*u, 1.6*u, 2.2*u);
+  // тінь правої півкулі (об'єм)
+  ctx.fillStyle = PD;
+  ctx.beginPath(); ctx.ellipse(3.4*u, -0.6*u, 4.2*u, 4.2*u, 0, -0.5, 2.3); ctx.fill();
+  // центральна борозна
+  ctx.strokeStyle = PD; ctx.lineWidth = Math.max(1, u);
+  ctx.beginPath(); ctx.moveTo(0,-5.6*u); ctx.lineTo(0,3*u); ctx.stroke();
+  // звивини (gyri) на кожній півкулі
+  ctx.lineWidth = Math.max(0.8, u*0.75);
+  [-1,1].forEach(s=>{
+    ctx.beginPath();
+    ctx.moveTo(s*1.2*u,-4.2*u); ctx.quadraticCurveTo(s*5.2*u,-3.8*u,s*4.2*u,-1.4*u);
+    ctx.quadraticCurveTo(s*1.4*u,-0.8*u,s*4.6*u,1.2*u);
+    ctx.quadraticCurveTo(s*2*u,2.2*u,s*3.2*u,3.2*u); ctx.stroke();
   });
+  // відблиск
+  ctx.fillStyle = PL; ctx.beginPath(); ctx.ellipse(-4*u,-3.4*u, 1.7*u, 1*u, -0.5, 0, 7); ctx.fill();
+  ctx.restore();
 }
 function drawSet(camX){
   // біла стіна офісу (галерейна, як на реальній зйомці)
@@ -1610,7 +1618,10 @@ function drawPeizazhka(camX){
 
 /* ================= Undertale-поєдинок ================= */
 const BULLET_WORDS = ['СЕРЙОЗНІ СТОСУНКИ','ПЛАНИ НА МАЙБУТНЄ','ЗНАЙОМСТВО З МАМОЮ','СПІЛЬНИЙ ПОБУТ','ВІДПУСТКА РАЗОМ'];
-const BOX = {x:60, y:(H-92)>>1, w:200, h:92};
+// у портреті поле бою велике й зручне для пальця; у ландшафті — компактне
+const BOX = PORTRAIT_MODE
+  ? {x:20, y:(H>>1)-140, w:W-40, h:280}
+  : {x:60, y:(H-92)>>1, w:200, h:92};
 
 /* Хвилі бою: НЕСЕРЙОЗНІСТЬ атакує по-різному. Прикол: ухилятись безглуздо —
    влучання правди лише пришвидшують неминуче. */
@@ -1659,7 +1670,10 @@ function updateBattle(){
     if(keys['ArrowRight']||input.right) h.x += SP;
     if(keys['ArrowUp']) h.y -= SP;
     if(keys['ArrowDown']) h.y += SP;
-    if(dragTarget){ h.x += (dragTarget.x-h.x)*0.3; h.y += (dragTarget.y-h.y)*0.3; }
+    if(dragTarget){                                  // серце тягнеться над пальцем — видно, куди ведеш
+      const ty = dragTarget.y - (isTouch?42:0);
+      h.x += (dragTarget.x-h.x)*0.4; h.y += (ty-h.y)*0.4;
+    }
   }
   h.x = Math.max(BOX.x+5, Math.min(BOX.x+BOX.w-5, h.x));
   h.y = Math.max(BOX.y+5, Math.min(BOX.y+BOX.h-5, h.y));
@@ -3621,8 +3635,8 @@ function novelBg(i){
     // хромакей із логотипом-мозком
     ctx.fillStyle='#cfe0d8'; ctx.fillRect(W-120,fl-150,110,150);
     ctx.strokeStyle='#9ac4b0'; ctx.lineWidth=2; ctx.strokeRect(W-120,fl-150,110,150);
-    ctx.fillStyle='#e85aa0'; ctx.beginPath(); ctx.arc(W-65,fl-100,20,0,7); ctx.stroke(); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.fillText('ШТОРМНАДО', W-65, fl-70);
+    drawBrain(W-65, fl-102, 20);
+    ctx.fillStyle='#3a3340'; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.fillText('ШТОРМНАДО', W-65, fl-70);
     // стенд БРИФ + таймер
     ctx.fillStyle='#f6f0e2'; ctx.fillRect(30,fl-120,70,44); ctx.strokeStyle='#c9bfa8'; ctx.strokeRect(30,fl-120,70,44);
     ctx.fillStyle='#a8323c'; ctx.font='bold 10px monospace'; ctx.fillText('БРИФ', 65,fl-100); ctx.fillStyle='#4a4636'; ctx.font='8px monospace'; ctx.fillText('59:59', 65,fl-86);
@@ -4341,6 +4355,11 @@ function finishGame(){
   // анкета гостя зʼявляється автоматично (один раз), відповіси → повертає запрошення
   if(!rsvp.sent && !rsvpAutoShown){ rsvpAutoShown = true; setTimeout(openRsvp, 700); }
 }
+const STREAM_URL = '';   // TODO: вставити посилання на трансляцію церемонії
+document.getElementById('btn-stream').addEventListener('click', ()=>{
+  if(STREAM_URL) window.open(STREAM_URL, '_blank', 'noopener');
+  else alert('📺 Трансляція церемонії для тих, хто не в Україні.\nПосилання додамо ближче до дати — 6 вересня 2026, Київ. 💛');
+});
 document.getElementById('btn-ics').addEventListener('click', ()=>{
   // календар з реальним часом і локацією твого потоку
   const s = GUEST ? SLOTS[GUEST.slot] : null;
@@ -5998,7 +6017,7 @@ function rsvpResponse(){
 const RSVP_QUESTIONS = [
   {q:'Ти з нами 6 вересня?', opts:['Звісно! 🥂','Дуже постараюсь','Ніяк 😢']},
   {q:'Скільки вас буде?', opts:['Я','Я +1','Ми сім’єю']},
-  {q:'Що тобі наливати?', opts:['Вино','Щось міцніше','Безалко']},
+  {q:'Пʼєш алкоголь?', opts:['Так 🥂','Ні, безалко']},
   {q:'Пісня, під яку ти точно танцюєш?', input:true},
 ];
 const rsvp = {idx:0, answers:[]};
