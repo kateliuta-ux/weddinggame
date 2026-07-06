@@ -480,10 +480,16 @@ const ACHS = [
   {id:'both',   icon:'👀', title:'Обидві сторони',   desc:'пройти за Катю і за Діму'},
   {id:'konami', icon:'🎮', title:'↑↑↓↓←→←→BA',      desc:'згадати старий код'},
   {id:'flappy', icon:'🐈', title:'Котолов',          desc:'покликати Кітану нявканням'},
-  {id:'egg',    icon:'🥚', title:'Слідопит',         desc:'знайти приховану пасхалку'},
   {id:'dvoye',  icon:'📼', title:'Гурт «ДВОЄ»',       desc:'знайти касету на тайтлі'},
   {id:'quiz',   icon:'🧠', title:'Знавець пари',      desc:'5/5 у квізі про пару'},
+  // пасхалки — окремий бейдж за кожну знайдену
+  {id:'egg_heart',  icon:'💗', title:'Серце між ними',  desc:'знайти серце на тайтлі'},
+  {id:'egg_kaasin', icon:'🪑', title:'Крісло KAASIN',   desc:'знайти крісло на зйомці'},
+  {id:'egg_diia',   icon:'🇺🇦', title:'Дія-пасхалка',    desc:'знайти лого Дія'},
+  {id:'egg_sun',    icon:'🌞', title:'Сонце щастя',     desc:'знайти сонце на весіллі'},
+  {id:'egg',    icon:'🥚', title:'Слідопит',         desc:'знайти ВСІ приховані пасхалки'},
 ];
+const EGG_ACHS = ['egg_heart','egg_kaasin','egg_diia','egg_sun'];
 let achDone = new Set(JSON.parse(localStorage.getItem('wed-ach')||'[]'));
 const achToasts = [];
 function achUnlock(id){
@@ -492,6 +498,7 @@ function achUnlock(id){
   localStorage.setItem('wed-ach', JSON.stringify([...achDone]));
   const a = ACHS.find(x=>x.id===id);
   achToasts.push({text: a.icon+' '+a.title, t: 170});
+  if(typeof sfxScore==='function') sfxScore(1175);   // чарівний дзинь за бейдж
   updateAchButton();
 }
 function drawAchToasts(){
@@ -898,8 +905,10 @@ function walkJumpAndCollect(p){
     if(it.taken) return;
     if(Math.abs(p.x - it.x) < 11 && Math.abs(bodyY - it.y) < 17){
       it.taken = true; c.got++;
+      sfxScore(560 + c.got*70);                     // висхідний тон за кожен предмет
       if(c.got === c.items.length){
         c.toastT = 80;
+        sfxScore(1046);                             // фанфара на завершення
         achUnlock(c.kind==='idea' ? 'storm' : 'hearts');
       }
     }
@@ -1921,6 +1930,7 @@ function updateTetris(){
         t.grid.unshift(Array(TET.COLS).fill(null));
       });
       t.lines += t.flashRows.length;
+      sfxScore(700 + t.flashRows.length*120);       // дзинь за прибрані лінії
       t.flashRows = [];
       if(t.lines >= TET.WIN_LINES){ t.win = true; t.winT = 0; }
     }
@@ -2110,7 +2120,8 @@ function updateSvat(){
         input.actionEdge = false;
         sl.stopped = true;
         sl.verdict = inRush ? 'рушник' : 'гарбуз';
-        if(sl.verdict==='гарбуз'){ sl.msgT = 80; achUnlock('harbuz'); shake(3,12); localStorage.setItem('wed-harbuz','1'); }  // жарт і ще спроба
+        if(sl.verdict==='рушник') sfxScore(784);
+        if(sl.verdict==='гарбуз'){ sl.msgT = 80; sfxScore(196); achUnlock('harbuz'); shake(3,12); localStorage.setItem('wed-harbuz','1'); }  // жарт і ще спроба
         else { s.step='exam'; s.exam={qi:0, sel:0, wrongT:0, misses:0}; }
       }
     }
@@ -3122,7 +3133,8 @@ function pingReply(){
   // відповідь летить від гравця до іншого
   const fromLondon = game.pov==='katya';
   r.msgs.push({x: fromLondon ? W*0.75 : W*0.25, dir: fromLondon ? -1 : 1, t:0, own:true});
-  if(r.count >= r.goal){ r.done = true; r.doneT = 0; shake(3,12); }
+  sfxScore(620 + (r.taps%6)*40);                  // «блип» щоразу як відповідаєш
+  if(r.count >= r.goal){ r.done = true; r.doneT = 0; sfxScore(1046); shake(3,12); }
 }
 function updateRun(){
   const r = game.run; if(!r || !r.started) return;
@@ -3225,7 +3237,8 @@ function montageCut(){
   const m = game.montage; if(!m || !m.started || m.done) return;
   for(const mk of m.marks){
     if(!mk.cut && Math.abs(mk.at - m.x) < 0.035){ mk.cut = true; m.cuts++; m.flashT = 8; shake(1.5,6);
-      if(m.cuts>=m.need){ m.done = true; m.doneT = 0; } return; }
+      sfxScore(520 + m.cuts*80);
+      if(m.cuts>=m.need){ m.done = true; m.doneT = 0; sfxScore(1046); } return; }
   }
 }
 function updateMontage(){
@@ -3350,6 +3363,14 @@ function playNote(f, t, d, type, vol){
   gn.gain.exponentialRampToValueAtTime(0.001, t+d*0.92);
   o.connect(gn); gn.connect(audioCtx.destination);
   o.start(t); o.stop(t+d);
+}
+/* короткий приємний «дзинь» на очки/влучання (поважає кнопку звуку) */
+function sfxScore(pitch){
+  if(musicMuted) return;
+  try{ ensureAudio(); const t = audioCtx.currentTime; pitch = pitch || 660;
+    playNote(pitch, t, 0.11, 'square', 0.05);
+    playNote(pitch*1.5, t+0.05, 0.10, 'square', 0.045);
+  }catch(_){}
 }
 /* ---------------- BGM: справжні україномовні треки SSB ----------------
    Реальні пісні гурту (з дозволу автора): звучать «як SSB» і не зациклюються
@@ -3650,6 +3671,14 @@ function novelBg(i){
   } else if(i===6){                             // світла квартира Позняки
     ctx.fillStyle='#ece4d6'; ctx.fillRect(0,0,W,fl); ctx.fillStyle='#f2ebde'; ctx.fillRect(0,0,W,14);
     ctx.fillStyle='#bcd4e2'; ctx.fillRect(40,fl-140,56,74); ctx.strokeStyle='#cfc4b2'; ctx.lineWidth=2; ctx.strokeRect(40,fl-140,56,74);
+    // книжкова полиця (права стіна)
+    const spines=['#A8505F','#3F7C77','#B58A2E','#1E4E8A','#7a5c8a','#c96a4e'];
+    ctx.fillStyle='#8a6b46'; ctx.fillRect(W-88,fl-130,64,7); ctx.fillRect(W-88,fl-102,64,7);
+    for(let s=0;s<10;s++){ ctx.fillStyle=spines[s%6]; ctx.fillRect(W-86+s*6,fl-150,5,20); ctx.fillStyle=spines[(s+3)%6]; ctx.fillRect(W-86+s*6,fl-122,5,20); }
+    // рамка-фото над диваном + кімнатна рослина
+    ctx.fillStyle='#6e4a2e'; ctx.fillRect(W/2-16,fl-98,32,24); ctx.fillStyle='#cbd9e0'; ctx.fillRect(W/2-13,fl-95,26,18); ctx.fillStyle='#a8505f'; ctx.fillRect(W/2-3,fl-88,6,5);
+    ctx.fillStyle='#b07a4a'; ctx.fillRect(104,fl-22,14,22);
+    for(let l=0;l<6;l++){ ctx.save(); ctx.translate(111,fl-22); ctx.rotate(-1+l*0.4); ctx.fillStyle='#3f6b3a'; ctx.fillRect(-1,-28,2,28); ctx.restore(); }
     ctx.fillStyle='#c9b89c'; ctx.fillRect(W/2-40,fl-34,80,34); ctx.fillStyle='#d8c8ac'; ctx.fillRect(W/2-40,fl-46,80,14); ctx.fillStyle='#a8505f'; ctx.fillRect(W/2+22,fl-44,12,10);
     ctx.fillStyle='#d8bd94'; ctx.fillRect(0,fl,W,H-fl);
     // сяюча коробочка
@@ -3661,6 +3690,14 @@ function novelBg(i){
     ctx.fillStyle='#0e1a2a'; ctx.beginPath(); ctx.arc(W/2,H*0.34,44,0,7); ctx.fill();
     ctx.strokeStyle='#6a5a4a'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(W/2,H*0.34,44,0,7); ctx.stroke();
     for(let k=0;k<20;k++){ ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(W/2-40+((k*37+game.t*2)%80),H*0.34-40+((k*53)%80),2,2); }
+    // барна стійка з пляшками + підвісні лампи (мінімалістичний бар)
+    for(let lx=64;lx<W;lx+=112){ ctx.strokeStyle='#4a4038'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,fl-138); ctx.stroke();
+      ctx.fillStyle='#2a221c'; ctx.fillRect(lx-6,fl-140,12,6); ctx.fillStyle='#ffe0a0'; ctx.fillRect(lx-3,fl-134,6,3);
+      ctx.fillStyle='rgba(255,220,150,.08)'; ctx.beginPath(); ctx.moveTo(lx,fl-133); ctx.lineTo(lx-26,fl-40); ctx.lineTo(lx+26,fl-40); ctx.fill(); }
+    ctx.fillStyle='#241c26'; ctx.fillRect(18,fl-92,74,4);
+    const bot=['#3F7C77','#A8505F','#B58A2E','#5a8c4e','#7a5c8a'];
+    for(let b=0;b<7;b++){ ctx.fillStyle=bot[b%5]; ctx.fillRect(22+b*10,fl-112,5,20); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fillRect(22+b*10,fl-112,2,20); }
+    ctx.fillStyle='#3a2e28'; ctx.fillRect(0,fl-30,W,30); ctx.fillStyle='#4a3a30'; ctx.fillRect(0,fl-32,W,3);
     // сяюча коробочка з каблучкою
     ctx.fillStyle='rgba(255,235,150,.35)'; ctx.beginPath(); ctx.arc(W/2,fl-24,28,0,7); ctx.fill();
     ctx.fillStyle='#2e3440'; ctx.fillRect(W/2-12,fl-30,24,16); ctx.fillStyle='#fff8e0'; ctx.fillRect(W/2-3,fl-26,6,6);
@@ -3682,7 +3719,7 @@ function novelBg(i){
    повністю видно на кадрах-наратора) */
 function novelBgFigures(i, fl){
   const walk = (game.t>>4)&1;
-  const P = (x,who,dir,sc)=>{ ctx.save(); ctx.translate(x, fl); ctx.scale(sc||1.3, sc||1.3); drawPerson(0,0,who,walk,dir,false); ctx.restore(); };
+  const P = (x,who,dir,sc,skin)=>{ ctx.save(); ctx.translate(x, fl); ctx.scale(sc||1.3, sc||1.3); drawPerson(0,0,who,walk,dir,false,skin); ctx.restore(); };
   if(i===0){ P(W/2-40,'katya',1,1.3); P(W-42,'guy',-1,1.2); }
   else if(i===2){ P(W/2-16,'katya',1,1.35); P(W/2+18,'dima',-1,1.35); }
   else if(i===3){ P(66,'katya',1,1.2); P(W-66,'dima',-1,1.2); }
@@ -3691,7 +3728,21 @@ function novelBgFigures(i, fl){
   else if(i===5){ P(46,'starosta',1,1.15); P(W-46,'starosta',-1,1.15); }
   else if(i===6){ P(W/2-20,'dima',1,1.35); P(W/2+20,'katya',-1,1.35); }
   else if(i===7){ P(60,'katya',1,1.3); P(W-60,'dima',-1,1.3); }
-  else if(i===8){ P(W/2-20,'katya',1,1.4); P(W/2+20,'dima',-1,1.4); }
+  else if(i===8){                                 // весілля: наречена у білому + фата, наречений у костюмі
+    const kx = W/2-20, dx = W/2+20;
+    P(kx,'katya',1,1.4,{top:'#f6f2ea',topD:'#dcd6c8'});
+    P(dx,'dima',-1,1.4,{top:'#2e2e3a',topD:'#1c1c26'});
+    const hkY = fl - 66;                           // приблизна висота голови Каті
+    // фата за головою нареченої
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    ctx.beginPath(); ctx.moveTo(kx-8,hkY-6); ctx.lineTo(kx+8,hkY-6); ctx.lineTo(kx+16,fl-14); ctx.lineTo(kx-16,fl-14); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#fff'; for(let s=0;s<5;s++) ctx.fillRect(kx-10+s*5, hkY-9, 2,2);  // діадема
+    // букет у нареченої
+    ctx.fillStyle='#3f6b3a'; ctx.fillRect(kx+6, fl-30, 5, 10);
+    ['#A8505F','#e8b0be','#B58A2E','#fff'].forEach((c,j)=>{ ctx.fillStyle=c; ctx.fillRect(kx+3+(j%2)*7, fl-34+(j>1?4:0), 4,4); });
+    // метелик-краватка нареченого
+    ctx.fillStyle='#a8323c'; ctx.fillRect(dx-3, fl-44, 3,3); ctx.fillRect(dx+1, fl-44, 3,3); ctx.fillStyle='#7a2530'; ctx.fillRect(dx, fl-44, 1,3);
+  }
 }
 /* крупний фото-портрет того, хто говорить — спирається дном над вікном тексту */
 /* Великий манга/аніме піксель-портрет мовця (на базі drawPortraitPixel 48×48,
@@ -5415,10 +5466,10 @@ addEventListener('keydown', e=>{
 const eggParticles = [];
 const SCENE_EGGS = {
   // сцена: [{x,y,r,burst}]  (координати у світі 320x180, camX враховується для скрол-сцен)
-  title: [{x:160, y:98, r:16, kind:'heart', world:false}],   // серце між ними
-  set:   [{x:120, y:100, r:16, kind:'meow', world:true}],    // крісло KAASIN
-  diia:  [{x:160, y:20,  r:14, kind:'heart', world:false}],  // лого дія
-  wed:   [{x:70,  y:52,  r:18, kind:'confetti', world:false}], // сонце
+  title: [{x:160, y:98, r:16, kind:'heart', world:false, ach:'egg_heart'}],   // серце між ними
+  set:   [{x:120, y:100, r:16, kind:'meow', world:true, ach:'egg_kaasin'}],   // крісло KAASIN
+  diia:  [{x:160, y:20,  r:14, kind:'heart', world:false, ach:'egg_diia'}],   // лого дія
+  wed:   [{x:70,  y:52,  r:18, kind:'confetti', world:false, ach:'egg_sun'}], // сонце
 };
 function tryEgg(pos){
   const key = game.state==='title' ? 'title' : game.phase;
@@ -5427,8 +5478,8 @@ function tryEgg(pos){
   for(const e of eggs){
     const ex = e.world ? e.x - game.camX : e.x;
     if(Math.abs(pos.x-ex) < e.r && Math.abs(pos.y-e.y) < e.r){
-      achUnlock('egg');
-      const cols = {heart:'heart', meow:'meow', confetti:'confetti'};
+      achUnlock(e.ach || 'egg');
+      if(EGG_ACHS.every(id=>achDone.has(id))) achUnlock('egg');   // усі пасхалки → мета-бейдж
       for(let i=0;i<14;i++) eggParticles.push({
         x:ex, y:e.y, vx:(Math.random()-0.5)*3, vy:-Math.random()*3-0.5, kind:e.kind,
       });
@@ -5489,16 +5540,17 @@ function micLevel(){
 function startKitana(){
   game.kitana = {dist:0, goal:1000, speed:0, t:0, lastLvl:0, meowCd:0,
     reached:false, reachedT:0, gotMeow:false, boostT:0};
-  setupMic();
   setPhase('kitana');
-  startDialog(kitanaIntroScript(game.pov), ()=>{ game.kitana.started = true; });
+  // спершу пояснюємо правила — і лише коли гравець дочитав, просимо мікрофон
+  startDialog(kitanaIntroScript(game.pov), ()=>{ setupMic(); game.kitana.started = true; });
 }
 function kitanaIntroScript(pov){
   return [
     {who:null, emo:null, text:'Білогородка. У друга Каті — Дана —\nу дворі вуличка окотила кошенят.'},
     {who:null, emo:null, text:'Катя побачила найручніше в його сторіз\nі одразу: «це вона». Господиня дозволила котика.'},
-    {who:null, emo:null, text:'Щоб покликати Кітану — увімкни мікрофон\nі нявкай (гра «чує» твій голос).'},
-    {who:null, emo:null, text:'🎤 Нявкай — Кітана біжить до вас!\nЧастіше нявкаєш — швидше. (або тап / ПРОБІЛ)'},
+    {who:null, emo:null, text:'ПРАВИЛА: щоб покликати Кітану — треба\nнявкати, а гра «слухає» твій голос.'},
+    {who:null, emo:null, text:'Тому далі браузер спитає доступ до мікрофона —\nце лише щоб чути твоє «няв». Дозволь 🎤'},
+    {who:null, emo:null, text:'🐈 Нявкай — Кітана біжить до вас!\nЧастіше нявкаєш — швидше. (нема мікрофона? тап / ПРОБІЛ)'},
   ];
 }
 function kitanaMeow(){
@@ -5506,6 +5558,7 @@ function kitanaMeow(){
   const k = game.kitana; if(!k || !k.started || k.reached) return;
   k.speed = Math.min(5, k.speed + 1.3);
   k.boostT = 10;
+  sfxScore(720 + Math.round(k.speed*40));         // «няв»-дзинь, вищий на швидкості
   eggParticles.push({x:52, y:H-34, vy:-0.7, kind:'meow'});
   if(!k.gotMeow){ k.gotMeow = true; achUnlock('flappy'); }
 }
@@ -5979,7 +6032,7 @@ function quizShow(){
     b.className='btn'; b.style.background='#2b2b38'; b.textContent = opt;
     b.addEventListener('click', ()=>{
       const right = i===item.ok;
-      if(right) quiz.score++;
+      if(right){ quiz.score++; sfxScore(660 + quiz.score*80); } else { sfxScore(180); }
       b.style.background = right ? 'var(--sage)' : '#7d3a46';
       document.getElementById('quiz-note').textContent = item.notes[i];
       opts.querySelectorAll('.btn').forEach(x=>x.disabled=true);
