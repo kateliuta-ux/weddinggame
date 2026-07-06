@@ -1634,35 +1634,63 @@ function drawMatch(){
 }
 
 /* ================= Пейзажна алея ================= */
+// каштанове листя-обрамлення переднього плану (київська фішка Пейзажки)
+function drawChestnut(x, y, dir){
+  const blob=(bx,by,r,c)=>{ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(bx,by,r,0,7); ctx.fill(); };
+  for(let i=0;i<6;i++) blob(x+dir*(4+i*11), y+6+(i%3)*11, 13, '#1f4a24');   // темна маса
+  for(let i=0;i<6;i++) blob(x+dir*(9+i*11), y+3+((i+1)%3)*11, 8, '#2f6e33'); // світліший шар
+  ctx.fillStyle='#49a04d';                                                   // дизер-відблиски
+  for(let i=0;i<44;i++){ const bx=x+dir*(2+(i*7)%74), by=y+2+(i*13)%42; if(((bx+by)&1)===0) ctx.fillRect(bx,by,1,1); }
+  ctx.fillStyle='#f2ecdc'; ctx.fillRect(x+dir*26,y+30,2,9);                  // біла «свічка» цвіту каштана
+  ctx.fillStyle='#f6b8c4'; ctx.fillRect(x+dir*26,y+30,2,2);
+}
 function drawPeizazhka(camX){
   // вечірнє небо — піксельні смуги з дизером (без омбре)
   const HOR = 110+GY;                                  // горизонт-парапет ближче до підлоги
-  pixBands(0,0,W,HOR, ['#2a2450','#402a5c','#5a3a68','#8a4a5e','#c96a4e']);
-  // місяць (круглий, із сяйвом і кратерами)
-  ctx.fillStyle='rgba(246,236,200,.22)'; ctx.beginPath(); ctx.arc(258,46,17,0,7); ctx.fill();
+  pixBands(0,0,W,HOR, ['#211c4a','#2f2557','#4a2f62','#7a3f60','#b95a50','#e0885a']);
+  // дизер-хмари, що ледь пливуть
+  ctx.fillStyle='rgba(255,190,150,.18)';
+  for(let cl=0; cl<3; cl++){
+    const cy=20+cl*17, cw=64+cl*30;
+    const cxp=(((cl*140 - ((camX*0.05)|0))%(W+150))+(W+150))%(W+150)-80;
+    for(let yy=0; yy<6; yy++){ const step=Math.max(2,6-yy); for(let xx=(yy&1); xx<cw; xx+=step){ const px=cxp+xx; if(px>=0&&px<W) ctx.fillRect(px, cy+yy, 1,1); } }
+  }
+  // місяць (круглий, із подвійним сяйвом і кратерами)
+  ctx.fillStyle='rgba(246,236,200,.14)'; ctx.beginPath(); ctx.arc(258,46,22,0,7); ctx.fill();
+  ctx.fillStyle='rgba(246,236,200,.26)'; ctx.beginPath(); ctx.arc(258,46,14,0,7); ctx.fill();
   ctx.fillStyle='#f6ecc8'; ctx.beginPath(); ctx.arc(258,46,10,0,7); ctx.fill();
   ctx.fillStyle='rgba(206,192,150,.55)';
-  ctx.beginPath(); ctx.arc(262,43,2,0,7); ctx.fill();
-  ctx.beginPath(); ctx.arc(255,49,1.5,0,7); ctx.fill();
-  ctx.beginPath(); ctx.arc(261,50,1,0,7); ctx.fill();
-  // зорі
-  for(let i=0;i<30;i++){
-    const sx=(i*53)%W, sy=(i*71)%(HOR-40);
-    ctx.fillStyle='rgba(255,240,200,.5)'; ctx.fillRect(sx,sy,2,2);
+  [[262,43,2],[255,49,1.5],[261,50,1]].forEach(m=>{ ctx.beginPath(); ctx.arc(m[0],m[1],m[2],0,7); ctx.fill(); });
+  // зорі з мерехтінням (частина яскравіші)
+  for(let i=0;i<42;i++){
+    const sx=(i*53)%W, sy=(i*71)%(HOR-46);
+    const tw = 0.32 + 0.42*(((i*7 + (game.t>>4))%5)/5);
+    ctx.fillStyle='rgba(255,240,205,'+tw.toFixed(2)+')';
+    const ss=(i%7===0)?2:1; ctx.fillRect(sx,sy,ss,ss);
   }
   // заграва міста над горизонтом — дизер, а не плавно
   ctx.fillStyle = 'rgba(232,140,96,.5)';
-  for(let yy=0; yy<40; yy++){ const step = Math.max(2, 12-(yy>>2)); for(let xx=((yy)&1); xx<W; xx+=step) ctx.fillRect(xx, HOR-40+yy, 1, 1); }
-  // далекий лівий берег через Дніпро — низький рідкий силует (не щільне місто)
-  ctx.fillStyle = '#241d3a'; ctx.fillRect(0, HOR-9, W, 9);          // рівна смуга берега
-  ctx.fillStyle = '#1e1832';
-  for(let hx=0; hx<LEVEL_W+300; hx+=118){                           // поодинокі висотки
-    const sx = Math.round(hx - camX*0.2); if(sx<-30||sx>W) continue;
-    const bh = 10 + ((hx/118)%3)*9;
-    ctx.fillRect(sx, HOR-bh, 16, bh);
-    ctx.fillStyle = '#ffd27a'; ctx.fillRect(sx+6, HOR-bh+4, 2, 2);  // один вогник у вікні
-    ctx.fillStyle = '#1e1832';
+  for(let yy=0; yy<44; yy++){ const step = Math.max(2, 13-(yy>>2)); for(let xx=((yy)&1); xx<W; xx+=step) ctx.fillRect(xx, HOR-44+yy, 1, 1); }
+  // далекі пагорби (дальній парлакс)
+  ctx.fillStyle='#2a2246';
+  for(let hx=0; hx<LEVEL_W+400; hx+=76){
+    const sx=Math.round(hx - camX*0.08); if(sx<-70||sx>W+50) continue;
+    const hh=7+((hx/76|0)%4)*3;
+    ctx.beginPath(); ctx.moveTo(sx-34,HOR-8); ctx.lineTo(sx,HOR-8-hh); ctx.lineTo(sx+34,HOR-8); ctx.closePath(); ctx.fill();
   }
+  // лівий берег через Дніпро — щільніший силует із вікнами й дзвіницями-орієнтирами
+  ctx.fillStyle = '#241d3a'; ctx.fillRect(0, HOR-9, W, 9);
+  for(let hx=0; hx<LEVEL_W+300; hx+=58){
+    const sx = Math.round(hx - camX*0.2); if(sx<-30||sx>W) continue;
+    const idx=(hx/58)|0; const bh = 9 + (idx%4)*7;
+    ctx.fillStyle='#1e1832'; ctx.fillRect(sx, HOR-9-bh, 14, bh);
+    for(let wy=0; wy<bh-3; wy+=5){ if((idx+(wy/5|0))%3===0){ ctx.fillStyle=(idx%2?'#ffd27a':'#ffb060'); ctx.fillRect(sx+3, HOR-9-bh+3+wy, 2, 2); ctx.fillRect(sx+8, HOR-9-bh+3+wy, 2, 2);} }
+    if(idx%5===2){ ctx.fillStyle='#1e1832'; ctx.fillRect(sx+5,HOR-9-bh-9,4,9); ctx.fillStyle='#c9a24a'; ctx.fillRect(sx+5,HOR-9-bh-12,4,3); ctx.fillRect(sx+6,HOR-9-bh-15,2,3);} // дзвіниця + шпиль
+  }
+  // місток-силует через ріку (легка дуга з опорами)
+  { const bxc=Math.round(120 - camX*0.15);
+    ctx.strokeStyle='#181329'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(bxc-58,HOR-8); ctx.quadraticCurveTo(bxc,HOR-17,bxc+58,HOR-8); ctx.stroke();
+    for(let p=-46;p<=46;p+=15){ const py=HOR-8-Math.round(7*Math.cos(p/58)); ctx.fillStyle='#181329'; ctx.fillRect(bxc+p,py,2,HOR-8-py); } }
   // рідкі теплі вогники вздовж берега
   for(let i=6; i<W; i+=24){ const sx=Math.round(i-camX*0.2); ctx.fillStyle='rgba(255,214,130,.8)'; ctx.fillRect(((sx%W)+W)%W, HOR-4, 2, 2); }
   // парапет із мозаїкою (фішка Пейзажки)
@@ -1682,13 +1710,23 @@ function drawPeizazhka(camX){
     const sx = Math.round(fx-camX); if(sx<-22||sx>W) continue;
     ctx.fillRect(sx,HOR+14+((fx/22)%2)*14,20,2);
   }
-  // ліхтарі з сяйвом
+  // ажурні ліхтарі з сяйвом (київський стиль: вигнута консоль, кований низ)
   for(let lx=80; lx<LEVEL_W; lx+=160){
-    const sx = Math.round(lx-camX); if(sx<-20||sx>W+20) continue;
-    ctx.fillStyle = COL.ink; ctx.fillRect(sx,FLOOR_Y-88,3,88);
-    ctx.fillStyle = '#ffe8a0'; ctx.fillRect(sx-3,FLOOR_Y-94,9,8);
+    const sx = Math.round(lx-camX); if(sx<-24||sx>W+24) continue;
+    const base = FLOOR_Y, top = FLOOR_Y-92;
+    ctx.fillStyle = '#171420'; ctx.fillRect(sx, top+4, 3, base-top-4);       // стовп
+    ctx.fillRect(sx-3, base-4, 9, 4);                                        // основа
+    ctx.fillStyle = '#221d2c'; ctx.fillRect(sx-2, base-8, 7, 4);
+    // вигнута консоль
+    ctx.strokeStyle='#171420'; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(sx+1, top+6); ctx.quadraticCurveTo(sx+9, top, sx+10, top+7); ctx.stroke();
+    // ліхтар-плафон + подвійне сяйво
+    ctx.fillStyle='rgba(255,224,150,.10)'; ctx.beginPath(); ctx.arc(sx+9, top+11, 12, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3a2f22'; ctx.fillRect(sx+5, top+6, 9, 3);              // шапочка
+    ctx.fillStyle = '#ffe8a0'; ctx.fillRect(sx+5, top+9, 9, 8);
+    ctx.fillStyle = '#fff6d2'; ctx.fillRect(sx+7, top+10, 4, 5);            // гаряче ядро
     ctx.fillStyle = 'rgba(255,232,160,.12)';
-    ctx.beginPath(); ctx.moveTo(sx+1,FLOOR_Y-86); ctx.lineTo(sx-22,FLOOR_Y); ctx.lineTo(sx+25,FLOOR_Y); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx+9,top+16); ctx.lineTo(sx-16,base); ctx.lineTo(sx+34,base); ctx.fill();
   }
   // мозаїчний кіт (символ Пейзажки), сидить на бруківці
   const kx = Math.round(340-camX);
@@ -1711,6 +1749,10 @@ function drawPeizazhka(camX){
     ctx.fillStyle = COL.ink; ctx.fillRect(bx+3,135+GY,3,14); ctx.fillRect(bx+28,135+GY,3,14);
     ctx.fillStyle = '#b58a2e'; ctx.fillRect(bx+10,122+GY,4,8); ctx.fillRect(bx+18,122+GY,4,8); // пиво x2
   }
+  // каштанове листя — обрамлення верхніх кутів (передній план, легке гойдання)
+  const sway = Math.round(Math.sin(game.t*0.03)*1.5);
+  drawChestnut(-8+sway, -8, 1);
+  drawChestnut(W+8-sway, -8, -1);
 }
 
 /* ================= Undertale-поєдинок ================= */
