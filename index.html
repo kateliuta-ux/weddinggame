@@ -1112,15 +1112,16 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
   add(1, -34+bob, 5, 1, '#ffffff2e', true);              // відблиск плеча
   add(0, -35+bob, 3, 3, SK);                             // виріз/шия
   if(skirt){
-    // розкльошена спідничка-трапеція поверх талії
+    // струнка витончена спідниця (не широка): припасована талія, лагідний кльош
     const sk = c.skirtCol || c.topD;
-    add(-7, -16+bob, 14, 3, sk);                         // талія
-    add(-9, -13+bob, 18, 3, sk);                         // середина
-    add(-11, -10+bob, 22, 3, sk);                        // подол (найширше)
-    add(-11, -10+bob, 22, 1, topH, true);               // блік верху подолу
-    add(-4, -15+bob, 1, 6, '#00000026', true);          // складка
-    add(3, -15+bob, 1, 6, '#00000026', true);           // складка
-    add(-11, -8+bob, 22, 1, '#0000002e', true);         // тінь під подолом
+    add(-6, -17+bob, 12, 4, sk);                         // талія (припасовано, вужче)
+    add(-7, -13+bob, 14, 3, sk);                         // м'який кльош
+    add(-8, -10+bob, 16, 3, sk);                         // подол (помірний, 16 а не 22)
+    add(-8, -10+bob, 16, 1, topH, true);                // блік подолу
+    add(-4, -16+bob, 1, 7, '#00000022', true);          // складка
+    add(-1, -16+bob, 1, 8, '#00000022', true);          // центральна складка
+    add(3, -15+bob, 1, 6, '#00000022', true);           // складка
+    add(-8, -8+bob, 16, 1, '#0000002c', true);          // тінь під подолом
   } else {
     add(-8, -14+bob, 16, 2, c.topD, true);              // низ/кант
     add(-8, -17+bob, 16, 3, '#2e2833');                 // пояс
@@ -5966,14 +5967,18 @@ function pixelateToDataURL(imgEl, targetW){
   g.drawImage(imgEl, 0, 0, w, h);
   return c.toDataURL('image/jpeg', 0.7);
 }
+// тестові документи (додані нами до запуску) — не показувати; у консолі видаляться назавжди
+const HIDE_DOCS = new Set(['11C0788YMDaPpyzSldQi','JVn93SeHaUGa1l08osaM','__selftest','gFK1wMAuNpWuob4kKAcy','name-діма']);
 async function loadMemories(){
   try{
     const r = await fetch(FS_BASE+'memories?key='+FB.apiKey+'&pageSize=60');
     if(!r.ok) return;
     const j = await r.json();
     (j.documents||[]).forEach(d=>{
+      const did = d.name.split('/').pop();
       const src = d.fields?.image?.stringValue;
       const nm = d.fields?.name?.stringValue || 'гостя';
+      if(HIDE_DOCS.has(did)) return;                                     // тестові — приховати
       if(!src || !src.startsWith('data:') || nm==='__selftest') return;  // тільки справжні фото
       const im = new Image(); im.src = src;
       SITCOM_EXTRA.push({img:im, name: nm});
@@ -6040,8 +6045,10 @@ async function loadSelfies(){
     if(!r.ok) return;
     const j = await r.json();
     (j.documents||[]).forEach(d=>{
+      const did = d.name.split('/').pop();
       const src = d.fields?.image?.stringValue;
       const nm = d.fields?.name?.stringValue || 'гість';
+      if(HIDE_DOCS.has(did)) return;                                     // тестові — приховати
       if(!src || !src.startsWith('data:') || nm==='__selftest') return;  // тільки справжні фото
       const im = new Image(); im.src = src;
       GUEST_FACES.push({img:im, name: nm});
