@@ -1590,7 +1590,31 @@ function drawSet(camX){
   if(cx2>-20 && cx2<W){
     ctx.fillStyle = COL.ink; ctx.fillRect(cx2,FLOOR_Y-8,14,8);
     ctx.fillStyle = COL.white; ctx.fillRect(cx2,FLOOR_Y-8,14,2);
+    for(let s=0;s<4;s++){ ctx.fillStyle = s%2?COL.white:COL.ink; ctx.fillRect(cx2+s*3.5, FLOOR_Y-11, 3, 3); }  // «зубці» хлопавки
   }
+  // кабелі, що зміяться по підлозі
+  ctx.strokeStyle = '#201e28'; ctx.lineWidth = 2;
+  for(let c=0;c<2;c++){ const cy=FLOOR_Y+12+c*9; let cs=Math.round(10-camX*0.9);
+    ctx.beginPath(); ctx.moveTo(cs,cy);
+    for(let s=1;s<=8;s++) ctx.lineTo(cs+s*44, cy+((s+c)%2?4:-4));
+    ctx.stroke(); }
+  // студійне світло: софтбокси на штативах + теплий конус (драматичне освітлення зйомки)
+  [[36,1],[392,-1]].forEach(([lxw,ldir])=>{
+    const sx=Math.round(lxw-camX); if(sx<-40||sx>W+40) return;
+    const topY=34+GY, panelW=14, panelH=30;
+    ctx.strokeStyle=COL.ink; ctx.lineWidth=2;                         // штатив
+    ctx.beginPath(); ctx.moveTo(sx,topY+panelH); ctx.lineTo(sx,FLOOR_Y-3);
+    ctx.moveTo(sx,FLOOR_Y-3); ctx.lineTo(sx-8,FLOOR_Y); ctx.moveTo(sx,FLOOR_Y-3); ctx.lineTo(sx+8,FLOOR_Y); ctx.stroke();
+    ctx.fillStyle='#2a2630'; ctx.fillRect(sx-panelW/2-1,topY-1,panelW+2,panelH+2);   // рамка софтбокса
+    ctx.fillStyle='#fdf6e2'; ctx.fillRect(sx-panelW/2,topY,panelW,panelH);
+    ctx.fillStyle='rgba(255,244,206,.95)'; ctx.fillRect(sx-panelW/2+1,topY+2,panelW-2,panelH-6);
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(sx-panelW/2+2,topY+2,3,panelH-8);   // гарячий блік
+    // теплий конус світла в бік сцени (низька непрозорість — без омбре)
+    ctx.fillStyle='rgba(255,236,180,.09)';
+    ctx.beginPath(); ctx.moveTo(sx+ldir*4,topY+6); ctx.lineTo(sx+ldir*150,FLOOR_Y-24); ctx.lineTo(sx+ldir*70,FLOOR_Y); ctx.lineTo(sx+ldir*2,FLOOR_Y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,240,200,.07)';
+    ctx.beginPath(); ctx.moveTo(sx+ldir*4,topY+8); ctx.lineTo(sx+ldir*90,FLOOR_Y-10); ctx.lineTo(sx+ldir*36,FLOOR_Y); ctx.lineTo(sx+ldir*2,FLOOR_Y); ctx.closePath(); ctx.fill();
+  });
 }
 
 /* ================= тіндер-сцена ================= */
