@@ -40,10 +40,12 @@
   #title-screen{gap:2.2%;background:transparent;pointer-events:none;padding:2.5% 0 13cqh;justify-content:center}
   #title-screen .btn, #title-screen #ach-btn{pointer-events:auto}
   #title-screen h1{
-    color:#fff;font-size:clamp(20px,5.2cqw,42px);letter-spacing:2px;
-    text-shadow:3px 3px 0 var(--rose), 6px 6px 0 rgba(0,0,0,.6);
+    font-family:"Snell Roundhand","Savoye LET","Segoe Script","Bradley Hand","Brush Script MT",cursive;
+    color:#b0596f;font-size:clamp(38px,10cqw,72px);letter-spacing:1px;font-weight:600;font-style:italic;
+    text-shadow:1px 2px 0 rgba(255,255,255,.85), 3px 5px 7px rgba(150,95,115,.3);
   }
-  #title-screen .sub{color:#d8d4c4;font-size:clamp(10px,2.2cqw,17px);letter-spacing:1px}
+  #title-screen h1 .amp{color:#c99a5a;font-size:.72em;vertical-align:.05em}
+  #title-screen .sub{color:#7a6a72;font-family:Georgia,serif;font-style:italic;font-size:clamp(11px,2.3cqw,17px);letter-spacing:.5px}
   .menu{display:flex;flex-direction:column;gap:8px;width:min(74%,360px)}
   .btn-row{display:flex;gap:8px;width:100%}
   .btn-row .btn{flex:1;min-width:0}
@@ -57,7 +59,13 @@
   }
   .btn:active{transform:translateY(2px);box-shadow:0 0 0 3px #000, inset 0 -2px 0 rgba(0,0,0,.35)}
   .btn.katya{background:var(--rose)} .btn.dima{background:var(--sage)} .btn.watch{background:var(--terra)}
-  #title-screen .hint{color:#bcb7a8;font-size:clamp(10px,2cqw,13px)}
+  /* весільна палітра кнопок на титулці (світло) */
+  #title-screen .btn{background:#fff8f1;color:#8a5766;text-transform:none;border-radius:9px;
+    box-shadow:0 3px 0 rgba(150,110,120,.3), 0 0 0 2px #ecd3c4;letter-spacing:.5px}
+  #title-screen .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(150,110,120,.3), 0 0 0 2px #ecd3c4}
+  #title-screen .btn.katya{background:#e8a7b6;color:#5a2838;box-shadow:0 3px 0 rgba(150,80,100,.35), 0 0 0 2px #d98ea0}
+  #title-screen .btn.watch{background:#ecd0a0;color:#5a4420;box-shadow:0 3px 0 rgba(150,120,60,.35), 0 0 0 2px #dcc088}
+  #title-screen .hint{color:#9a8a86;font-size:clamp(10px,2cqw,13px)}
 
   /* ---------- dialogue ---------- */
   #dialog{
@@ -245,8 +253,8 @@
   </div>
 
   <div id="title-screen" class="overlay">
-    <h1>КАТЯ ♥ ДІМА</h1>
-    <div class="sub">наші запросини на весілля · 06.09.2026 · Київ</div>
+    <h1>Катя <span class="amp">&amp;</span> Діма</h1>
+    <div class="sub">запрошуємо на наше весілля · 6 вересня 2026 · Київ</div>
     <div class="menu" id="main-menu">
       <button class="btn katya" id="btn-newgame">▶ Нова гра</button>
       <button class="btn watch" data-pov="watch">📖 Історія без ігор</button>
@@ -1551,9 +1559,13 @@ function drawPeizazhka(camX){
   // вечірнє небо — піксельні смуги з дизером (без омбре)
   const HOR = 110+GY;                                  // горизонт-парапет ближче до підлоги
   pixBands(0,0,W,HOR, ['#2a2450','#402a5c','#5a3a68','#8a4a5e','#c96a4e']);
-  // місяць (високо в небі)
-  ctx.fillStyle = '#f4e8c8'; ctx.fillRect(250,40,14,14);
-  ctx.fillStyle = '#2a2450'; ctx.fillRect(254,40,10,4);
+  // місяць (круглий, із сяйвом і кратерами)
+  ctx.fillStyle='rgba(246,236,200,.22)'; ctx.beginPath(); ctx.arc(258,46,17,0,7); ctx.fill();
+  ctx.fillStyle='#f6ecc8'; ctx.beginPath(); ctx.arc(258,46,10,0,7); ctx.fill();
+  ctx.fillStyle='rgba(206,192,150,.55)';
+  ctx.beginPath(); ctx.arc(262,43,2,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(255,49,1.5,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(261,50,1,0,7); ctx.fill();
   // зорі
   for(let i=0;i<30;i++){
     const sx=(i*53)%W, sy=(i*71)%(HOR-40);
@@ -5060,8 +5072,18 @@ function render(){
   ctx.fillStyle = '#000'; ctx.fillRect(-8,-8,W+16,H+16);
 
   if(game.state==='title'){
-    drawSet(120);
-    ctx.fillStyle = 'rgba(10,10,22,.55)'; ctx.fillRect(0,0,W,H);
+    // світлий весільний фон — дизер-смуги (без омбре) + пелюстки, що падають
+    pixBands(0,0,W,FLOOR_Y, ['#fdeef1','#f9e7eb','#f3dee4','#efe8dd']);
+    pixBands(0,FLOOR_Y,W,H-FLOOR_Y, ['#efe6d4','#e7dcc6']);
+    for(let i=0;i<20;i++){ const px=((i*61)+(game.t*0.3))%W, py=((i*47)+(game.t*0.55))%FLOOR_Y;
+      ctx.fillStyle = (i%3)? 'rgba(255,255,255,.9)' : 'rgba(230,160,178,.75)';
+      ctx.fillRect(px|0, py|0, 2, 2); }
+    // квіткові гілочки-гіпсофіла у верхніх кутах
+    [[26,34,1],[W-26,44,-1]].forEach(([gx,gy,dir])=>{ ctx.save(); ctx.translate(gx,gy);
+      ctx.strokeStyle='#8bb37e'; ctx.lineWidth=1;
+      for(let b=0;b<5;b++){ ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(dir*(6+b*3), 8+b*6); ctx.stroke(); }
+      ctx.fillStyle='#fff'; for(let d=0;d<7;d++) ctx.fillRect((dir*(4+d*4))|0, (10+d*5)|0, 3,3);
+      ctx.restore(); });
     drawOrnament(10);                       // вишиванковий кант тайтла
     drawOrnament(H-16);
     const bob = (game.t>>4)&1;
