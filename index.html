@@ -3708,11 +3708,12 @@ function sfxBlip(who){
 /* ---------------- BGM: справжні україномовні треки SSB ----------------
    Реальні пісні гурту (з дозволу автора): звучать «як SSB» і не зациклюються
    (довгі). Тихий фон + кнопка вимкнення. Ліниве завантаження по одному треку. */
+// діджиталізовані (лоу-фай, без розбірливих слів) — оригінали лишаються в audio/ про запас
 const BGM_TRACKS = {
-  planeta:  'audio/ssb_planeta.m4a',    // «Моя планета»
-  khata:    'audio/ssb_khata.m4a',      // «Над моєю хатою»
-  stezhyna: 'audio/ssb_stezhyna.m4a',   // «Стежина»
-  pozniaky: 'audio/ssb_pozniaky.m4a',   // «Позняки»
+  planeta:  'audio/ssb_planeta_dig.m4a',    // «Моя планета»
+  khata:    'audio/ssb_khata_dig.m4a',      // «Над моєю хатою»
+  stezhyna: 'audio/ssb_stezhyna_dig.m4a',   // «Стежина»
+  pozniaky: 'audio/ssb_pozniaky_dig.m4a',   // «Позняки»
 };
 let musicMuted = localStorage.getItem('wed-mute') === '1';
 const bgmEls = {};
