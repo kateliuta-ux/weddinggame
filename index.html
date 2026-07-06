@@ -709,6 +709,21 @@ function chatScript(pov){
   ];
   return [...war, ...intro, ...common, ...outro];
 }
+// ── КАМЕО ГОСТЕЙ: персональні вставки в сюжет (бачить лише той гість у своїй версії) ──
+// Додавати легко: {match:/регекс імені/, lines:[...репліки]} у потрібну сцену.
+const GUEST_CAMEOS = {
+  date: [
+    { match:/пінаєвськ|маріч/, lines:[
+      {who:null, emo:null, text:'А перед цим Катя була в ТЕБЕ, Марічко,\nна дні народження — пиво почалося ще там!'},
+    ]},
+  ],
+  // svat, band, wed, secret… — додамо, коли Катя скаже, кому де місце
+};
+function guestCameo(sceneKey){
+  const pn = (localStorage.getItem('wed-player-name')||'').toLowerCase();
+  for(const c of (GUEST_CAMEOS[sceneKey]||[])){ if(c.match.test(pn)) return c.lines; }
+  return [];
+}
 function dateScript(pov){
   // обоє щойно з довгих стосунків — ішли ніби «просто на пиво» (без обіцянок)
   const first = pov==='katya' ? [
@@ -729,6 +744,7 @@ function dateScript(pov){
     {who:'katya', emo:'wow', text:'Андервуд коконат?! Ти ЗАПАМʼЯТАВ?'},
   ];
   return [
+    ...guestCameo('date'),          // персональне камео гостя (напр. Марічка)
     ...first,
     ...beer,
     {who:null, emo:null, text:'(Запамʼятай і ти цей бар — «Хвильовий».\nВін ще зіграє свою роль.)'},
