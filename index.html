@@ -782,6 +782,16 @@ function guestCameo(sceneKey){
   for(const c of (GUEST_CAMEOS[sceneKey]||[])){ if(c.match.test(pn)) return c.lines; }
   return [];
 }
+// ── мапа гість→локація за іменем: хто у Хвильовому, хто в Софі (для фіналу) ──
+const GUEST_VENUE = [
+  { v:'khv',  match:/кімельфельд|приймак|большаков|\bліда\b|лідус|дарин|рябухін|плешаков|казанець|альон|кандауров|тімур|матвійчук/ },
+  { v:'sofi', match:/шаблія|луїз|яра|дядя саша|дядьк.* саш|брат саша|брат.* саш|костя|костянтин|давід|георгій|ліка/ },
+];
+function guestVenue(){
+  const pn = (localStorage.getItem('wed-player-name')||'').toLowerCase();
+  for(const g of GUEST_VENUE){ if(g.match.test(pn)) return g.v; }
+  return null;
+}
 function dateScript(pov){
   // обоє щойно з довгих стосунків — ішли ніби «просто на пиво» (без обіцянок)
   const first = pov==='katya' ? [
@@ -5532,10 +5542,11 @@ function update(){
 
     case 'cap8':
       if(game.phaseT > 170 || input.actionEdge){
-        // фінал за слотом гостя: A → тераса «Бути Софі», B → дворик «Хвильового»;
-        // без персонального коду — показуємо обидва по черзі
-        game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : 'sofi';
-        game.wedBoth = !GUEST;
+        // фінал за слотом гостя: A → тераса «Бути Софі», B → дворик «Хвильового».
+        // Пріоритет: персональний код (slot) → мапа гість→локація за іменем → обидва по черзі
+        const vByName = guestVenue();
+        game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : (vByName || 'sofi');
+        game.wedBoth = !GUEST && !vByName;
         setPhase('wed');                         // музика — «Горіла сосна» (через chipForPhase)
       }
       break;
