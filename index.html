@@ -5766,13 +5766,16 @@ async function openSelfie(){
     return;
   }
   snapBtn.disabled = false;
+  document.getElementById('selfie-send').disabled = true;
+  const already = !!localStorage.getItem('wed-selfie-sent');
   st.textContent = 'вмикаю камеру…';
   try{
     selfieStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:640}}});
     document.getElementById('selfie-video').srcObject = selfieStream;
-    st.textContent = 'обличчя в овал, дивись у камеру — і «КЛАЦ»';
+    st.textContent = already ? 'ти вже додавав фото — можеш переклацати (лишиться перше)'
+                             : 'обличчя в овал, дивись у камеру — і «КЛАЦ»';
   }catch(e){
-    st.textContent = 'камера недоступна 😔 дозволь доступ у налаштуваннях браузера';
+    st.textContent = 'камера недоступна — дозволь доступ у налаштуваннях браузера';
   }
 }
 function closeSelfie(toEnd){
