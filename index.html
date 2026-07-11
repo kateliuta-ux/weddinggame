@@ -557,7 +557,7 @@ const ACHS = [
   {id:'konami', icon:'🎮', title:'↑↑↓↓←→←→BA',      desc:'згадати старий код'},
   {id:'flappy', icon:'🐈', title:'Котолов',          desc:'покликати Кітану нявканням'},
   {id:'dvoye',  icon:'📼', title:'Гурт «ДВОЄ»',       desc:'знайти касету на тайтлі'},
-  {id:'quiz',   icon:'🧠', title:'Знавець пари',      desc:'5/5 у квізі про пару'},
+  {id:'quiz',   icon:'🧠', title:'Знавець пари',      desc:'усі відповіді у квізі про пару'},
   // пасхалки — окремий бейдж за кожну знайдену
   {id:'egg_heart',  icon:'💗', title:'Серце між ними',  desc:'знайти серце на тайтлі'},
   {id:'egg_kaasin', icon:'🪑', title:'Крісло KAASIN',   desc:'знайти крісло на зйомці'},
@@ -683,29 +683,38 @@ function chatScript(pov){
     {who:'dima',  emo:'happy', text:'О, симпатична! Точно ніде не бачив)'},
     {who:null,    emo:null,    text:'(Насправді не згадав. Але майже.)'},
   ];
+  // ── СПРАВЖНЯ перша переписка (Tinder → Telegram), 10–11 серпня 2022 ──
   const common = [
-    {who:null, emo:null, text:'Тіндер швидко переїхав у Телеграм.\nПерше збережене повідомлення — 11.08.2022:'},
-    {who:null, emo:null, text:'(Контекст: Катя тоді готувалась до своїх\nперших змагань із джиу-джитсу.)'},
-    {who:'dima',  emo:'happy', text:'Йоу! Як трєня?)'},
-    {who:'katya', emo:'tired', text:'Йоу) стресово 🥲\nБоюсь потрапити до важчих суперниць.'},
-    {who:'dima',  emo:'happy', text: CENSORED
-      ? 'Та навіть якщо потрапиш —\nвсеодно всіх покладеш'
-      : 'Та навіть якщо потрапиш —\nвсеодно їх відпиздиш'},
-    {who:'dima',  emo:'wow',   text:'А там такий двіж, як в карате-кіді?)'},
-    {who:'dima',  emo:'happy', text:'Удачки тобі завтра!'},
-    {who:'dima',  emo:'shy',   text:'ой'},
-    {who:'dima',  emo:'shy',   text:'в сб)'},
-    {who:'katya', emo:'normal',text:'Навіщо люди в тіндері пишуть,\nщо в них хороше почуття гумору?'},
-    {who:'dima',  emo:'happy', text:'Не знаю. Але тіндер голд\nзмінив моє життя'},
-    {who:null,    emo:null,    text:'(окрема важлива тема — пиво)'},
-    {who:'katya', emo:'happy', text:'з особливих дуже люблю кокосове темне,\nв Хвильовому наливають, але не запамʼятаю чиє'},
-    {who:'dima',  emo:'normal',text:'Андервуд коконат'},
-    {who:'dima',  emo:'wow',   text:'Тобто ти не любиш кокос як горіх?\nЧи як коканейро? МЕНІ ВАЖЛИВО ЗНАТИ'},
+    {who:null,   emo:null,    text:'ТИ СТВОРИВ/-ЛА ПАРУ З Dima Liutyi\n· 10.08.2022 ·'},
+    {who:'dima', emo:'happy',  text:'Привіт!'},
+    {who:'dima', emo:'normal', text:'Я в твітері не дуже шарю,\nяк і в тіндері, але він є'},
+    {who:'katya',emo:'wow',    text:'Привіт) Діма, а ми знайомились'},
+    {who:'katya',emo:'tired',  text:'Тільки я тоді була після ковіду.\nЗнімала Штормнадо, яке й не вийшло досі'},
+    {who:'dima', emo:'happy',  text:'Та я ж був в команді нахапченків —\nтреба було багато хапать, вже не памʼятаю)'},
+    {who:'katya',emo:'normal', text:'Це мабуть інша зйомка, Діма'},
+    {who:'dima', emo:'shy',    text:'Блін. Точно'},
+    {who:'dima', emo:'happy',  text:'Ага, «штормклуб» прочитав.\nТоді так, все памʼятаю)'},
+    {who:'katya',emo:'happy',  text:'Нахапченки звучить гордо'},
+    {who:'dima', emo:'normal', text:'Ну після тієї зйомки пообіцяв\nбільше не пити перед зйомкою. 8/10 погано)'},
+    {who:null,   emo:null,     text:'(окрема важлива тема — тренування)'},
+    {who:'dima', emo:'wow',    text:'А шо за тренування? Зальчик?'},
+    {who:'katya',emo:'happy',  text:'Джиу-джитсу. Майже боксік)\nТільки ми душимо, а не бʼємо'},
+    {who:'dima', emo:'happy',  text:'О, а ти не в ту секцію на печерці ходиш?\nДруг туди ж ходить'},
+    {who:'katya',emo:'normal', text:'Хто друг?)'},
+    {who:'dima', emo:'happy',  text:'Ярослав соколовський'},
+    {who:'katya',emo:'normal', text:'Той прікол, де чувак сидить на дівчині:\n«я займаюсь джиу-джитсу» — «я вже зрозуміла»?'},
+    {who:'dima', emo:'happy',  text:'Я бачив цей же,\nтільки він каже «я айтішнік»'},
+    {who:null,   emo:null,     text:'(окрема важлива тема — пиво)'},
+    {who:'katya',emo:'happy',  text:'з особливих люблю кокосове темне,\nв Хвильовому наливають'},
+    {who:'dima', emo:'normal',  text:'Андервуд коконат'},
+    {who:'katya',emo:'tired',  text:'Засинаю, Діма. Добраніч)'},
   ];
   const outro = pov==='katya' ? [
-    {who:null, emo:null, text:'11 серпня 2022. (Не пам’ятав.)'},
+    {who:null, emo:null, text:'А через пів року, 8 березня 2023:'},
+    {who:'katya', emo:'happy', text:'Реально досі пише, що тобі 30'},
   ] : [
     {who:null, emo:null, text:'11 серпня 2022. (Бачив. Дубль три.)'},
+    {who:null, emo:null, text:'А тіндер уперто писав, що Каті 30.'},
   ];
   return [...war, ...intro, ...common, ...outro];
 }
@@ -6196,16 +6205,37 @@ if(PARAMS.get('selfie') !== null && PARAMS.get('selfie') !== undefined && PARAMS
    отже наступні гравці свайпатимуть і тебе. Все на HTML/CSS, окремо від головного циклу. */
 let partyDeck = [], partyIdx = 0, partyBusy = false, partyTopEl = null, partyTopCard = null;
 function partyFaceSrc(who){ try{ return (who==='katya'?offK:offD).toDataURL(); }catch(_){ return ''; } }
+// гість без селфі все одно має «якусь картинку»: монограма на кольоровому тлі
+function placeholderAvatar(name){
+  const c=document.createElement('canvas'); c.width=240; c.height=300; const x=c.getContext('2d');
+  const n=(name||'гість').trim(); let h=0; for(let i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))>>>0; const hue=h%360;
+  const g=x.createLinearGradient(0,0,0,300); g.addColorStop(0,'hsl('+hue+',42%,44%)'); g.addColorStop(1,'hsl('+((hue+40)%360)+',36%,24%)');
+  x.fillStyle=g; x.fillRect(0,0,240,300);
+  x.fillStyle='rgba(255,255,255,.09)';
+  for(let i=0;i<44;i++){ const px=(i*53)%240, py=(i*71)%300; x.fillRect(px,py,4,4); x.fillRect(px+5,py,4,4); x.fillRect(px,py+3,9,4); x.fillRect(px+2,py+7,5,3); }
+  x.fillStyle='rgba(0,0,0,.22)'; x.beginPath(); x.arc(120,120,56,0,7); x.fill();
+  x.fillStyle='#f6efe2'; x.font='bold 74px Georgia, serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText((n[0]||'★').toUpperCase(),120,124);
+  x.font='bold 15px monospace'; x.fillStyle='rgba(255,255,255,.9)'; x.fillText('фото ще нема',120,214);
+  x.font='12px monospace'; x.fillStyle='rgba(255,255,255,.62)'; x.fillText('додай своє —',120,240); x.fillText('і будеш тут по-справжньому',120,258);
+  return c.toDataURL('image/png');
+}
 function buildPartyDeck(){
-  const guests = GUEST_FACES
-    .map(f => ({kind:'guest', name:(f.name||'гість весілля'), tag:'гість весілля', src:(f.img&&f.img.src)||''}))
-    .filter(g => g.src && g.src.startsWith('data:'));
+  const guests = GUEST_FACES.map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
+    return {kind:'guest', name:nm, tag:'гість весілля', src:(real&&real.startsWith('data:'))?real:placeholderAvatar(nm)}; });
   for(let i=guests.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=guests[i]; guests[i]=guests[j]; guests[j]=t; }
   const deck = guests.slice(0, 12);
   const katya = {kind:'katya', name:'Катерина, 30', tag:'джиу-джитсу · монтаж · кокосове темне', src:partyFaceSrc('katya')};
   const dima  = {kind:'dima',  name:'Дмитро, 32',  tag:'бокс · синтезатори · недоречні жарти', src:partyFaceSrc('dima')};
   const insert = c => deck.splice(Math.floor(Math.random()*(deck.length+1)), 0, c);
   insert(katya); insert(dima);
+  // ТВОЯ власна картка — навіть без фото (з плейсхолдером), зверху колоди
+  const meName = (localStorage.getItem('wed-player-name')||'').trim();
+  if(meName){
+    const mine = GUEST_FACES.find(f => (f.name||'').toLowerCase().trim() === meName.toLowerCase());
+    const realMine = mine && mine.img && mine.img.src && mine.img.src.startsWith('data:') ? mine.img.src : null;
+    const has = !!(selfieShot || realMine);
+    deck.unshift({kind:'self', name:meName+' — це ти', tag: has?'твоя картка ✦':'твоя картка ✦ (додай фото!)', src: selfieShot || realMine || placeholderAvatar(meName)});
+  }
   return deck;
 }
 function openParty(){
@@ -6287,8 +6317,8 @@ function showPartyMatch(card){
   const d = document.createElement('img'); d.className = 'pm-face'; d.src = partyFaceSrc('dima');
   face.append(k, h, d);
   document.getElementById('party-match-text').textContent = card.kind === 'katya'
-    ? 'У тебе гарний смак! Але Катя вже забронена Дімою — і навпаки.'
-    : 'Непоганий вибір! Та серце Діми вже давно у Каті — і навпаки.';
+    ? 'Смак у тебе відмінний! Але Катя вже забронена Дімою — і навпаки. Зате ти щойно метчнувся з їхнім весіллям: ти у списку, до зустрічі 6 вересня!'
+    : 'Вибір — вогонь! Та серце Діми давно у Каті — і навпаки. Зате це метч із їхнім весіллям: ми тебе чекаємо 6 вересня!';
   document.getElementById('party-match').classList.remove('hidden');
 }
 document.getElementById('party-like').addEventListener('click', ()=>{ if(partyTopEl && partyTopCard) swipeParty(partyTopCard, 1, partyTopEl); });
@@ -7064,6 +7094,22 @@ const QUIZ = [
   {q:'Чим коробочка з каблучкою привернула увагу?',
    opts:['Світилась світлодіодом','Заграла марш Мендельсона','Викотилась із рюкзака сама'],
    ok:0, notes:['Так! Інженерія кохання ✨','Ні, було тихо. І дуже мило.','Майже — Діма довго в рюкзаку копошився.']},
+  // ── питання зі СПРАВЖНЬОЇ першої переписки (серпень 2022) ──
+  {q:'Як Діма спершу пояснив, що не памʼятає ту зйомку?',
+   opts:['«Був у команді нахапченків»','Проспав','Його там не було'],
+   ok:0, notes:['Так! «там треба було багато хапать, вже не памʼятаю») А то був «штормклуб».','Ні — просто переплутав зйомки.','Був. Просто «8/10 погано» виглядав.']},
+  {q:'Хто з друзів Діми теж ходив на джиу-джитсу з Катею?',
+   opts:['Ярослав Соколовський','Плахотній','Кітана'],
+   ok:0, notes:['Так! Світ тісний — тепер він боярин на весіллі.','Плахотній — з дитячого табору, інша історія.','Кітана душить лише по-своєму.']},
+  {q:'Чому Діма кепсько виглядав на тій зйомці ШТОРМНАДО?',
+   opts:['Випив перед зйомкою','Не спав три доби','Кітана подряпала'],
+   ok:0, notes:['Так — і відтоді пообіцяв більше не пити перед зйомкою.','Ні, все прозаїчніше.','Кітана зʼявилась значно пізніше.']},
+  {q:'Про який прікол Катя спитала Діму першого вечора?',
+   opts:['«Я займаюсь джиу-джитсу» — «я вже зрозуміла»','Про кота в чоботях','Про гарбуз на сватанні'],
+   ok:0, notes:['Так! А Дімина версія була «я айтішнік».','Ні, котів іще не було.','Гарбуз — то геть інша серія.']},
+  {q:'Що Тіндер уперто писав про Дімин вік навіть у 2023-му?',
+   opts:['Що йому 30','Що він 8/10','Що він айтішнік'],
+   ok:0, notes:['Так! «реально досі пише, що тобі 30».','8/10 — то про зовсім інше.','Айтішнік — то з приколу, не з профілю.']},
 ];
 const quiz = {idx:0, score:0};
 const elQuiz = document.getElementById('quiz-screen');
@@ -7090,13 +7136,14 @@ function quizShow(){
   });
 }
 function quizFinish(){
-  document.getElementById('quiz-q').textContent = 'Результат: ' + quiz.score + '/5';
+  const N = QUIZ.length;
+  document.getElementById('quiz-q').textContent = 'Результат: ' + quiz.score + '/' + N;
   document.getElementById('quiz-dots').textContent = '';
-  const note = quiz.score===5 ? 'Ти або Кітана, або мама. Приходь обовʼязково! 🏆'
-    : quiz.score>=3 ? 'Солідно! Решту дізнаєшся на весіллі 🥂'
+  const note = quiz.score===N ? 'Ти або Кітана, або мама. Приходь обовʼязково! 🏆'
+    : quiz.score>=Math.ceil(N*0.6) ? 'Солідно! Решту дізнаєшся на весіллі 🥂'
     : 'Тим більше приходь — стільки всього дізнаєшся!';
   document.getElementById('quiz-note').textContent = note;
-  if(quiz.score===5) achUnlock('quiz');
+  if(quiz.score===N) achUnlock('quiz');
   const opts = document.getElementById('quiz-opts');
   opts.innerHTML = '';
   const back = document.createElement('button');
