@@ -1751,7 +1751,9 @@ function drawPhone(){
   // шапка
   ctx.fillStyle = COL.rose; ctx.fillRect(px,py,pw,16);
   ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
-  ctx.fillText('🔥 тіндер', px+pw/2, py+11);
+  ctx.fillText('тіндер', px+pw/2, py+11);
+  // намальоване полум'я замість айфон-емоджі
+  { const fx=px+pw/2-30, fy=py+8; ctx.fillStyle='#ff8f4a'; ctx.beginPath(); ctx.moveTo(fx,fy-6); ctx.quadraticCurveTo(fx+4,fy-1,fx,fy+3); ctx.quadraticCurveTo(fx-4,fy-1,fx,fy-6); ctx.fill(); ctx.fillStyle='#ffd27a'; ctx.fillRect(fx-1,fy-2,2,3); }
 
   const other = game.pov==='katya' ? 'dima' : 'katya';
 
@@ -4173,114 +4175,175 @@ function novelData(){
 }
 /* детальні фони новели (повний екран, атмосферні) */
 function novelBg(i){
-  const fl = Math.round(H*0.74), lin=(c1,c2)=>{ const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,c1); g.addColorStop(1,c2); return g; };
-  if(i===0){                                    // офіс ШТОРМНАДО
+  const fl = Math.round(H*0.74);
+  const lin=(c1,c2)=>{ const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,c1); g.addColorStop(1,c2); return g; };
+  const T=game.t;
+  const win=(x,y,bw,bh,c,off)=>{ for(let wy=3;wy<bh-2;wy+=4) for(let wx=2;wx<bw-2;wx+=4){ const lit=(((off|0)+wx*3+wy)%5)<2; ctx.fillStyle=lit?c:'#141024'; ctx.fillRect(x+wx,y+wy,2,2); } };
+  if(i===0){                                    // ── ОФІС ШТОРМНАДО (знімальний майданчик) ──
     ctx.fillStyle='#ece4d6'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#e0d6c4'; ctx.fillRect(0,fl,W,H-fl);
-    // хромакей із логотипом-мозком
-    ctx.fillStyle='#cfe0d8'; ctx.fillRect(W-120,fl-150,110,150);
-    ctx.strokeStyle='#9ac4b0'; ctx.lineWidth=2; ctx.strokeRect(W-120,fl-150,110,150);
-    drawBrain(W-65, fl-102, 20);
-    ctx.fillStyle='#3a3340'; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.fillText('ШТОРМНАДО', W-65, fl-70);
-    // стенд БРИФ + таймер
-    ctx.fillStyle='#f6f0e2'; ctx.fillRect(30,fl-120,70,44); ctx.strokeStyle='#c9bfa8'; ctx.strokeRect(30,fl-120,70,44);
-    ctx.fillStyle='#a8323c'; ctx.font='bold 10px monospace'; ctx.fillText('БРИФ', 65,fl-100); ctx.fillStyle='#4a4636'; ctx.font='8px monospace'; ctx.fillText('59:59', 65,fl-86);
-    // камера на штативі
-    ctx.fillStyle='#2b2b38'; ctx.fillRect(W/2-6,fl-40,26,16); ctx.fillRect(W/2+14,fl-46,10,8);
-    ctx.fillStyle='#1a1a24'; ctx.fillRect(W/2-2,fl-24,3,24); ctx.fillRect(W/2-10,fl,20,3);
-  } else if(i===1){                             // тіндер — сердечка
+    for(let fx=0;fx<W;fx+=30){ ctx.fillStyle='#d4cab6'; ctx.fillRect(fx,fl,1,H-fl); }
+    // зелений хромакей із логотипом ШТОРМНАДО
+    ctx.fillStyle='#cfe0d8'; ctx.fillRect(W-126,fl-158,116,158);
+    ctx.strokeStyle='#9ac4b0'; ctx.lineWidth=2; ctx.strokeRect(W-126,fl-158,116,158);
+    if(STORM_LOGO.complete && STORM_LOGO.naturalWidth){ const lw=76,lh=Math.round(lw*STORM_LOGO.naturalHeight/STORM_LOGO.naturalWidth); ctx.imageSmoothingEnabled=false; ctx.drawImage(STORM_LOGO,W-106,fl-142,lw,lh); }
+    else drawBrain(W-68,fl-104,20);
+    // вивіска iamidea
+    ctx.fillStyle='#fbfaf5'; ctx.fillRect(20,26,86,20); ctx.strokeStyle='#d6d0c2'; ctx.lineWidth=1; ctx.strokeRect(20,26,86,20);
+    ctx.fillStyle='#1a1a24'; ctx.font='bold 12px monospace'; ctx.textAlign='left'; ctx.fillText('iam',27,41); ctx.fillStyle='#a8323c'; ctx.fillText('idea',56,41);
+    ctx.fillStyle='#f4c84a'; ctx.beginPath(); ctx.arc(96,31,3,0,7); ctx.fill();
+    // фліпчарт «БРИФ» + таймер + рядки
+    ctx.fillStyle='#f6f0e2'; ctx.fillRect(24,fl-128,74,50); ctx.strokeStyle='#c9bfa8'; ctx.strokeRect(24,fl-128,74,50);
+    ctx.fillStyle='#a8323c'; ctx.font='bold 10px monospace'; ctx.textAlign='center'; ctx.fillText('БРИФ',61,fl-110); ctx.fillStyle='#e33'; ctx.font='8px monospace'; ctx.fillText('59:59',61,fl-96);
+    ctx.fillStyle='#3F7C77'; for(let r=0;r<3;r++) ctx.fillRect(30,fl-88+r*5,52,2);
+    // рослина-драцена
+    ctx.fillStyle='#cfcabd'; ctx.fillRect(116,fl-26,16,26); for(let l=0;l<6;l++){ ctx.save(); ctx.translate(124,fl-26); ctx.rotate(-1.1+l*0.4); ctx.fillStyle='#3f6b3a'; ctx.fillRect(-1,-30,2,30); ctx.restore(); }
+    // камера на штативі + REC
+    ctx.fillStyle='#2b2b38'; ctx.fillRect(W/2-6,fl-54,28,17); ctx.fillRect(W/2+20,fl-60,10,9); ctx.fillStyle='#c33'; ctx.fillRect(W/2-2,fl-51,3,3);
+    ctx.fillStyle='#8b8898'; ctx.fillRect(W/2+6,fl-37,3,37); ctx.fillStyle='#1a1a24'; ctx.fillRect(W/2-2,fl-2,22,2);
+    // софтбокс зі світловим конусом
+    ctx.strokeStyle='#1a1a24'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(40,fl-96); ctx.lineTo(40,fl); ctx.stroke();
+    ctx.fillStyle='#2a2630'; ctx.fillRect(32,fl-126,16,30); ctx.fillStyle='#fdf6e2'; ctx.fillRect(33,fl-124,14,26);
+    ctx.fillStyle='rgba(255,236,180,.10)'; ctx.beginPath(); ctx.moveTo(44,fl-120); ctx.lineTo(160,fl-30); ctx.lineTo(74,fl); ctx.lineTo(42,fl); ctx.fill();
+    // кабелі
+    ctx.strokeStyle='#22202a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(8,fl+9); for(let s=1;s<=6;s++) ctx.lineTo(8+s*32,fl+9+((s&1)?4:-4)); ctx.stroke();
+    // хлопавка
+    ctx.fillStyle='#1a1a24'; ctx.fillRect(W-40,fl-9,16,9); for(let s=0;s<4;s++){ ctx.fillStyle=s%2?'#f0ede4':'#1a1a24'; ctx.fillRect(W-40+s*3.5,fl-12,3,3); }
+  } else if(i===1){                             // ── ТІНДЕР ──
     ctx.fillStyle=lin('#241d33','#3a2438'); ctx.fillRect(0,0,W,H);
-    for(let k=0;k<26;k++){ const hx=(k*47)%W, hy=(H-((game.t*0.4+k*53)%H));
-      ctx.fillStyle=k%2?'rgba(168,80,95,.55)':'rgba(181,138,46,.45)';
-      ctx.fillRect(hx,hy,4,4); ctx.fillRect(hx+5,hy,4,4); ctx.fillRect(hx,hy+3,9,4); ctx.fillRect(hx+2,hy+7,5,3); }
-    // телефон-силует зі світінням
-    ctx.fillStyle='rgba(255,120,200,.12)'; ctx.beginPath(); ctx.arc(W/2,H*0.4,70,0,7); ctx.fill();
-    ctx.fillStyle='#12101a'; ctx.fillRect(W/2-26,H*0.4-46,52,92); ctx.fillStyle='#ff6ec7'; ctx.font='30px serif'; ctx.textAlign='center'; ctx.fillText('🔥', W/2, H*0.4+10);
-  } else if(i===2){                             // Пейзажка — захід
-    const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#2a2450'); g.addColorStop(.6,'#5a3a68'); g.addColorStop(1,'#c96a4e');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,fl);
-    ctx.fillStyle='#f4e8c8'; ctx.beginPath(); ctx.arc(W-60,60,14,0,7); ctx.fill();
-    for(let k=0;k<24;k++){ ctx.fillStyle='rgba(255,240,200,.5)'; ctx.fillRect((k*53)%W,(k*71)%(fl-40),2,2); }
-    ctx.fillStyle='#4a4456'; ctx.fillRect(0,fl,W,10);           // парапет
-    const mc=['#A8505F','#B58A2E','#3F7C77','#1E4E8A','#c9c4b4'];
-    for(let mx=0;mx<W;mx+=9){ ctx.fillStyle=mc[(mx/9)%5|0]; ctx.fillRect(mx+1,fl+2,6,5); }
-    ctx.fillStyle='#5a5461'; ctx.fillRect(0,fl+10,W,H-fl-10);
-    for(let lx=60;lx<W;lx+=140){ ctx.fillStyle='#1a1a24'; ctx.fillRect(lx,fl-70,3,70); ctx.fillStyle='#ffe8a0'; ctx.fillRect(lx-3,fl-76,9,8);
-      ctx.fillStyle='rgba(255,232,160,.12)'; ctx.beginPath(); ctx.moveTo(lx+1,fl-68); ctx.lineTo(lx-20,fl); ctx.lineTo(lx+22,fl); ctx.fill(); }
-  } else if(i===3){                             // Київ ↔ Лондон
+    for(let k=0;k<28;k++){ const hx=(k*47)%W, hy=(H-((T*0.4+k*53)%H)); ctx.fillStyle=k%2?'rgba(230,120,150,.6)':'rgba(200,170,90,.5)'; ctx.fillRect(hx,hy,4,4); ctx.fillRect(hx+5,hy,4,4); ctx.fillRect(hx,hy+3,9,4); ctx.fillRect(hx+2,hy+7,5,3); }
+    const cw=90,ch=120,cx=W/2-cw/2,cy=Math.round(H*0.26);
+    ctx.fillStyle='rgba(255,120,200,.14)'; ctx.beginPath(); ctx.arc(W/2,cy+ch/2,84,0,7); ctx.fill();
+    ctx.fillStyle='#f6f2ea'; ctx.fillRect(cx-3,cy-3,cw+6,ch+6); ctx.fillStyle='#2a2436'; ctx.fillRect(cx,cy,cw,ch);
+    ctx.fillStyle='#4a4458'; ctx.beginPath(); ctx.arc(W/2,cy+42,22,0,7); ctx.fill();
+    ctx.fillStyle='#3a3648'; ctx.fillRect(cx+12,cy+64,cw-24,ch-64);
+    ctx.fillStyle='#e8dfd0'; ctx.fillRect(cx+4,cy+ch-22,cw-8,18);
+    ctx.fillStyle='#1a1a24'; ctx.font='bold 8px monospace'; ctx.textAlign='left'; ctx.fillText('Дмитро, 32',cx+8,cy+ch-10);
+    ctx.strokeStyle='#3F7C77'; ctx.lineWidth=2; ctx.strokeRect(cx+6,cy+6,32,14); ctx.fillStyle='#3F7C77'; ctx.font='bold 8px monospace'; ctx.fillText('LIKE',cx+9,cy+16);
+    // намальоване полум'я (замість айфон-емоджі)
+    ctx.fillStyle='#ff8f4a'; ctx.beginPath(); ctx.moveTo(W/2,cy-18); ctx.quadraticCurveTo(W/2+10,cy-4,W/2,cy+8); ctx.quadraticCurveTo(W/2-10,cy-4,W/2,cy-18); ctx.fill();
+    ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.moveTo(W/2,cy-9); ctx.quadraticCurveTo(W/2+5,cy-2,W/2,cy+5); ctx.quadraticCurveTo(W/2-5,cy-2,W/2,cy-9); ctx.fill();
+  } else if(i===2){                             // ── ПЕЙЗАЖКА, захід сонця ──
+    const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#211c4a'); g.addColorStop(.55,'#5a3a68'); g.addColorStop(1,'#e0885a'); ctx.fillStyle=g; ctx.fillRect(0,0,W,fl);
+    ctx.fillStyle='rgba(246,236,200,.16)'; ctx.beginPath(); ctx.arc(W-56,54,22,0,7); ctx.fill(); ctx.fillStyle='#f6ecc8'; ctx.beginPath(); ctx.arc(W-56,54,11,0,7); ctx.fill();
+    for(let k=0;k<40;k++){ ctx.fillStyle='rgba(255,240,205,.5)'; ctx.fillRect((k*53)%W,(k*71)%(fl-46),(k%7?1:2),(k%7?1:2)); }
+    // лівий берег Києва: висотки з вікнами
+    ctx.fillStyle='#241d3a'; ctx.fillRect(0,fl-12,W,12);
+    for(let hx=0;hx<W;hx+=40){ const idx=hx/40|0, tall=idx%7===3, bw=16+(idx%3)*4, bh=tall?34+(idx%2)*8:12+(idx%4)*6; ctx.fillStyle='#1e1832'; ctx.fillRect(hx,fl-12-bh,bw,bh); win(hx,fl-12-bh,bw,bh,idx%2?'#ffd27a':'#ffb45a',idx*7); }
+    // телевежа + місток
+    { const tvx=Math.round(W*0.62); ctx.strokeStyle='#1a1530'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(tvx-6,fl-12); ctx.lineTo(tvx,fl-58); ctx.lineTo(tvx+6,fl-12); ctx.stroke(); for(let ty=fl-52;ty<fl-12;ty+=7){ const wch=6*(fl-12-ty)/46; ctx.beginPath(); ctx.moveTo(tvx-wch,ty); ctx.lineTo(tvx+wch,ty); ctx.stroke(); } ctx.fillStyle='#ff5a4a'; ctx.fillRect(tvx-1,fl-61,2,3); }
+    { const bxc=Math.round(W*0.28); ctx.strokeStyle='#181329'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(bxc-40,fl-11); ctx.quadraticCurveTo(bxc,fl-20,bxc+40,fl-11); ctx.stroke(); }
+    // мозаїчний парапет
+    ctx.fillStyle='#4a4456'; ctx.fillRect(0,fl,W,12); const mc=['#A8505F','#B58A2E','#3F7C77','#1E4E8A','#c9c4b4']; for(let mx=0;mx<W;mx+=9){ ctx.fillStyle=mc[(mx/9)%5|0]; ctx.fillRect(mx+1,fl+2,6,6); }
+    // бруківка + ажурні ліхтарі
+    ctx.fillStyle='#5a5461'; ctx.fillRect(0,fl+12,W,H-fl-12);
+    for(let lx=50;lx<W;lx+=130){ ctx.fillStyle='#171420'; ctx.fillRect(lx,fl-74,3,74); ctx.strokeStyle='#171420'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(lx+1,fl-72); ctx.quadraticCurveTo(lx+8,fl-78,lx+9,fl-71); ctx.stroke(); ctx.fillStyle='#ffe8a0'; ctx.fillRect(lx+5,fl-73,8,7); ctx.fillStyle='rgba(255,232,160,.12)'; ctx.beginPath(); ctx.moveTo(lx+8,fl-66); ctx.lineTo(lx-14,fl); ctx.lineTo(lx+30,fl); ctx.fill(); }
+    // мозаїчний кіт (символ Пейзажки)
+    { const kx=Math.round(W*0.46); ctx.fillStyle='#1a1a24'; ctx.fillRect(kx,fl-30,34,30); ctx.fillRect(kx+24,fl-44,14,18); ctx.fillRect(kx+24,fl-50,4,7); ctx.fillRect(kx+34,fl-50,4,7); mc.forEach((c,ci)=>{ ctx.fillStyle=c; ctx.fillRect(kx+3+ci*6,fl-26+(ci%3)*7,4,4); }); ctx.fillStyle='#fff'; ctx.fillRect(kx+27,fl-40,2,2); ctx.fillRect(kx+33,fl-40,2,2); }
+    // каштанове листя в кутах
+    for(const dir of [1,-1]){ const ox=dir>0?-6:W+6; for(let bi=0;bi<5;bi++){ ctx.fillStyle='#1f4a24'; ctx.beginPath(); ctx.arc(ox+dir*(6+bi*10),8+(bi%2)*10,12,0,7); ctx.fill(); } ctx.fillStyle='#f2ecdc'; ctx.fillRect(ox+dir*22,30,2,7); }
+  } else if(i===3){                             // ── КИЇВ ↔ ЛОНДОН ──
     const mid=W/2;
     let g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#1c2440'); g.addColorStop(1,'#4a3a58'); ctx.fillStyle=g; ctx.fillRect(0,0,mid,fl);
-    ctx.fillStyle='#141a30'; ctx.fillRect(20,fl-80,24,80); ctx.fillRect(60,fl-120,8,120); ctx.fillRect(57,fl-130,14,12);
-    ctx.fillStyle='rgba(255,220,140,.8)'; ctx.fillRect(28,fl-64,3,3); ctx.fillRect(64,fl-100,3,3);
+    // Київ: місяць, дзвіниця, висотки
+    ctx.fillStyle='rgba(246,236,200,.9)'; ctx.beginPath(); ctx.arc(30,30,7,0,7); ctx.fill();
+    ctx.fillStyle='#141a30'; ctx.fillRect(14,fl-72,22,72); win(14,fl-72,22,72,'#ffd27a',3); ctx.fillRect(48,fl-116,8,116); ctx.fillRect(45,fl-126,14,12);
+    ctx.fillStyle='#c9a24a'; ctx.fillRect(50,fl-130,4,4);
+    ctx.fillStyle='#141a30'; ctx.fillRect(70,fl-56,22,56); win(70,fl-56,22,56,'#ffb45a',5);
+    // Лондон: сірувато, Біг-Бен, даблдекер, дощ, будка
     g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#2a2438'); g.addColorStop(1,'#5a4a5e'); ctx.fillStyle=g; ctx.fillRect(mid,0,mid,fl);
-    ctx.fillStyle='#3c3450'; ctx.fillRect(W-64,fl-140,22,140); ctx.fillStyle='#f4e8c8'; ctx.fillRect(W-60,fl-134,12,12);
-    for(let k=0;k<10;k++){ ctx.fillStyle='rgba(160,190,230,.35)'; ctx.fillRect(mid+((k*23+game.t*3)%(mid-8)),(k*40)%fl,1,6); }
+    ctx.fillStyle='rgba(200,205,215,.10)'; ctx.fillRect(mid,fl-50,mid,50);
+    ctx.fillStyle='#3c3450'; ctx.fillRect(W-58,fl-150,22,150); ctx.fillRect(W-62,fl-166,30,18);   // Біг-Бен вежа
+    ctx.fillStyle='#f4e8c8'; ctx.fillRect(W-56,fl-146,18,18); ctx.fillStyle='#3c3450'; ctx.fillRect(W-48,fl-142,2,6); ctx.fillRect(W-47,fl-138,4,1);  // циферблат
+    ctx.fillStyle='#3c3450'; ctx.beginPath(); ctx.moveTo(W-64,fl-166); ctx.lineTo(W-47,fl-182); ctx.lineTo(W-30,fl-166); ctx.fill();  // шпиль
+    ctx.fillStyle='#141a30'; ctx.fillRect(mid+16,fl-64,20,64); win(mid+16,fl-64,20,64,'#cbd9e0',2);
+    { const busx=mid+26; ctx.fillStyle='#b3252c'; ctx.fillRect(busx,fl-20,40,18); ctx.fillStyle='#8a1a20'; ctx.fillRect(busx,fl-20,40,3); ctx.fillStyle='#cbd9e0'; for(let k=0;k<5;k++) ctx.fillRect(busx+3+k*7,fl-16,5,5); ctx.fillStyle='#1a1a24'; ctx.beginPath(); ctx.arc(busx+9,fl-2,3,0,7); ctx.arc(busx+31,fl-2,3,0,7); ctx.fill(); }
+    ctx.fillStyle='#7a1e22'; ctx.fillRect(W-24,fl-40,14,40); ctx.fillStyle='#f4e8c8'; ctx.fillRect(W-21,fl-36,8,10);  // червона будка
+    for(let k=0;k<12;k++){ ctx.fillStyle='rgba(160,190,230,.35)'; ctx.fillRect(mid+((k*23+T*3)%(mid-8)),(k*40+T*5)%fl,1,6); }
     ctx.fillStyle='#3a3446'; ctx.fillRect(0,fl,W,H-fl);
-    ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='bold 10px monospace'; ctx.textAlign='center'; ctx.fillText('· 2500 км ·', mid, H*0.5);
-  } else if(i===4){                             // Білогородка, осінь
+    ctx.fillStyle='rgba(255,255,255,.15)'; for(let y=0;y<fl;y+=14) ctx.fillRect(mid-1,y,2,8);
+    ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='bold 10px monospace'; ctx.textAlign='center'; ctx.fillText('· 2500 км ·', mid, 30);
+  } else if(i===4){                             // ── БІЛОГОРОДКА, осінь ──
     ctx.fillStyle=lin('#c9b78a','#e8dcc0'); ctx.fillRect(0,0,W,fl);
     ctx.fillStyle='#a8935e'; ctx.fillRect(0,fl,W,H-fl);
-    ctx.fillStyle='#8a6b46'; for(let px=8;px<W;px+=46){ ctx.fillRect(px,fl-46,8,46); } ctx.fillRect(0,fl-44,W,3);  // паркан
-    for(let k=0;k<14;k++){ const lx=(k*61+game.t)%(W+20)-10, ly=40+(k*29)%(fl-50); ctx.fillStyle=['#b5652e','#c98a3e','#8a6b2e'][k%3]; ctx.fillRect(lx,ly,3,3); }
-    // хата вдалині
-    ctx.fillStyle='#d8c8a8'; ctx.fillRect(W-90,fl-70,70,70); ctx.fillStyle='#8a5c3e'; ctx.beginPath(); ctx.moveTo(W-96,fl-70); ctx.lineTo(W-55,fl-96); ctx.lineTo(W-14,fl-70); ctx.fill();
-    ctx.fillStyle='#3a4a3c'; ctx.fillRect(W-70,fl-40,16,40);
-  } else if(i===5){                             // сватання — хата зсередини
-    ctx.fillStyle='#d8c8a8'; ctx.fillRect(0,0,W,fl); ctx.fillStyle='#c8b494'; ctx.fillRect(0,fl,W,H-fl);
-    // рушник на стіні
-    ctx.fillStyle='#faf6ea'; ctx.fillRect(W/2-50,30,100,20); ctx.fillStyle='#a8323c'; ctx.fillRect(W/2-50,30,10,20); ctx.fillRect(W/2+40,30,10,20);
-    for(let x=W/2-36;x<W/2+36;x+=8){ ctx.fillStyle='#a8323c'; ctx.fillRect(x,38,3,3); }
-    // стіл із короваєм
-    ctx.fillStyle='#8a5e40'; ctx.fillRect(W/2-60,fl-14,120,14);
-    ctx.fillStyle='#b8783c'; ctx.beginPath(); ctx.ellipse(W/2,fl-22,26,14,0,0,7); ctx.fill();
-    ctx.fillStyle='#e8b877'; ctx.fillRect(W/2-14,fl-34,5,5); ctx.fillRect(W/2-2,fl-36,5,5); ctx.fillRect(W/2+10,fl-34,5,5);
-    ctx.fillStyle='#a8323c'; ctx.fillRect(W/2-2,fl-40,3,3);
-  } else if(i===6){                             // світла квартира Позняки
+    // осінні дерева
+    for(let tx=0;tx<W;tx+=90){ ctx.fillStyle='#6a4a2a'; ctx.fillRect(tx+34,fl-64,5,64); ctx.fillStyle=['#c98a3e','#b5652e','#d9a83a'][(tx/90|0)%3]; ctx.beginPath(); ctx.arc(tx+36,fl-70,18,0,7); ctx.fill(); ctx.fillStyle='rgba(255,230,150,.22)'; ctx.beginPath(); ctx.arc(tx+30,fl-76,6,0,7); ctx.fill(); }
+    // паркан
+    ctx.fillStyle='#8a6b46'; for(let px=8;px<W;px+=44){ ctx.fillRect(px,fl-46,8,46); ctx.fillStyle='#7a5c3a'; ctx.fillRect(px+2,fl-46,2,46); ctx.fillStyle='#8a6b46'; } ctx.fillRect(0,fl-44,W,3);
+    // мазанка Дана з солом'яним дахом
+    { const hx=W-92; ctx.fillStyle='#ece0c4'; ctx.fillRect(hx,fl-74,68,74); ctx.fillStyle='#b58a4a'; ctx.beginPath(); ctx.moveTo(hx-8,fl-74); ctx.lineTo(hx+34,fl-100); ctx.lineTo(hx+76,fl-74); ctx.closePath(); ctx.fill(); ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+27,fl-40,14,40); ctx.fillStyle='#bfe0e8'; ctx.fillRect(hx+8,fl-62,14,14); ctx.fillRect(hx+46,fl-62,14,14); ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+14,fl-62,2,14); ctx.fillRect(hx+52,fl-62,2,14); }
+    // листя, що падає
+    for(let k=0;k<16;k++){ const lx=(k*61+T)%(W+20)-10, ly=40+(k*29+T*0.6)%(fl-50); ctx.fillStyle=['#b5652e','#c98a3e','#8a6b2e'][k%3]; ctx.fillRect(lx,ly,3,3); }
+    // силует кицьки на землі
+    { const kx=W*0.32; ctx.fillStyle='#3a3340'; ctx.fillRect(kx,fl-14,26,12); ctx.fillRect(kx+22,fl-22,10,10); ctx.fillRect(kx+22,fl-26,3,5); ctx.fillRect(kx+29,fl-26,3,5); ctx.fillRect(kx-6,fl-12,8,3); ctx.fillStyle='#7fc0b6'; ctx.fillRect(kx+24,fl-19,2,2); ctx.fillRect(kx+28,fl-19,2,2); }
+  } else if(i===5){                             // ── СВАТАННЯ (хата зсередини) ──
+    ctx.fillStyle='#e8dcc0'; ctx.fillRect(0,0,W,fl); ctx.fillStyle='#d9c9a8'; ctx.fillRect(0,0,W,14); ctx.fillStyle='#7a5c3e'; ctx.fillRect(0,14,W,3);
+    ctx.fillStyle='#a8845a'; ctx.fillRect(0,fl,W,H-fl); for(let fx=0;fx<W;fx+=32){ ctx.fillStyle='#96744c'; ctx.fillRect(fx,fl,2,H-fl); }
+    // ПІЧ біла з розписом + жар
+    ctx.fillStyle='#f4efe2'; ctx.fillRect(18,fl-120,66,120); ctx.fillRect(28,fl-136,34,16); ctx.fillStyle='#ddd4bd'; ctx.fillRect(18,fl-120,66,4);
+    ctx.fillStyle='#1a1a24'; ctx.fillRect(30,fl-84,36,26); ctx.fillStyle='#c96a2e'; ctx.fillRect(34,fl-70,28,10); ctx.fillStyle='#e8a04e'; ctx.fillRect(38,fl-66,20,5);
+    ctx.fillStyle='rgba(255,180,90,.10)'; ctx.beginPath(); ctx.arc(48,fl-64,36,0,7); ctx.fill();
+    for(let p=0;p<3;p++){ const px=28+p*18; ctx.fillStyle='#A8505F'; ctx.fillRect(px,fl-108,6,6); ctx.fillStyle='#3F7C77'; ctx.fillRect(px+2,fl-102,2,6); ctx.fillStyle='#B58A2E'; ctx.fillRect(px-2,fl-106,2,2); ctx.fillRect(px+6,fl-106,2,2); }
+    // рушники на стіні
+    [W/2-8,W/2+28].forEach(rx=>{ ctx.fillStyle='#faf6ea'; ctx.fillRect(rx,26,18,54); ctx.fillStyle='#b3323c'; for(let ry=0;ry<3;ry++){ ctx.fillRect(rx+2,32+ry*16,14,2); for(let kk=0;kk<3;kk++) ctx.fillRect(rx+3+kk*5,36+ry*16,3,3); } });
+    // калина над рушником
+    ctx.strokeStyle='#5a7c3a'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(W/2-6,22); ctx.lineTo(W/2+40,22); ctx.stroke(); for(let kk=0;kk<8;kk++){ ctx.fillStyle='#c0202a'; ctx.fillRect(W/2-4+kk*5,20+((kk%2)*2),2,2); }
+    // в'язка кукурудзи
+    for(let kk=0;kk<5;kk++){ ctx.fillStyle=kk%2?'#e8c24a':'#d9a83a'; ctx.fillRect(W-24,24+kk*7,7,7); ctx.fillStyle='#b58a2e'; ctx.fillRect(W-24,24+kk*7,7,1); }
+    // стіл із короваєм на рушнику
+    ctx.fillStyle='#8a5e40'; ctx.fillRect(W/2-60,fl-16,120,16); ctx.fillStyle='#faf6ea'; ctx.fillRect(W/2-44,fl-20,88,5); ctx.fillStyle='#a8323c'; ctx.fillRect(W/2-44,fl-17,88,2);
+    ctx.fillStyle='#b8783c'; ctx.beginPath(); ctx.ellipse(W/2,fl-28,28,15,0,0,7); ctx.fill(); ctx.fillStyle='#e8b877'; for(let sh=0;sh<5;sh++) ctx.fillRect(W/2-20+sh*10,fl-40,6,6); ctx.fillStyle='#a8323c'; ctx.fillRect(W/2-2,fl-46,3,4);
+    // гарбуз у кутку
+    ctx.fillStyle='#d97e2e'; ctx.fillRect(W-30,fl-16,18,16); ctx.fillStyle='#b3611c'; ctx.fillRect(W-27,fl-16,3,16); ctx.fillRect(W-19,fl-16,3,16); ctx.fillStyle='#3F7C77'; ctx.fillRect(W-23,fl-20,4,5);
+  } else if(i===6){                             // ── ПОЗНЯКИ (квартира) ──
     ctx.fillStyle='#ece4d6'; ctx.fillRect(0,0,W,fl); ctx.fillStyle='#f2ebde'; ctx.fillRect(0,0,W,14);
-    ctx.fillStyle='#bcd4e2'; ctx.fillRect(40,fl-140,56,74); ctx.strokeStyle='#cfc4b2'; ctx.lineWidth=2; ctx.strokeRect(40,fl-140,56,74);
-    // книжкова полиця (права стіна)
-    const spines=['#A8505F','#3F7C77','#B58A2E','#1E4E8A','#7a5c8a','#c96a4e'];
-    ctx.fillStyle='#8a6b46'; ctx.fillRect(W-88,fl-130,64,7); ctx.fillRect(W-88,fl-102,64,7);
-    for(let s=0;s<10;s++){ ctx.fillStyle=spines[s%6]; ctx.fillRect(W-86+s*6,fl-150,5,20); ctx.fillStyle=spines[(s+3)%6]; ctx.fillRect(W-86+s*6,fl-122,5,20); }
-    // справжні шпалери-джунглі їхньої кімнати (акцентна стіна над диваном) + кімнатна рослина
+    // вікно з видом
+    ctx.fillStyle='#bcd4e2'; ctx.fillRect(34,fl-140,56,74); ctx.strokeStyle='#cfc4b2'; ctx.lineWidth=2; ctx.strokeRect(34,fl-140,56,74); ctx.fillStyle='#a8c4d6'; ctx.fillRect(34,fl-100,56,34); ctx.fillStyle='#cfc4b2'; ctx.fillRect(60,fl-140,2,74); ctx.fillRect(34,fl-104,56,2);
+    // справжні шпалери-джунглі
     drawWallpaper(W/2-38, fl-150, 76, 108);
-    ctx.fillStyle='#b07a4a'; ctx.fillRect(104,fl-22,14,22);
-    for(let l=0;l<6;l++){ ctx.save(); ctx.translate(111,fl-22); ctx.rotate(-1+l*0.4); ctx.fillStyle='#3f6b3a'; ctx.fillRect(-1,-28,2,28); ctx.restore(); }
-    ctx.fillStyle='#c9b89c'; ctx.fillRect(W/2-40,fl-34,80,34); ctx.fillStyle='#d8c8ac'; ctx.fillRect(W/2-40,fl-46,80,14); ctx.fillStyle='#a8505f'; ctx.fillRect(W/2+22,fl-44,12,10);
-    ctx.fillStyle='#d8bd94'; ctx.fillRect(0,fl,W,H-fl);
-    // сяюча коробочка
-    ctx.fillStyle='rgba(255,240,180,.3)'; ctx.beginPath(); ctx.arc(W-70,fl-20,22,0,7); ctx.fill();
-    ctx.fillStyle='#2e3440'; ctx.fillRect(W-78,fl-26,16,12); ctx.fillStyle='#fff8e0'; ctx.fillRect(W-72,fl-22,4,4);
-  } else if(i===7){                             // Мінімаліст, ніч, сніг
+    // книжкова полиця
+    const spines=['#A8505F','#3F7C77','#B58A2E','#1E4E8A','#7a5c8a','#c96a4e']; ctx.fillStyle='#8a6b46'; ctx.fillRect(W-90,fl-130,66,7); ctx.fillRect(W-90,fl-100,66,7); for(let s=0;s<10;s++){ ctx.fillStyle=spines[s%6]; ctx.fillRect(W-88+s*6,fl-150,5,20); ctx.fillStyle=spines[(s+3)%6]; ctx.fillRect(W-88+s*6,fl-120,5,20); }
+    // рослина
+    ctx.fillStyle='#b07a4a'; ctx.fillRect(104,fl-22,14,22); for(let l=0;l<6;l++){ ctx.save(); ctx.translate(111,fl-22); ctx.rotate(-1+l*0.4); ctx.fillStyle='#3f6b3a'; ctx.fillRect(-1,-28,2,28); ctx.restore(); }
+    // диван із подушкою
+    ctx.fillStyle='#c9b89c'; ctx.fillRect(W/2-42,fl-36,84,36); ctx.fillStyle='#d8c8ac'; ctx.fillRect(W/2-42,fl-48,84,14); ctx.fillStyle='#a8505f'; ctx.fillRect(W/2+22,fl-46,12,12);
+    ctx.fillStyle='#d8bd94'; ctx.fillRect(0,fl,W,H-fl); for(let fx=0;fx<W;fx+=34){ ctx.fillStyle='#c8ac82'; ctx.fillRect(fx,fl,1,H-fl); }
+    // сяюча коробочка (він щось ховає)
+    ctx.fillStyle='rgba(255,240,180,.3)'; ctx.beginPath(); ctx.arc(W-70,fl-20,22,0,7); ctx.fill(); ctx.fillStyle='#2e3440'; ctx.fillRect(W-78,fl-26,16,12); ctx.fillStyle='#fff8e0'; ctx.fillRect(W-72,fl-22,4,4);
+  } else if(i===7){                             // ── МІНІМАЛІСТ, ніч (освідчення) ──
     ctx.fillStyle=lin('#1a1626','#2a2036'); ctx.fillRect(0,0,W,fl); ctx.fillStyle='#3a2e28'; ctx.fillRect(0,fl,W,H-fl);
     // кругле вікно зі снігом
-    ctx.fillStyle='#0e1a2a'; ctx.beginPath(); ctx.arc(W/2,H*0.34,44,0,7); ctx.fill();
-    ctx.strokeStyle='#6a5a4a'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(W/2,H*0.34,44,0,7); ctx.stroke();
-    for(let k=0;k<20;k++){ ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(W/2-40+((k*37+game.t*2)%80),H*0.34-40+((k*53)%80),2,2); }
-    // барна стійка з пляшками + підвісні лампи (мінімалістичний бар)
-    for(let lx=64;lx<W;lx+=112){ ctx.strokeStyle='#4a4038'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,fl-138); ctx.stroke();
-      ctx.fillStyle='#2a221c'; ctx.fillRect(lx-6,fl-140,12,6); ctx.fillStyle='#ffe0a0'; ctx.fillRect(lx-3,fl-134,6,3);
-      ctx.fillStyle='rgba(255,220,150,.08)'; ctx.beginPath(); ctx.moveTo(lx,fl-133); ctx.lineTo(lx-26,fl-40); ctx.lineTo(lx+26,fl-40); ctx.fill(); }
-    ctx.fillStyle='#241c26'; ctx.fillRect(18,fl-92,74,4);
-    const bot=['#3F7C77','#A8505F','#B58A2E','#5a8c4e','#7a5c8a'];
-    for(let b=0;b<7;b++){ ctx.fillStyle=bot[b%5]; ctx.fillRect(22+b*10,fl-112,5,20); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fillRect(22+b*10,fl-112,2,20); }
+    ctx.fillStyle='#0e1a2a'; ctx.beginPath(); ctx.arc(W/2,Math.round(H*0.32),46,0,7); ctx.fill(); ctx.strokeStyle='#6a5a4a'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(W/2,Math.round(H*0.32),46,0,7); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.arc(W/2,Math.round(H*0.32),44,0,7); ctx.clip(); ctx.fillStyle='#fff'; ctx.fillRect(W/2-44,Math.round(H*0.32)+14,88,32); ctx.fillStyle='#3c3a46'; ctx.fillRect(W/2-20,Math.round(H*0.32)-4,16,10); ctx.fillRect(W/2+8,Math.round(H*0.32),14,8); for(let k=0;k<18;k++){ ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fillRect(W/2-40+((k*37+T*2)%80),Math.round(H*0.32)-40+((k*53)%70),2,2); } ctx.restore();
+    // підвісні лампи з конусом
+    for(let lx=60;lx<W;lx+=110){ ctx.strokeStyle='#4a4038'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,fl-140); ctx.stroke(); ctx.fillStyle='#2a221c'; ctx.fillRect(lx-6,fl-142,12,6); ctx.fillStyle='#ffe0a0'; ctx.fillRect(lx-3,fl-136,6,3); ctx.fillStyle='rgba(255,220,150,.08)'; ctx.beginPath(); ctx.moveTo(lx,fl-133); ctx.lineTo(lx-26,fl-40); ctx.lineTo(lx+26,fl-40); ctx.fill(); }
+    // барна полиця з пляшками
+    ctx.fillStyle='#241c26'; ctx.fillRect(16,fl-92,80,4); const bot=['#3F7C77','#A8505F','#B58A2E','#5a8c4e','#7a5c8a']; for(let b=0;b<7;b++){ ctx.fillStyle=bot[b%5]; ctx.fillRect(20+b*10,fl-112,5,20); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fillRect(20+b*10,fl-112,2,20); }
+    // ванна з парою (мінімаліст-лазня)
+    ctx.fillStyle='#e8e4dc'; ctx.fillRect(W-84,fl-30,64,26); ctx.beginPath(); ctx.ellipse(W-52,fl-30,32,6,0,0,7); ctx.fill(); ctx.fillStyle='#c9d4d0'; ctx.beginPath(); ctx.ellipse(W-52,fl-30,26,4,0,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.13)'; for(let s=0;s<3;s++){ const sx=W-66+s*12; for(let kk=0;kk<8;kk++){ const yy=(fl-34)-kk*4-Math.round((T*0.5+s*20)%36); const xx=sx+Math.round(Math.sin(kk*0.7+T*0.05+s)*4); ctx.fillRect(xx,yy,2,2); } }
     ctx.fillStyle='#3a2e28'; ctx.fillRect(0,fl-30,W,30); ctx.fillStyle='#4a3a30'; ctx.fillRect(0,fl-32,W,3);
     // сяюча коробочка з каблучкою
-    ctx.fillStyle='rgba(255,235,150,.35)'; ctx.beginPath(); ctx.arc(W/2,fl-24,28,0,7); ctx.fill();
-    ctx.fillStyle='#2e3440'; ctx.fillRect(W/2-12,fl-30,24,16); ctx.fillStyle='#fff8e0'; ctx.fillRect(W/2-3,fl-26,6,6);
-  } else {                                      // весілля — золота година
+    ctx.fillStyle='rgba(255,235,150,.35)'; ctx.beginPath(); ctx.arc(W/2,fl-24,28,0,7); ctx.fill(); ctx.fillStyle='#2e3440'; ctx.fillRect(W/2-12,fl-30,24,16); ctx.fillStyle='#fff8e0'; ctx.fillRect(W/2-3,fl-26,6,6);
+  } else {                                      // ── ВЕСІЛЛЯ, золота година ──
     const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#9ec8e8'); g.addColorStop(1,'#f2d0a0'); ctx.fillStyle=g; ctx.fillRect(0,0,W,fl);
-    ctx.fillStyle='#fff8dc'; ctx.beginPath(); ctx.arc(60,60,16,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,248,200,.14)'; ctx.beginPath(); ctx.arc(56,54,26,0,7); ctx.fill(); ctx.fillStyle='#fff8dc'; ctx.beginPath(); ctx.arc(56,54,16,0,7); ctx.fill();
+    // дзвіниця Софії (силует)
+    ctx.fillStyle='#e6ddc8'; ctx.fillRect(W-74,fl-150,40,150); ctx.fillRect(W-68,fl-176,28,26); ctx.fillStyle='#3F7C77'; ctx.beginPath(); ctx.ellipse(W-54,fl-186,16,12,0,0,7); ctx.fill(); ctx.fillRect(W-58,fl-200,8,14); ctx.fillStyle='#d8b25a'; ctx.fillRect(W-55,fl-212,3,12);
+    ctx.fillStyle='#3a4a3c'; ctx.fillRect(W-64,fl-140,10,18); ctx.fillRect(W-50,fl-140,10,18);
+    // голуби + пелюстки
+    for(let d=0;d<3;d++){ const dx=Math.round((30+d*110+T*0.6)%(W+40))-20, dy=28+d*12+Math.round(Math.sin(T*0.05+d)*4); ctx.strokeStyle='#f4f0e4'; ctx.lineWidth=2; const wing=((T>>3)&1)?4:1; ctx.beginPath(); ctx.moveTo(dx-5,dy+wing); ctx.lineTo(dx,dy); ctx.lineTo(dx+5,dy+wing); ctx.stroke(); }
     ctx.fillStyle='#6f9b64'; ctx.fillRect(0,fl,W,H-fl);
-    // весільна арка
-    ctx.fillStyle='#f4f0e4'; ctx.fillRect(W/2-46,fl-90,6,90); ctx.fillRect(W/2+40,fl-90,6,90);
-    ctx.beginPath(); ctx.arc(W/2,fl-84,46,Math.PI,0); ctx.arc(W/2,fl-84,38,0,Math.PI,true); ctx.fill();
-    for(let k=0;k<9;k++){ const a=Math.PI+k*(Math.PI/8); ctx.fillStyle=k%2?'#A8505F':'#B58A2E'; ctx.fillRect(W/2+Math.cos(a)*42-2,fl-84+Math.sin(a)*42-2,5,5); }
+    // весільна арка з квітами
+    ctx.fillStyle='#f4f0e4'; ctx.fillRect(W/2-46,fl-90,6,90); ctx.fillRect(W/2+40,fl-90,6,90); ctx.beginPath(); ctx.arc(W/2,fl-84,46,Math.PI,0); ctx.arc(W/2,fl-84,38,0,Math.PI,true); ctx.fill();
+    for(let k=0;k<11;k++){ const a=Math.PI+k*(Math.PI/10); ctx.fillStyle=k%2?'#A8505F':'#B58A2E'; ctx.fillRect(W/2+Math.cos(a)*42-2,fl-84+Math.sin(a)*42-2,5,5); }
+    // рушник під ногами
+    ctx.fillStyle='#faf6ea'; ctx.fillRect(W/2-40,fl+2,80,10); ctx.fillStyle='#a8323c'; ctx.fillRect(W/2-40,fl+2,8,10); ctx.fillRect(W/2+32,fl+2,8,10);
+    for(let k=0;k<9;k++){ const px2=Math.round((k*43+T*0.4)%W), py2=Math.round((k*67+T*1.1)%fl); ctx.fillStyle=k%2?'rgba(232,138,160,.7)':'rgba(255,255,255,.6)'; ctx.fillRect(px2,py2,3,2); }
   }
   // легке затемнення знизу під текст
   const dg=ctx.createLinearGradient(0,H*0.55,0,H); dg.addColorStop(0,'rgba(10,8,14,0)'); dg.addColorStop(1,'rgba(10,8,14,.72)');
   ctx.fillStyle=dg; ctx.fillRect(0,H*0.55,W,H*0.45);
-  // загальний план — чиста сценерія (без ігрових спрайтів; персонажі — окрема аніме-манга)
 }
 /* піксельні герої в сценах новели (перекриваються портретом на репліках,
    повністю видно на кадрах-наратора) */
