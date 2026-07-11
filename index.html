@@ -243,6 +243,7 @@
   <div id="pause-menu" class="hidden" style="position:absolute;inset:0;z-index:60;background:rgba(12,10,20,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
     <div style="color:#f4cf5e;font-weight:bold;font-size:22px;letter-spacing:2px">ПАУЗА</div>
     <button class="btn katya" id="pause-resume" style="min-width:200px">▶ Продовжити</button>
+    <button class="btn small" id="pause-skip" style="background:#3f7c77;min-width:200px">⏭ Пропустити сцену</button>
     <button class="btn small" id="pause-menu-go" style="background:#55515f;min-width:200px">⌂ Головне меню</button>
     <div style="color:#b9b3a4;font-size:11px">прогрес зберігається — повернешся й продовжиш</div>
   </div>
@@ -5535,12 +5536,39 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
 });
 
 /* ================= пауза / вихід у меню ================= */
+// карта «яку фазу пропускаємо → куди»; фінал (cap8/wed/credits) не пропускаємо
+function skipScene(){
+  const pov = game.pov;
+  const M = {
+    prolog:'sitcom', sitcom:'cap1', cap1:'set',
+    set: pov==='katya'?'capMont':'capBand',
+    capMont:'cap2', montage:'cap2', capBand:'cap2', band:'cap2',
+    cap2:'cap3', tinder:'cap3', swipe:'cap3', match:'cap3', chat:'cap3',
+    cap3:'cap4', date:'cap4', battle:'cap4',
+    cap4:'capK', run:'capK',
+    capK:'cap5', kitana:'cap5',
+    cap5:'capS', svat:'capS',
+    capS:'cap6', secret:'cap6',
+    cap6:'cap7', prop:'cap7',
+    cap7:'cap8', diia:'cap8',
+  };
+  const t = M[game.phase]; if(!t) return false;
+  // свіжий старт наступної фази — прибираємо стан мінігор
+  game.dialog=null; game.onDialogEnd=null;
+  game.battle=null; game.tetris=null; game.run=null; game.svat=null; game.prop=null;
+  game.diia=null; game.kitana=null; game.montage=null; game.band=null; game.secret=null;
+  game._setDone=false; game._dateDone=false; game.swipeX=0; game._swipeDrag=null;
+  try{ stopBandSong(); stopShtolnya(); }catch(_){}
+  setPhase(t); return true;
+}
 function openPause(){
   if(game.state!=='play' && game.state!=='novel') return;   // працює і в грі, і в історії
   game.paused = true;
+  document.getElementById('pause-skip').classList.toggle('hidden', game.state!=='play' || !skipTargetExists());
   document.getElementById('pause-menu').classList.remove('hidden');
   try{ stopMusic(); }catch(_){}
 }
+function skipTargetExists(){ return ['prolog','sitcom','cap1','set','capMont','montage','capBand','band','cap2','tinder','swipe','match','chat','cap3','date','battle','cap4','run','capK','kitana','cap5','svat','capS','secret','cap6','prop','cap7','diia'].includes(game.phase); }
 function resumePause(){
   game.paused = false;
   document.getElementById('pause-menu').classList.add('hidden');
@@ -5557,6 +5585,7 @@ function pauseToMenu(){
   resetTitleMenus(); elTitle.classList.remove('hidden');
 }
 document.getElementById('pause-resume').addEventListener('click', resumePause);
+document.getElementById('pause-skip').addEventListener('click', ()=>{ if(skipScene()) resumePause(); });
 document.getElementById('pause-menu-go').addEventListener('click', pauseToMenu);
 
 /* ================= головний цикл ================= */
