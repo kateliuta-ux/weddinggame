@@ -3958,7 +3958,10 @@ const CHIP_MAP = {
   secret:'stezhyna', prop:'stezhyna', diia:'stezhyna',
   wed:'stezhyna',
 };
-function chipForPhase(phase){ return CHIP_MAP[phase] || null; }
+function chipForPhase(phase){
+  if(phase==='wed' && game.wedLoc==='khv') return 'pozniaky';   // Хвильовий — жвавіша «центрова» (замість спільної стежини)
+  return CHIP_MAP[phase] || null;
+}
 function playChip(key){
   if(musicMuted){ chipKey = key; return; }               // запам'ятали, але не граємо
   const cur = bgmEls[chipKey];
@@ -5037,6 +5040,7 @@ function finishGame(){
       '6 вересня 2026 · Київ<br>' +
       '<span style="opacity:.8">місце й час підтвердимо особисто ближче до дати</span>' + surn + more;
   }
+  stopChip(); if(!musicMuted) playChip('planeta');   // фінальна музика не лупиться на екрані запрошення
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
   document.getElementById('watch-hint').classList.add('hidden');
