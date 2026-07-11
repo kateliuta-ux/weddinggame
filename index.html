@@ -4153,13 +4153,12 @@ function drawProlog(){
     ctx.fillStyle = '#d8d4c4'; ctx.font = '9px monospace';
     lines.forEach((ln,i)=> ctx.fillText(ln, W/2, H/2+2 + i*15));
   } else {
-    // ландшафт (комп): компактно, шишка збоку, увесь текст влазить
-    ctx.fillStyle = COL.gold; ctx.font = 'bold 14px monospace';
-    ctx.fillText('ЗАПРОСИНИ', W/2, 24);
-    drawShyshka(28, H/2+8, 1.0);
-    ctx.fillStyle = '#d8d4c4'; ctx.font = '7px monospace';
+    // ландшафт (комп, H=180): по центру, читабельним шрифтом
+    ctx.fillStyle = COL.gold; ctx.font = 'bold 16px monospace';
+    ctx.fillText('ЗАПРОСИНИ', W/2, 22);
+    ctx.fillStyle = '#e8e2d0'; ctx.font = '9px monospace';
     const shown = lines.filter(l=>l!=='');
-    shown.forEach((ln,i)=> ctx.fillText(ln, W/2+14, 46 + i*13));
+    shown.forEach((ln,i)=> ctx.fillText(ln, W/2, 42 + i*16));
   }
   ctx.fillStyle = 'rgba(216,212,196,.5)'; ctx.font = (PORTRAIT_MODE?8:7)+'px monospace';
   ctx.fillText(game.watch ? '' : 'тап — далі', W/2, H-(PORTRAIT_MODE?30:5));
