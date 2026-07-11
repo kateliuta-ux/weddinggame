@@ -4450,7 +4450,7 @@ function novelMangaFx(emo, px, py, size){
 function startNovel(){
   tryFullscreen();
   game.state='novel'; game.pov='katya'; game.watch=true; game.paused=false;
-  game.nov = {ch:0, li:0, shown:0, wait:0, chapters:novelData()};
+  game.nov = {ch:0, li:0, shown:0, wait:0, chapters:novelData(), seen:novelSeenSet()};
   stopChip(); playChip('planeta');
   elTitle.classList.add('hidden');
   document.getElementById('pause-btn').classList.remove('hidden');   // вихід у меню з історії
@@ -4470,9 +4470,15 @@ function novelAdvance(){
   const ln = chap.lines[n.li];
   if(n.shown < ln.text.length){ n.shown = ln.text.length; return; }   // домалювати рядок
   n.li++; n.shown = 0;
-  if(n.li >= chap.lines.length){ n.ch++; n.li = 0; }
+  if(n.li >= chap.lines.length){ novelMarkSeen(n.ch); n.ch++; n.li = 0; }
   if(n.ch >= n.chapters.length){ finishGame(); }
 }
+// памʼять про переглянуті розділи (щоб можна було пропускати бачене)
+function novelSeenSet(){ try{ return new Set(JSON.parse(localStorage.getItem('wed-novel-seen')||'[]')); }catch(_){ return new Set(); } }
+function novelMarkSeen(ch){ const s=novelSeenSet(); s.add(ch); try{ localStorage.setItem('wed-novel-seen', JSON.stringify([...s])); }catch(_){} if(game.nov) game.nov.seen=s; }
+function novelSkipRect(){ return {x:W-104, y:46, w:96, h:20}; }
+function novelCanSkip(){ const n=game.nov; return !!(n && n.seen && n.seen.has(n.ch) && n.ch < n.chapters.length-1); }
+function novelSkipChapter(){ const n=game.nov; if(!n) return; novelMarkSeen(n.ch); n.ch++; n.li=0; n.shown=0; if(n.ch>=n.chapters.length) finishGame(); }
 /* ===== АНІМЕ-ПОРТРЕТИ (мальовані, окрема манга — без фото й ігрових спрайтів) =====
    Катя й Діма в аніме-стилі: великі очі, чисті лінії, cel-shading. */
 /* GAME BOY портрет для новели: фото-бюст у бірюзовій 4-тоновій палітрі з дизерингом.
@@ -4702,6 +4708,13 @@ function drawNovel(){
   ctx.fillStyle='rgba(10,8,14,.55)'; ctx.fillRect(0,10,W,32);
   ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText(chap.cap[0], W/2, 26);
   ctx.fillStyle='#d8d4c4'; ctx.font='9px monospace'; ctx.fillText(chap.cap[1], W/2, 38);
+  // кнопка «пропустити розділ» — зʼявляється лише для вже баченого
+  if(novelCanSkip()){ const r=novelSkipRect();
+    ctx.fillStyle='rgba(20,16,26,.82)'; ctx.fillRect(r.x,r.y,r.w,r.h);
+    ctx.strokeStyle='rgba(181,138,46,.7)'; ctx.lineWidth=1; ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
+    ctx.fillStyle='#f4cf5e'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText('⏭ пропустити', r.x+r.w/2, r.y+14);
+  }
   // текстове вікно
   ctx.fillStyle='rgba(18,14,22,.85)'; ctx.fillRect(10,boxY,W-20,boxH);
   ctx.strokeStyle='rgba(181,138,46,.6)'; ctx.lineWidth=1; ctx.strokeRect(10,boxY,W-20,boxH);
@@ -4909,7 +4922,11 @@ function canvasPos(e){
 }
 cv.addEventListener('pointerdown', e=>{
   e.preventDefault();
-  if(game.state==='novel'){ novelAdvance(); return; }
+  if(game.state==='novel'){
+    if(novelCanSkip()){ const p=canvasPos(e), r=novelSkipRect();
+      if(p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h){ novelSkipChapter(); return; } }
+    novelAdvance(); return;
+  }
   if(game.state==='title'){
     if(game.cassetteShow){ game.cassetteShow = false; elTitle.classList.remove('hidden'); return; }
     const pos = canvasPos(e);
@@ -5313,7 +5330,11 @@ function viberVenue(){
   return s ? (s.where + ' · ' + s.when) : '6 вересня 2026 · Київ';
 }
 function inviteName(){ return ((GUEST&&GUEST.name)||localStorage.getItem('wed-player-name')||'').trim(); }
-function inviteHello(){ const n=inviteName(); return n ? n+'!' : (viberGender==='f'?'Дорога тьотю':'Дорогий дядю')+'!'; }
+function inviteHello(){
+  const n=inviteName();
+  if(n && n.toLowerCase()!=='гість') return n+'!';
+  return (viberGender==='f' ? 'Шановна гостя' : 'Шановний гість') + '!';   // без імені — ввічливо й за статтю
+}
 function viberRefresh(){
   document.getElementById('viber-hello').textContent = inviteHello();
   document.getElementById('viber-venue').textContent = viberVenue();
