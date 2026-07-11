@@ -5571,21 +5571,21 @@ function update(){
   switch(game.phase){
 
     case 'prolog':
-      if(game.phaseT > 700 || (!game.watch && input.actionEdge && game.phaseT>20)){
+      if(game.phaseT > 220 || (!game.watch && input.actionEdge && game.phaseT>12)){
         input.actionEdge = false;
         setPhase('sitcom');
       }
       break;
 
     case 'sitcom':
-      if(game.phaseT > sitcomFrames().length*80 + 160 || (!game.watch && input.actionEdge && game.phaseT>10)){
+      if(game.phaseT > sitcomFrames().length*52 + 90 || (!game.watch && input.actionEdge && game.phaseT>8)){
         input.actionEdge = false;
         setPhase('cap1');
       }
       break;
 
     case 'cap1':
-      if(game.phaseT > 170 || input.actionEdge) setPhase('set');
+      if(game.phaseT > 95 || input.actionEdge) setPhase('set');
       break;
 
     case 'set': {
@@ -5858,6 +5858,12 @@ function render(){
       const camX = Math.round(game.camX);
       drawSet(camX);
       drawCollect(camX);
+      // одразу зрозуміла мета — щоб гравець діяв з першої секунди
+      if(game.phaseT < 160 && !game._setDone && !game.watch){
+        ctx.fillStyle='rgba(10,8,14,.62)'; ctx.fillRect(0,44,W,22);
+        ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+        ctx.fillText('⚡ лови ШТОРМ і біжи до Діми →', W/2, 59);
+      }
       // другий креативник — у кадрі біля хромакею разом з Дімою (за словами Каті)
       const guyX = Math.round(398-camX);
       if(guyX>-20 && guyX<W+20) drawPerson(guyX, FLOOR_Y+2, 'guy', 0, 1, false);
