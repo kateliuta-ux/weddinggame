@@ -240,6 +240,12 @@
   <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ</div>
   <button id="watch-play" class="hidden">▶ ГРАТИ САМ</button>
   <div id="pause-btn" class="hidden">⏸</div>
+  <div id="pause-menu" class="hidden" style="position:absolute;inset:0;z-index:60;background:rgba(12,10,20,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+    <div style="color:#f4cf5e;font-weight:bold;font-size:22px;letter-spacing:2px">ПАУЗА</div>
+    <button class="btn katya" id="pause-resume" style="min-width:200px">▶ Продовжити</button>
+    <button class="btn small" id="pause-menu-go" style="background:#55515f;min-width:200px">⌂ Головне меню</button>
+    <div style="color:#b9b3a4;font-size:11px">прогрес зберігається — повернешся й продовжиш</div>
+  </div>
   <div id="kbd-hint" class="hidden">← → ходити &nbsp;·&nbsp; ПРОБІЛ — стрибок</div>
 
   <div id="dialog" class="hidden">
@@ -295,7 +301,7 @@
     </div>
   </div>
 
-  <div id="rating-screen" class="overlay hidden" style="background:#14121c;gap:2%">
+  <div id="rating-screen" class="overlay hidden" style="background:#14121c;gap:2%;justify-content:flex-start;overflow-y:auto;padding:20px 0">
     <div class="s-head">📊 РЕЙТИНГ ГРАВЦІВ <span>бал = 🏆 за кожне досягнення (їх видно на тайтлі) + 3 за обидві історії · найбільше балів = супер-приз на весіллі 🎁</span></div>
     <div id="rating-list" style="display:flex;flex-direction:column;gap:5px;width:min(88%,420px);max-height:62%;overflow-y:auto"></div>
     <div id="rating-status" style="color:#bcb7a8;font-size:12.5px"></div>
@@ -4957,7 +4963,7 @@ function takeOver(){
   }
 }
 document.getElementById('watch-play').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); takeOver(); });
-document.getElementById('pause-btn').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); toggleTetrisPause(); });
+document.getElementById('pause-btn').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); openPause(); });
 
 /* ================= стани / UI ================= */
 const elTitle = document.getElementById('title-screen');
@@ -4971,7 +4977,7 @@ function updateHudAndControls(){
   // під час діалогу кнопки ховаються, щоб не перекривати вікно
   document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase || !!game.dialog);
   document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
-  document.getElementById('pause-btn').classList.toggle('hidden', game.phase!=='tetris' || game.watch || game.state!=='play');
+  document.getElementById('pause-btn').classList.toggle('hidden', game.watch || game.state!=='play' || game.paused);
   document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
 }
 
@@ -5495,8 +5501,34 @@ document.getElementById('btn-restart').addEventListener('click', ()=>{
   elTitle.classList.remove('hidden');
 });
 
+/* ================= пауза / вихід у меню ================= */
+function openPause(){
+  if(game.state!=='play' || game.watch) return;
+  game.paused = true;
+  document.getElementById('pause-menu').classList.remove('hidden');
+  try{ stopMusic(); }catch(_){}
+}
+function resumePause(){
+  game.paused = false;
+  document.getElementById('pause-menu').classList.add('hidden');
+  try{ startMusic(); }catch(_){}
+}
+function pauseToMenu(){
+  game.paused = false;
+  document.getElementById('pause-menu').classList.add('hidden');
+  try{ stopMusic(); }catch(_){}
+  game.state = 'title';
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('controls').classList.add('hidden');
+  document.getElementById('pause-btn').classList.add('hidden');
+  resetTitleMenus(); elTitle.classList.remove('hidden');
+}
+document.getElementById('pause-resume').addEventListener('click', resumePause);
+document.getElementById('pause-menu-go').addEventListener('click', pauseToMenu);
+
 /* ================= головний цикл ================= */
 function update(){
+  if(game.paused) return;
   game.t++; game.phaseT++;
   if(game.state==='novel'){ updateNovel(); return; }
   if(game.state!=='play') return;
