@@ -1626,16 +1626,12 @@ function drawSet(camX){
   for(let yy=0; yy<76; yy++){ const step = 2 + (yy>>3); for(let xx=W-96+((yy)&1); xx<W; xx+=step) ctx.fillRect(xx, yy, 1, 1); }
   ctx.fillStyle = '#cfc9bc'; ctx.fillRect(0,FLOOR_Y-4,W,4);            // плінтус
   ctx.fillStyle = 'rgba(90,86,78,.12)'; ctx.fillRect(0,FLOOR_Y-10,W,6);
-  // вивіска агенції «iamidea» на стіні (тут знімали ШТОРМНАДО)
-  { const ax=Math.round(44-camX);
-    if(ax>-92 && ax<W){
-      ctx.fillStyle='#fbfaf5'; ctx.fillRect(ax,26,86,22);
-      ctx.strokeStyle='#d6d0c2'; ctx.lineWidth=1; ctx.strokeRect(ax+0.5,26.5,85,21);
-      ctx.fillStyle='#1a1a24'; ctx.font='bold 13px monospace'; ctx.textAlign='left';
-      ctx.fillText('iam', ax+9, 42);
-      ctx.fillStyle=COL.rose; ctx.fillText('idea', ax+41, 42);
-      ctx.fillStyle='#f4c84a'; ctx.beginPath(); ctx.arc(ax+78,32,3,0,7); ctx.fill();  // лампочка-ідея
-      ctx.fillStyle='#1a1a24'; ctx.fillRect(ax+77,35,3,2);
+  // маленька непомітна табличка агенції на стіні (не акцент — просто деталь)
+  { const ax=Math.round(52-camX);
+    if(ax>-52 && ax<W){
+      ctx.fillStyle='rgba(232,228,218,.55)'; ctx.fillRect(ax,30,46,11);
+      ctx.fillStyle='rgba(120,116,106,.75)'; ctx.font='8px monospace'; ctx.textAlign='left';
+      ctx.fillText('iamidea', ax+5, 39);
       ctx.textAlign='left';
     } }
   // мʼяка тінь від рослини на стіні (низько, ледь помітна)
