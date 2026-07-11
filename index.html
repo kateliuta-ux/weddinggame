@@ -3359,6 +3359,15 @@ function drawGuest(x, y, col, seated, t, faceImg){
 function guestFace(i){
   return GUEST_FACES.length ? GUEST_FACES[i % GUEST_FACES.length].img : null;
 }
+/* ── ВЕСІЛЬНА ПАРТІЯ: дружки (Катині) та бояри (Дімині) обабіч молодят ──
+   фото — у того, хто додав селфі; інакше піксельна голівка */
+function faceByName(pat){ const f = GUEST_FACES.find(g => (g.name||'').toLowerCase().includes(pat)); return f ? f.img : null; }
+function pickFace(pats){ for(const p of pats){ const im = faceByName(p); if(im) return im; } return null; }
+const BRIDES = [ {col:'#a8505f', f:['дідор','кукрицьк','вік','луїз']},   // Аня Дідора / Віка
+                 {col:'#c98a9c', f:['маріч','пінаєвськ','луїз','кукрицьк']} ];  // Марічка / Луїза
+const GROOMS = [ {col:'#3a4a6a', f:['плахотн','бур','ярік','сміря']},   // Плахотній / Олег Бурий
+                 {col:'#2e3440', f:['соколовськ','ярік','сміря','плахотн']} ];  // Ярік / Олег Сміря
+function drawAttendant(x, baseY, spec){ drawGuest(x, baseY, spec.col, false, game.t + x, pickFace(spec.f)); }
 /* Ноти, що злітають над гостем (спів) */
 function drawSongNote(x, headY, seed){
   for(let i=0;i<3;i++){
@@ -3442,6 +3451,9 @@ function drawWedSofi(){
   ctx.fillRect(36, FLOOR_Y+2, 8, 10); ctx.fillRect(104, FLOOR_Y+2, 8, 10);
   ctx.fillRect(47, FLOOR_Y+4, 2, 2); ctx.fillRect(47, FLOOR_Y+8, 2, 2);
   ctx.fillRect(99, FLOOR_Y+4, 2, 2); ctx.fillRect(99, FLOOR_Y+8, 2, 2);
+  // почет: дружки ліворуч від Каті, бояри праворуч від Діми
+  drawAttendant(14, FLOOR_Y+4, BRIDES[0]); drawAttendant(29, FLOOR_Y+4, BRIDES[1]);
+  drawAttendant(107, FLOOR_Y+4, GROOMS[0]); drawAttendant(120, FLOOR_Y+4, GROOMS[1]);
   // молодята на рушнику
   drawCouple(58, 90, FLOOR_Y+4);
   // ЗАСТІЛЛЯ: довгий стіл, скатертина з вишивкою, КОРОВАЙ у центрі
@@ -3551,6 +3563,9 @@ function drawWedKhv(){
   ctx.fillText('♥ ЛЮТІ ♥', sx+sw/2, syTop-64);
   ctx.fillStyle = '#a8323c';                                     // вишита смужка на краю сцени
   for(let ox=sx+4; ox<sx+sw-6; ox+=8){ ctx.fillRect(ox, syTop+1, 4, 2); }
+  // почет стоїть на сцені обабіч: дружки ліворуч, бояри праворуч
+  drawAttendant(sx+10, syTop, BRIDES[0]); drawAttendant(sx+22, syTop, BRIDES[1]);
+  drawAttendant(sx+96, syTop, GROOMS[0]); drawAttendant(sx+108, syTop, GROOMS[1]);
   // МОЛОДЯТА СИДЯТЬ на краю сцени, ноги звисають
   drawSeatedCouple(sx+34, sx+74, syTop);
   // мікрофон на стійці біля сцени
