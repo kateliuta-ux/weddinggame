@@ -319,7 +319,7 @@
     <div class="s-head">🎹 СЕМПЛЕР <span>накидай мелодію — і збережи її у весільний плейлист</span></div>
     <div id="s-grid"></div>
     <div class="s-controls">
-      <button class="btn s-btn" id="s-play">▶</button>
+      <button class="btn s-btn" id="s-play">▶ ПРОГРАТИ</button>
       <button class="btn s-btn" id="s-clear">ЧИСТКА</button>
       <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
@@ -6091,13 +6091,13 @@ function samplerStop(){
   SMP.playing = false;
   if(SMP.timer){ clearInterval(SMP.timer); SMP.timer = null; }
   samplerHighlight(-1);
-  document.getElementById('s-play').textContent = '▶';
+  document.getElementById('s-play').textContent = '▶ ПРОГРАТИ';
 }
 document.getElementById('s-play').addEventListener('click', ()=>{
   if(SMP.playing){ samplerStop(); return; }
   ensureAudio();
   SMP.playing = true; SMP.col = 0;
-  document.getElementById('s-play').textContent = '■';
+  document.getElementById('s-play').textContent = '■ СТОП';
   SMP.timer = setInterval(()=>{
     const t = audioCtx.currentTime;
     SMP.rows.forEach((row,r)=>{ if(SMP.grid[r][SMP.col]) playNote(row.f, t, 0.24, 'square', 0.06); });
