@@ -273,7 +273,7 @@
         <button class="btn small" id="btn-memory">Фото з нами</button>
       </div>
       <div class="btn-row">
-        <button class="btn small" id="btn-party">Тіндер вечірки</button>
+        <button class="btn small" id="btn-party">Тіндер</button>
         <button class="btn small" id="btn-viber-title">Гарне запрошення</button>
       </div>
     </div>
@@ -394,7 +394,7 @@
   </div>
 
   <div id="party-screen" class="overlay hidden" style="background:#14121c;gap:12px">
-    <div class="s-head">ТІНДЕР ВЕЧІРКИ <span>гортай гостей · але головна ціль — свайпнути вправо Катю або Діму</span></div>
+    <div class="s-head">ТІНДЕР <span>гортай гостей весілля · вправо — лайк, вліво — пас</span></div>
     <div id="party-stack"></div>
     <div id="party-empty" class="hidden"></div>
     <div id="party-actions" style="display:flex;gap:26px;justify-content:center;align-items:center">
@@ -536,7 +536,7 @@ const SLOTS = {
       ics:{start:'20260906T173000', end:'20260906T235900', loc:'Хвильовий, Київ'}},
 };
 const DRESS_CODE = '—';                  // Катя дасть формулювання — поки прочерк
-const FLOWERS_NOTE = 'Замість букета — принеси квітку-дві:\nз них зберемо декор свята 🌸';
+const FLOWERS_NOTE = 'Принесеш кілька живих квітів —\nз них разом зберемо декор простору 🌸';
 /* «що дарувати»: вони збирають гроші — формулюємо делікатно.
    Катя може переписати; ось три готові варіанти на вибір:
    1) 'Ваша присутність — найкращий подарунок.\nА хто хоче потішити — будемо вдячні за конвертик\nна наші спільні мрії 💛'
@@ -659,7 +659,7 @@ function setScript(pov){
   // ПОВ реально різні: Катя — режисерка за камерою, Діма — гість у кадрі
   if(pov==='katya') return [
     {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nБув якийсь бриф про метаверс.'},
-    {who:'katya', emo:'tired',  text:'Той, з міліруванням. В камеру. Дубль три!'},
+    {who:'katya', emo:'tired',  text:'Той, у білому поло. В камеру. Дубль три!'},
     {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
     {who:'katya', emo:'shy',    text:'(в камеру, Дімо.)'},
     {who:null,    emo:null,     text:'(Той сезон так і не вийшов у ефір.\nАле це вже потім.)'},
@@ -5061,7 +5061,7 @@ document.getElementById('btn-ics').addEventListener('click', ()=>{
   const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//katya-dima-wedding//UA',
     'BEGIN:VEVENT','UID:wedding-katya-dima-20260906', ...ev,
     'SUMMARY:Весілля Каті і Діми 🥂',
-    'DESCRIPTION:'+(DRESS_CODE!=='—' ? 'Дрес-код: '+DRESS_CODE+'. ' : '')+'Принеси квітку для декору 🌸',
+    'DESCRIPTION:'+(DRESS_CODE!=='—' ? 'Дрес-код: '+DRESS_CODE+'. ' : '')+'Принеси кілька живих квітів для декору 🌸',
     'END:VEVENT','END:VCALENDAR'].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
@@ -5213,7 +5213,7 @@ function buildInvitationCard(){
     g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 40;
   }
   g.fillStyle = '#a8323c'; g.font = '22px Georgia, serif';
-  g.fillText('🌸 замість букета — принеси квітку', 360, y); y += 30;
+  g.fillText('🌸 принеси кілька живих квітів — для декору', 360, y); y += 30;
   g.fillText('з них зберемо декор свята', 360, y); y += 44;
   // «що дарувати» (делікатно — вони збирають гроші)
   g.fillStyle = '#6b6658'; g.font = 'italic 21px Georgia, serif';
@@ -5287,9 +5287,10 @@ function viberVenue(){
   const s = GUEST ? SLOTS[GUEST.slot] : null;
   return s ? (s.where + ' · ' + s.when) : '6 вересня 2026 · Київ';
 }
+function inviteName(){ return ((GUEST&&GUEST.name)||localStorage.getItem('wed-player-name')||'').trim(); }
+function inviteHello(){ const n=inviteName(); return n ? n+'!' : (viberGender==='f'?'Дорога тьотю':'Дорогий дядю')+'!'; }
 function viberRefresh(){
-  document.getElementById('viber-hello').textContent =
-    (viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '!';
+  document.getElementById('viber-hello').textContent = inviteHello();
   document.getElementById('viber-venue').textContent = viberVenue();
 }
 function openViber(fromTitle){
@@ -5336,8 +5337,8 @@ function buildViberCard(){
   g.font = 'bold 34px serif'; g.textAlign='center';
   for(let i=0;i<11;i++){ g.fillStyle=dbCol[i%4]; g.fillText(dbTop[i%dbTop.length], 40+i*64, 46); g.fillStyle=dbCol[(i+1)%4]; g.fillText(dbTop[(i+3)%dbTop.length], 40+i*64, 986); }
   for(let i=0;i<14;i++){ g.fillStyle=dbCol[i%4]; g.fillText(['✿','♥','❀','✧'][i%4], 30, 90+i*62); g.fillStyle=dbCol[(i+2)%4]; g.fillText(['❁','✽','⋆','❦'][i%4], 690, 90+i*62); }
-  g.fillStyle = '#ffd7f0'; g.font = 'italic 30px Georgia, serif';
-  g.fillText((viberGender==='f' ? 'Дорога тьотю' : 'Дорогий дядю') + '!', 360, 150);
+  g.fillStyle = '#ffd7f0';
+  { const hn = inviteHello(); g.font = 'italic ' + (hn.length>18?22:hn.length>12?26:30) + 'px Georgia, serif'; g.fillText(hn, 360, 150); }
   // золотий блискучий заголовок
   const grad = g.createLinearGradient(120,0,600,0);
   grad.addColorStop(0,'#b8860b'); grad.addColorStop(.5,'#fff3b0'); grad.addColorStop(1,'#b8860b');
@@ -6213,7 +6214,7 @@ if(PARAMS.get('selfie') !== null && PARAMS.get('selfie') !== undefined && PARAMS
   setTimeout(openSelfie, 400);
 }
 
-/* ---------- ТІНДЕР ВЕЧІРКИ (окремий режим) ----------
+/* ---------- ТІНДЕР (окремий режим) ----------
    Колода = селфі гостей (GUEST_FACES, колекція `selfies`) + Катя і Діма.
    Ціль — свайпнути ВПРАВО Катю або Діму → «ЦЕ МЕТЧ!».
    «Додати своє фото» веде у звичайну камеру-селфі → твоє фото лягає в `selfies`,
@@ -6238,11 +6239,8 @@ function buildPartyDeck(){
   const guests = GUEST_FACES.map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
     return {kind:'guest', name:nm, tag:'гість весілля', src:(real&&real.startsWith('data:'))?real:placeholderAvatar(nm)}; });
   for(let i=guests.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=guests[i]; guests[i]=guests[j]; guests[j]=t; }
-  const deck = guests.slice(0, 12);
-  const katya = {kind:'katya', name:'Катерина, 30', tag:'джиу-джитсу · монтаж · кокосове темне', src:partyFaceSrc('katya')};
-  const dima  = {kind:'dima',  name:'Дмитро, 32',  tag:'бокс · синтезатори · недоречні жарти', src:partyFaceSrc('dima')};
-  const insert = c => deck.splice(Math.floor(Math.random()*(deck.length+1)), 0, c);
-  insert(katya); insert(dima);
+  const deck = guests.slice(0, 14);
+  // Катю й Діму НЕ свайпаємо — тіндер серед гостей весілля
   // ТВОЯ власна картка — навіть без фото (з плейсхолдером), зверху колоди
   const meName = (localStorage.getItem('wed-player-name')||'').trim();
   if(meName){
@@ -6320,20 +6318,21 @@ function swipeParty(card, dir, el){
   if(dir > 0){ try{ sfxScore(); }catch(_){} }
   setTimeout(() => {
     partyBusy = false;
-    if(dir > 0 && (card.kind === 'katya' || card.kind === 'dima')){ showPartyMatch(card); return; }
+    // лайк на гостя → приблизно половина «метчить у відповідь» (без набридливих попапів)
+    if(dir > 0 && card.kind === 'guest' && (((card.name||'').length + partyIdx) % 2 === 0)){ showPartyMatch(card); return; }
     partyIdx++; renderPartyTop();
   }, 340);
 }
 function showPartyMatch(card){
   const face = document.getElementById('party-match-face');
   face.innerHTML = '';
-  const k = document.createElement('img'); k.className = 'pm-face'; k.src = partyFaceSrc('katya');
+  const im = document.createElement('img'); im.className = 'pm-face'; im.src = card.src || '';
   const h = document.createElement('span'); h.textContent = '♥';
-  const d = document.createElement('img'); d.className = 'pm-face'; d.src = partyFaceSrc('dima');
-  face.append(k, h, d);
-  document.getElementById('party-match-text').textContent = card.kind === 'katya'
-    ? 'Смак у тебе відмінний! Але Катя вже забронена Дімою — і навпаки. Зате ти щойно метчнувся з їхнім весіллям: ти у списку, до зустрічі 6 вересня!'
-    : 'Вибір — вогонь! Та серце Діми давно у Каті — і навпаки. Зате це метч із їхнім весіллям: ми тебе чекаємо 6 вересня!';
+  const k = document.createElement('img'); k.className = 'pm-face'; k.src = partyFaceSrc('katya');
+  face.append(im, h, k);
+  const nm = (card.name||'Гість').replace(/[,—].*/,'').trim();
+  document.getElementById('party-match-text').textContent =
+    'Ви метч! ' + nm + ', на весіллі точно буде з ким потеревенити. До зустрічі 6 вересня! 🥂';
   document.getElementById('party-match').classList.remove('hidden');
 }
 document.getElementById('party-like').addEventListener('click', ()=>{ if(partyTopEl && partyTopCard) swipeParty(partyTopCard, 1, partyTopEl); });
