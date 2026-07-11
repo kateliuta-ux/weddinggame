@@ -3845,7 +3845,7 @@ function bandOutroScript(){
   return [{who:'dima', emo:'happy', text:'Оце — «Позняки». Наша.'}];
 }
 function startBand(){
-  game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false};
+  game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false, musicT:0};
   setPhase('band');
   startDialog(bandIntroScript(), ()=>{ game.band.started = true; playBandSong(); });
 }
@@ -3855,7 +3855,8 @@ function bandHit(lane){
   for(const n of b.notes){
     if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 22){ n.hit = true; b.hits++; shake(1,5);
       ensureAudio(); playNote([330,392,494][lane], audioCtx.currentTime, 0.18, 'square', 0.05);
-      if(b.hits>=b.need){ b.done = true; b.doneT = 0; } return; }
+      b.musicT = 90; if(!musicMuted) playChip('pozniaky');       // фонова пісня грає, поки влучаєш у ритм
+      if(b.hits>=b.need){ b.done = true; b.doneT = 0; stopChip(); } return; }
   }
 }
 function updateBand(){
@@ -3874,6 +3875,7 @@ function updateBand(){
     return;
   }
   b.t++;
+  if(b.musicT>0){ b.musicT--; if(b.musicT===0) stopChip(); }   // перестав влучати — музика стихла
   for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
   if(b.t%28===0 && b.notes.length<40) b.notes.push({lane:(Math.random()*3|0), y:-10, hit:false});
   b.notes.forEach(n=>{ n.y += 2.4; });
@@ -5046,8 +5048,8 @@ function updateHudAndControls(){
 
 function setPhase(p){
   game.phase = p; game.phaseT = 0;
-  // поліфонічна музика за фазою; глушимо лише на Кітані (там мікрофон)
-  if(p==='kitana'){ stopChip(); }
+  // поліфонічна музика за фазою; на Кітані — тиша (мікрофон), на гурті — музика лише при влучних нотах
+  if(p==='kitana' || p==='band'){ stopChip(); }
   else { const want = chipForPhase(p); if(want) playChip(want); }
   // капшни та інші немапнуті фази — поточна пісня грає далі
   updateHudAndControls();
