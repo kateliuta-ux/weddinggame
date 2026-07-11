@@ -2017,7 +2017,7 @@ const BEERS = [
   {lbl:['пшеничне'],           ok:false, c:'#d9c47a', cap:'#b0a05a'},
   {lbl:['IPA'],                ok:false, c:'#c98a3a', cap:'#a06a24'},
 ];
-function beerRects(){ const y=FLOOR_Y-72; return [46,118,190,262].map(cx=>({x:cx-20,y,w:40,h:56,cx})); }
+function beerRects(){ const y=FLOOR_Y-80; return [44,116,188,260].map(cx=>({x:cx-25,y,w:50,h:68,cx})); }
 function startBeerChoice(){ setPhase('beer'); game.beer={picked:-1, okT:0, wrong:0}; }
 function beerPick(px,py){
   const b=game.beer; if(!b||b.okT>0) return;
@@ -2040,8 +2040,8 @@ function drawBeer(){
     if(b.picked===i && !be.ok){ ctx.strokeStyle='#e0555f'; ctx.lineWidth=2; ctx.strokeRect(r.x-2,r.y-2,r.w+4,r.h+4); }
     if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-3,r.y-3,r.w+6,r.h+6); }
   });
-  drawCaption('Пригадай: яке пиво любить Катя?', b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
-    : b.wrong>0 ? 'не те… вона любить темне, кокосове. Ще?' : 'обери правильне — і подаруй 🍺');
+  drawCaption('Яке пиво любить Катя? Тапни банку', b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
+    : b.wrong>0 ? 'не те… вона любить темне, кокосове. Тапни ще' : 'тапни банку з її улюбленим — і подаруй 🍺');
 }
 function startBattle(){
   game.battle = {
@@ -3855,8 +3855,7 @@ function bandHit(lane){
   for(const n of b.notes){
     if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 22){ n.hit = true; b.hits++; shake(1,5);
       ensureAudio(); playNote([330,392,494][lane], audioCtx.currentTime, 0.18, 'square', 0.05);
-      b.musicT = 90; if(!musicMuted) playChip('pozniaky');       // фонова пісня грає, поки влучаєш у ритм
-      if(b.hits>=b.need){ b.done = true; b.doneT = 0; stopChip(); } return; }
+      if(b.hits>=b.need){ b.done = true; b.doneT = 0; } return; }
   }
 }
 function updateBand(){
@@ -3875,7 +3874,6 @@ function updateBand(){
     return;
   }
   b.t++;
-  if(b.musicT>0){ b.musicT--; if(b.musicT===0) stopChip(); }   // перестав влучати — музика стихла
   for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
   if(b.t%28===0 && b.notes.length<40) b.notes.push({lane:(Math.random()*3|0), y:-10, hit:false});
   b.notes.forEach(n=>{ n.y += 2.4; });
@@ -5047,8 +5045,8 @@ function updateHudAndControls(){
 
 function setPhase(p){
   game.phase = p; game.phaseT = 0;
-  // поліфонічна музика за фазою; на Кітані — тиша (мікрофон), на гурті — музика лише при влучних нотах
-  if(p==='kitana' || p==='band'){ stopChip(); }
+  // поліфонічна музика за фазою; глушимо лише на Кітані (там мікрофон)
+  if(p==='kitana'){ stopChip(); }
   else { const want = chipForPhase(p); if(want) playChip(want); }
   // капшни та інші немапнуті фази — поточна пісня грає далі
   updateHudAndControls();
@@ -5763,7 +5761,7 @@ function update(){
 
     case 'beer':
       if(game.watch && game.phaseT>50 && game.beer && game.beer.okT===0){ game.beer.picked=0; game.beer.okT=1; }
-      if(game.beer && game.beer.okT>0){ game.beer.okT++; if(game.beer.okT>95) startBattle(); }
+      if(game.beer && game.beer.okT>0){ game.beer.okT++; if(game.beer.okT>60) startBattle(); }
       break;
 
     case 'battle':
