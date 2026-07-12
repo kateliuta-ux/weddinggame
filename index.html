@@ -2605,8 +2605,8 @@ function drawVykup(){
   ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(14.5,16.5,W-29,33);
   ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText('· ВИКУП НАРЕЧЕНОЇ ·', W/2, 30);
   if(v.intro){                                                   // ── ПРАВИЛА ГРИ (картка на старті) ──
-    ctx.fillStyle='rgba(26,18,10,.92)'; ctx.fillRect(24, H*0.30, W-48, 132);
-    ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(25, H*0.30+1, W-50, 130);
+    ctx.fillStyle='rgba(26,18,10,.92)'; ctx.fillRect(24, H*0.30, W-48, 148);
+    ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(25, H*0.30+1, W-50, 146);
     ctx.textAlign='center'; ctx.fillStyle='#f4cf5e'; ctx.font='bold 11px monospace';
     ctx.fillText('ЯК ГРАТИ У ВИКУП', W/2, H*0.30+22);
     ctx.fillStyle='#f4e8c8'; ctx.font='8px monospace';
@@ -2615,7 +2615,7 @@ function drawVykup(){
      'У кожному з 3 раундів обери правильний хід.','Помилка — дружки беруть штраф із казни 🍬🍾.',
      'Пройдеш усі три — стрічку опустять!'].forEach((ln,li)=> ctx.fillText(ln, W/2, H*0.30+40+li*13));
     ctx.fillStyle='rgba(244,232,200,.6)'; ctx.font='8px monospace';
-    ctx.fillText(game.watch?'…':'тап — почати', W/2, H*0.30+126);
+    ctx.fillText(game.watch?'…':'тап — почати', W/2, H*0.30+140);
     ctx.textAlign='left';
     return;
   }
