@@ -3000,7 +3000,7 @@ const KATYA_FEB26 = {top:'#c4c0ce', topD:'#9a95aa'};                 // сіра
 // ── одяг по сценах (Катя просила перевдягати на кожну сцену) ──
 const VYSH_K = {top:'#f6f2e6', topD:'#d8d0bc', topH:'#fff', skirtCol:'#a8323c'};  // вишиванка + червона плахта
 const VYSH_D = {top:'#f6f2e6', topD:'#d8d0bc', topH:'#e8e2d0'};                    // вишиванка Діми
-const DATE_K = {top:'#e0a34e', topD:'#b8813a', topH:'#f0bc6a', skirtCol:'#6a4a30'};// тепла осіння куртка
+const DATE_K = {top:'#f6e2e8', topD:'#dcc4cc', topH:'#fff0f4', skirt:true, skirtCol:'#c9584a'};// маєчка світло-рожева + теракотова спідничка
 const DATE_D = {top:'#4a5c7a', topD:'#374660', topH:'#5c7090'};          // джинсовка
 const OFFICE_K = {top:'#3a3a44', topD:'#26262e', topH:'#4a4a56'};                  // чорне режисерське
 
@@ -6571,17 +6571,17 @@ function render(){
     const tby = H-22;
     drawPerson(100, tby-bob, 'katya', 0, 1, false, VYSH_K);
     drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, VYSH_D);
-    { const hx=100, hy=tby-59-bob;                       // ВІНОК на голові Каті (над чолом)
+    { const hx=100, hy=tby-62-bob;                       // ВІНОК на маківці (над волоссям)
       ctx.fillStyle='#3f6b3a'; ctx.fillRect(hx-10,hy,20,3);                       // основа-зелень
       [['#a8323c',-9],['#f4cf5e',-4],['#e08aa0',1],['#a8323c',6]].forEach(([c,dx])=>{  // квіти
         ctx.fillStyle=c; ctx.fillRect(hx+dx,hy-3,4,4); });
       ctx.fillStyle='#fff'; ctx.fillRect(hx-2,hy-4,3,3);                          // біла квітка по центру
-      // стрічки, що маяться за вітром
+      // стрічки — ЛИШЕ З БОКІВ голови (за вушками), не по обличчю
       const wav=Math.sin(game.t*0.08)*2;
-      [['#a8323c',-9],['#f4cf5e',-5],['#3F7C77',9],['#e08aa0',12]].forEach(([c,dx],i)=>{
+      [['#a8323c',-14],['#f4cf5e',-11],['#3F7C77',10],['#e08aa0',13]].forEach(([c,dx],i)=>{
         ctx.fillStyle=c;
-        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 14);
-        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+15, 2, 8); });
+        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 16);
+        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+17, 2, 9); });
       ctx.fillStyle='#a8323c';                                                     // намисто (під підборіддям)
       ctx.fillRect(hx-5,tby-32-bob,2,2); ctx.fillRect(hx-1,tby-31-bob,2,2); ctx.fillRect(hx+3,tby-32-bob,2,2);
     }
