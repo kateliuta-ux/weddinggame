@@ -148,7 +148,7 @@
   #watch-play:active{transform:translateY(2px)}
   @keyframes blink{50%{opacity:.55}}
   #pause-btn{
-    position:absolute;top:2.5%;right:2.5%;cursor:pointer;
+    position:absolute;top:2.5%;left:2.5%;cursor:pointer;
     color:#fff;font-size:clamp(14px,3.4cqw,22px);
     background:rgba(0,0,0,.55);padding:.15em .45em;
     border:2px solid rgba(255,255,255,.35);user-select:none;
@@ -4391,6 +4391,90 @@ function drawHint(txt, x, y, size){
   ctx.fillText(txt, x, y);
   ctx.restore();
 }
+/* ── ПЕРЕПИСКА ЯК СПРАВЖНІЙ МЕСЕНДЖЕР: бабли, наратор — окремою смугою внизу ── */
+function drawChatSim(){
+  const cs = game.chatsim; if(!cs) return;
+  // тло чату (світле, як у скрінах)
+  ctx.fillStyle = '#efe9e2'; ctx.fillRect(0,0,W,H);
+  // шапка: аватар + імʼя
+  ctx.fillStyle = '#f7f3ee'; ctx.fillRect(0,0,W,44);
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(0,43,W,1);
+  const other = game.pov==='katya' ? 'Dima Liutyi' : 'Katya';
+  if(game.pov==='katya' && TINDER_PIC.complete && TINDER_PIC.naturalWidth){
+    ctx.save(); ctx.beginPath(); ctx.arc(W/2-40,22,13,0,7); ctx.clip();
+    ctx.imageSmoothingEnabled=false; ctx.drawImage(TINDER_PIC, W/2-53, 9, 26, 26); ctx.restore();
+  } else { ctx.fillStyle='#c9788c'; ctx.beginPath(); ctx.arc(W/2-40,22,13,0,7); ctx.fill(); }
+  ctx.fillStyle = '#1a1a24'; ctx.font='bold 11px monospace'; ctx.textAlign='left';
+  ctx.fillText(other, W/2-20, 26);
+  // зона наратора внизу (пряма мова — ТІЛЬКИ баблами вище)
+  const narH = 46, chatBottom = H - narH - 8;
+  const cur = cs.lines[cs.idx];
+  // зібрати видимі бабли: усі до idx + поточний (якщо він пряма мова)
+  const msgs = [];
+  for(let i=0;i<=cs.idx && i<cs.lines.length;i++){
+    const l = cs.lines[i];
+    if(!l.who) continue;                                     // наратор не в стрічці
+    const full = i<cs.idx;
+    msgs.push({who:l.who, text: full ? l.text : l.text.slice(0, Math.floor(cs.shown))});
+  }
+  // маляр знизу догори
+  const bw = 8, lineH = 12, padV = 7, maxW = W*0.68;
+  ctx.font = '9px monospace';
+  let y = chatBottom;
+  for(let m = msgs.length-1; m>=0; m--){
+    const msg = msgs[m];
+    const rawLines = msg.text.split('\n');
+    // перенос довгих рядків по ширині бабла
+    const lines = [];
+    rawLines.forEach(rl=>{
+      while(ctx.measureText(rl).width > maxW-18 && rl.length>4){
+        let cut = rl.lastIndexOf(' ', Math.floor(rl.length*0.6));
+        if(cut<4) cut = Math.floor(rl.length*0.6);
+        lines.push(rl.slice(0,cut)); rl = rl.slice(cut+1);
+      }
+      lines.push(rl);
+    });
+    const tw = Math.min(maxW-18, Math.max(...lines.map(l=>ctx.measureText(l).width), 20));
+    const bh = lines.length*lineH + padV*2;
+    y -= bh + 6;
+    if(y < 52) break;                                        // не лізем під шапку
+    const mine = (msg.who === game.pov);
+    const bx = mine ? W-14-(tw+18) : 14;
+    // хвостик + бабл
+    ctx.fillStyle = mine ? '#5c2330' : '#e2dcd2';
+    ctx.beginPath();
+    const r=9, x0=bx, y0=y, x1=bx+tw+18, y1=y+bh;
+    ctx.moveTo(x0+r,y0); ctx.lineTo(x1-r,y0); ctx.quadraticCurveTo(x1,y0,x1,y0+r);
+    ctx.lineTo(x1,y1-r); ctx.quadraticCurveTo(x1,y1,x1-r,y1);
+    ctx.lineTo(x0+r,y1); ctx.quadraticCurveTo(x0,y1,x0,y1-r);
+    ctx.lineTo(x0,y0+r); ctx.quadraticCurveTo(x0,y0,x0+r,y0);
+    ctx.fill();
+    ctx.beginPath();                                          // хвостик
+    if(mine){ ctx.moveTo(x1-2,y1-8); ctx.lineTo(x1+6,y1); ctx.lineTo(x1-8,y1); }
+    else { ctx.moveTo(x0+2,y1-8); ctx.lineTo(x0-6,y1); ctx.lineTo(x0+8,y1); }
+    ctx.fill();
+    ctx.fillStyle = mine ? '#f6eef0' : '#241d1a';
+    ctx.textAlign='left';
+    lines.forEach((l,li)=> ctx.fillText(l, bx+9, y+padV+10+li*lineH));
+  }
+  // «набирає…» коли поточний бабл ще друкується
+  if(cur && cur.who && cs.shown < cur.text.length){
+    ctx.fillStyle='rgba(0,0,0,.35)'; ctx.font='8px monospace'; ctx.textAlign='left';
+    ctx.fillText((cur.who===game.pov?'ти':'він')+' набирає…', 16, chatBottom+2);
+  }
+  // НАРАТОР — окрема смуга внизу
+  ctx.fillStyle = 'rgba(20,16,24,.92)'; ctx.fillRect(0,H-narH,W,narH);
+  ctx.strokeStyle='rgba(181,138,46,.5)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,H-narH+0.5); ctx.lineTo(W,H-narH+0.5); ctx.stroke();
+  if(cur && !cur.who){
+    const shownT = cur.text.slice(0, Math.floor(cs.shown));
+    ctx.fillStyle = '#efe6d2'; ctx.font='italic 11px Georgia, serif'; ctx.textAlign='center';
+    shownT.split('\n').forEach((t,i)=> ctx.fillText(t, W/2, H-narH+18+i*14));
+  } else {
+    ctx.fillStyle = 'rgba(239,230,210,.4)'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(game.watch ? '' : 'тап — наступне повідомлення', W/2, H-narH/2+3);
+  }
+  ctx.textAlign='left';
+}
 function drawCaption(line1, line2, part){
   const t = game.t;
   // фон — глибокий градієнт (не голий чорний)
@@ -4414,11 +4498,20 @@ function drawCaption(line1, line2, part){
   }
   drawOrnament(H/2-46);
   ctx.fillStyle='rgba(244,207,94,.12)'; ctx.beginPath(); ctx.ellipse(W/2,H/2-6,108,30,0,0,7); ctx.fill();  // сяйво
-  ctx.fillStyle = COL.gold; ctx.font='bold 15px monospace';
+  ctx.fillStyle = COL.gold;
+  ctx.font = 'bold '+(line1.length>26?12:15)+'px monospace';       // довгий заголовок — меншим кеглем
   ctx.fillText(line1, W/2, H/2-8);
   ctx.fillStyle = '#e8e2d0'; ctx.font='10px monospace';
-  ctx.fillText(line2, W/2, H/2+14);
-  drawOrnament(H/2+34);
+  if(line2.length > 42){                                            // довгий підзаголовок — у 2 рядки
+    let cut = line2.lastIndexOf(' ', Math.ceil(line2.length/2)+6);
+    if(cut < 10) cut = line2.indexOf(' ', Math.ceil(line2.length/2));
+    ctx.fillText(line2.slice(0,cut), W/2, H/2+14);
+    ctx.fillText(line2.slice(cut+1), W/2, H/2+28);
+    drawOrnament(H/2+46);
+  } else {
+    ctx.fillText(line2, W/2, H/2+14);
+    drawOrnament(H/2+34);
+  }
   ctx.textAlign='left';
 }
 
@@ -6270,17 +6363,41 @@ function update(){
 
     case 'match':
       if(game.phaseT === 95 || (!game.watch && input.actionEdge && game.phaseT>25)){
+        input.actionEdge = false;
+        game.chatsim = {lines: chatScript(game.pov), idx:0, shown:0};
         setPhase('chat');
-        startDialog(chatScript(game.pov), ()=>{
-          // перехід до сцени першого побачення
-          game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
-          game.npc = {x:410, dir:-1, phase:0};
-          game.camX = 0; game._dateDone = false;
-          initWalkScene('heart');
-          setPhase('cap3');
-        });
       }
       break;
+
+    case 'chat': {
+      const cs = game.chatsim;
+      if(!cs) { setPhase('cap3'); break; }
+      const ln = cs.lines[cs.idx];
+      if(!ln){
+        // переписка дочитана → до першого побачення
+        game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
+        game.npc = {x:410, dir:-1, phase:0};
+        game.camX = 0; game._dateDone = false;
+        initWalkScene('heart');
+        game.chatsim = null;
+        setPhase('cap3');
+        break;
+      }
+      if(cs.shown < ln.text.length){
+        const prev = Math.floor(cs.shown);
+        cs.shown = Math.min(ln.text.length, cs.shown + 1.5);
+        const now = Math.floor(cs.shown);
+        if(now>prev){ const ch2=ln.text[now-1]||''; if(ch2.trim() && typeof sfxBlip==='function') sfxBlip(ln.who); }
+      }
+      if(game.watch){
+        if(cs.shown >= ln.text.length && (game.phaseT % 55)===0){ cs.idx++; cs.shown=0; }
+      } else if(input.actionEdge){
+        input.actionEdge = false;
+        if(cs.shown < ln.text.length) cs.shown = ln.text.length;   // домалювати
+        else { cs.idx++; cs.shown = 0; }
+      }
+      break;
+    }
 
     case 'cap3':
       if(game.phaseT > 170 || input.actionEdge) setPhase('date');
@@ -6522,8 +6639,10 @@ function render(){
       drawPhone();
       break;
     case 'match':
-    case 'chat':
       drawMatch();
+      break;
+    case 'chat':
+      drawChatSim();
       break;
     case 'cap3':
       drawCaption('ЗА КІЛЬКА ДНІВ', 'на вечорницях годилось частувати. у нас — кокосове темне', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
