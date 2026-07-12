@@ -74,6 +74,12 @@
   #title-screen .hint{color:#9a8a86;font-size:clamp(10px,2cqw,13px)}
 
   /* ---------- dialogue ---------- */
+  #dialog.bub{ border-radius:16px; min-height:0; bottom:15%; box-shadow:0 4px 0 rgba(0,0,0,.35); }
+  #dialog.bub-k{ left:3%; right:auto; width:min(76%,400px); }
+  #dialog.bub-d{ right:3%; left:auto; width:min(76%,400px); }
+  #dialog.bub::after{ content:''; position:absolute; bottom:-12px; border:12px solid transparent; border-top-color:var(--ink); border-bottom:0; }
+  #dialog.bub-k::after{ left:34px; }
+  #dialog.bub-d::after{ right:34px; }
   #dialog{
     position:absolute;left:2%;right:2%;bottom:2%;
     display:flex;gap:3%;align-items:center;
@@ -4137,30 +4143,41 @@ function drawMontage(){
 /* ================= ЕКСКЛЮЗИВ ДІМИ: SPACE SPICE BOY ================= */
 function bandIntroScript(){
   return [
-    {who:'dima', emo:'happy', text:'Оце — моя стихія. Тримай ритм зі мною!'},
-    {who:null,   emo:null,    text:'Лови ноти на лінії! (тап у колонці / A S D)'},
+    {who:'dima', emo:'happy', text:'Оце — моя стихія. Пісня живе,\nпоки ти в ритмі!'},
+    {who:null,   emo:null,    text:'Лови ноти на лінії — і пісня грає.\nПроґавив — тиша. (тап у колонці / A S D)'},
   ];
 }
 function bandOutroScript(){
   return [{who:'dima', emo:'happy', text:'Оце — «Позняки». Наша.'}];
 }
+function bandAudio(){
+  let el = bgmEls['pozniaky'];
+  if(!el){ el = new Audio(BGM_TRACKS['pozniaky']); el.loop = true; bgmEls['pozniaky'] = el; routeBgm(el); }
+  return el;
+}
 function startBand(){
-  game.band = {notes:[], hits:0, need:10, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false, musicT:0};
-  setPhase('band');
-  startDialog(bandIntroScript(), ()=>{ game.band.started = true; playBandSong(); });
+  game.band = {notes:[], hits:0, need:12, t:0, done:false, doneT:0, hitFlash:[0,0,0], started:false, flowT:0, beat:0};
+  setPhase('band'); stopChip();
+  startDialog(bandIntroScript(), ()=>{
+    game.band.started = true;
+    try{ ensureAudio(); const el=bandAudio(); el.currentTime=0; bgmFadeTo(BGM_VOL,200); }catch(_){}
+  });
 }
 function bandHit(lane){
   const b = game.band; if(!b || !b.started || b.done) return;
   b.hitFlash[lane] = 8;
   for(const n of b.notes){
-    if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 22){ n.hit = true; b.hits++; shake(1,5);
-      ensureAudio(); playNote([330,392,494][lane], audioCtx.currentTime, 0.18, 'square', 0.05);
+    if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 26){ n.hit = true; b.hits++; shake(1,5);
+      // влучив у ритм → пісня звучить далі (вікно ~1.2с)
+      try{ if(!musicMuted){ const el=bandAudio(); if(el.paused) el.play(); } }catch(_){}
+      b.flowT = 72;
       if(b.hits>=b.need){ b.done = true; b.doneT = 0; } return; }
   }
 }
 function updateBand(){
   const b = game.band; if(!b || !b.started) return;
   if(b.done){ b.doneT++;
+    if(b.doneT===1){ try{ bandAudio().pause(); }catch(_){} }
     if(b.doneT===60){
       startDialog(bandOutroScript(), ()=>{
         if(game.watch){ setPhase('cap2'); return; }
@@ -4174,9 +4191,17 @@ function updateBand(){
     return;
   }
   b.t++;
+  // пісня грає ЛИШЕ поки влучаєш: вікно спливло → пауза
+  if(b.flowT>0){ b.flowT--; if(b.flowT===0){ try{ bandAudio().pause(); }catch(_){} } }
   for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
-  if(b.t%28===0 && b.notes.length<40) b.notes.push({lane:(Math.random()*3|0), y:-10, hit:false});
-  b.notes.forEach(n=>{ n.y += 2.4; });
+  // ноти летять У РИТМІ треку: біт кожні 30 тіків (~120 bpm), патерн по бітах
+  if(b.t%30===0 && b.notes.length<40){
+    b.beat++;
+    const pat=[0,1,2,1,0,2,1,0];                       // ритмічний малюнок, не рандом-каша
+    b.notes.push({lane:pat[b.beat%pat.length], y:-10, hit:false});
+    if(b.beat%4===0) b.notes.push({lane:(pat[b.beat%pat.length]+1)%3, y:-34, hit:false});  // подвійна на сильну долю
+  }
+  b.notes.forEach(n=>{ n.y += (H-60)/100; });          // долітають до лінії рівно за 100 тіків
   b.notes = b.notes.filter(n=> n.y < H+10 && !n.hit);
   if(game.watch){ for(const n of b.notes) if(!n.hit && Math.abs(n.y-(H-70))<10) bandHit(n.lane); }
 }
@@ -4288,7 +4313,6 @@ function routeBgm(el){
 const CHIP_MAP = {
   prolog:'planeta', sitcom:'planeta', set:'planeta', montage:'planeta',
   tinder:'khata', swipe:'khata', match:'khata', chat:'khata', date:'khata', battle:'khata', run:'khata',
-  band:'pozniaky',
   svat:'planeta',
   secret:'stezhyna', prop:'stezhyna', diia:'stezhyna',
   vykup:'pozniaky',
@@ -5500,6 +5524,11 @@ function showLine(){
   const d = game.dialog, ln = d.lines[d.idx];
   d.shown = 0; d.waitTimer = 0;
   elArrow.classList.add('hidden');
+  // пряма мова — БАБЛОМ біля мовця (Катя зліва, Діма/інші справа); наратор — унизу
+  elDialog.classList.remove('bub','bub-k','bub-d');
+  if(ln.who){
+    elDialog.classList.add('bub', ln.who==='katya' ? 'bub-k' : 'bub-d');
+  }
   if(ln.who){
     const c = CHARS[ln.who];
     elPortraitWrap.style.display='';
@@ -6357,18 +6386,31 @@ function update(){
         }
         break;
       }
-      // актор грає: дрейфує й раптово міняє напрямок/швидкість (складніше зловити)
-      sh.turnT--; if(sh.turnT<=0){ sh.dir = Math.random()<0.5?-1:1; sh.spd = 0.9+Math.random()*1.7; sh.turnT = 34+(Math.random()*52|0); }
-      sh.sub += sh.dir*sh.spd;
-      if(sh.sub<44){ sh.sub=44; sh.dir=1; } if(sh.sub>W-44){ sh.sub=W-44; sh.dir=-1; }
-      // видошукач — гравець панорамує камеру (◀ ▶ / тап)
-      if(game.watch){ sh.vf += (sh.sub - sh.vf)*0.10; }
-      else {
-        if(keys['ArrowLeft']||input.left) sh.vf -= 3.2;
-        if(keys['ArrowRight']||input.right) sh.vf += 3.2;
-        if(game._tapPos){ sh.vf += (game._tapPos.x - sh.vf)*0.22; if(Math.abs(game._tapPos.x-sh.vf)<3) game._tapPos=null; }
+      if(game.pov==='dima'){
+        // ПОВ ДІМИ: ти — АКТОР. Рамка оператора їздить сама — тримайся в кадрі!
+        sh.turnT--; if(sh.turnT<=0){ sh.dir = Math.random()<0.5?-1:1; sh.spd = 0.9+Math.random()*1.6; sh.turnT = 40+(Math.random()*50|0); }
+        sh.vf += sh.dir*sh.spd;
+        if(sh.vf<44){ sh.vf=44; sh.dir=1; } if(sh.vf>W-44){ sh.vf=W-44; sh.dir=-1; }
+        if(game.watch){ sh.sub += (sh.vf - sh.sub)*0.10; }
+        else {
+          if(keys['ArrowLeft']||input.left) sh.sub -= 3.0;
+          if(keys['ArrowRight']||input.right) sh.sub += 3.0;
+          if(game._tapPos){ sh.sub += (game._tapPos.x - sh.sub)*0.22; if(Math.abs(game._tapPos.x-sh.sub)<3) game._tapPos=null; }
+        }
+        sh.sub = Math.max(30, Math.min(W-30, sh.sub));
+      } else {
+        // ПОВ КАТІ: ти — ОПЕРАТОРКА. Актор дрейфує — панорамуй камеру за ним
+        sh.turnT--; if(sh.turnT<=0){ sh.dir = Math.random()<0.5?-1:1; sh.spd = 0.9+Math.random()*1.7; sh.turnT = 34+(Math.random()*52|0); }
+        sh.sub += sh.dir*sh.spd;
+        if(sh.sub<44){ sh.sub=44; sh.dir=1; } if(sh.sub>W-44){ sh.sub=W-44; sh.dir=-1; }
+        if(game.watch){ sh.vf += (sh.sub - sh.vf)*0.10; }
+        else {
+          if(keys['ArrowLeft']||input.left) sh.vf -= 3.2;
+          if(keys['ArrowRight']||input.right) sh.vf += 3.2;
+          if(game._tapPos){ sh.vf += (game._tapPos.x - sh.vf)*0.22; if(Math.abs(game._tapPos.x-sh.vf)<3) game._tapPos=null; }
+        }
+        sh.vf = Math.max(30, Math.min(W-30, sh.vf));
       }
-      sh.vf = Math.max(30, Math.min(W-30, sh.vf));
       const d = Math.abs(sh.sub - sh.vf);
       sh.focus += d<24 ? 1.0 : -0.55; sh.focus = Math.max(0, Math.min(100, sh.focus));
       if(sh.focus>=100){ sh.done=true; sh.doneT=0; try{sfxScore();}catch(_){} }
@@ -6664,7 +6706,9 @@ function render(){
       if(!sh.done){
         ctx.fillStyle='rgba(10,8,14,.62)'; ctx.fillRect(0,44,W,22);
         ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-        ctx.fillText(isTouch?'🎥 тримай Діму в рамці (◀ ▶) — злови дубль':'🎥 тримай Діму в рамці (← →) — злови дубль', W/2, 59);
+        ctx.fillText(game.pov==='dima'
+          ? (isTouch?'🎭 ТИ в кадрі! Не випадай із рамки (◀ ▶)':'🎭 ТИ в кадрі! Не випадай із рамки (← →)')
+          : (isTouch?'🎥 тримай Діму в рамці (◀ ▶) — злови дубль':'🎥 тримай Діму в рамці (← →) — злови дубль'), W/2, 59);
         ctx.textAlign='left';
       } else { drawCaption('ЗНЯТО!', 'дубль 8/10 — але наш'); }
       break;
