@@ -201,6 +201,11 @@
   @keyframes vtwinkle{0%{transform:scale(0) rotate(0);opacity:0}
     40%{transform:scale(1.3) rotate(90deg);opacity:1}100%{transform:scale(0) rotate(180deg);opacity:0}}
   /* квіткові кути картки */
+  #viber-invite.male #viber-card{background:linear-gradient(160deg,#1a2436,#2a3a52 55%,#141c2a);border-color:#c8a050}
+  #viber-invite.male #viber-card::before,#viber-invite.male #viber-card::after{content:"⚜";color:#c8a050}
+  #viber-invite.male .v-hello{color:#d8e4f0}
+  #viber-invite.male .v-title{color:#c8a050;text-shadow:0 0 12px rgba(200,160,80,.6)}
+  #viber-invite.male .v-names{color:#e8eef6}
   #viber-card::before,#viber-card::after{content:"✿";position:absolute;font-size:30px;color:#e05aa0;
     text-shadow:0 0 6px rgba(224,90,160,.6);animation:vwiggle 2s ease-in-out infinite}
   #viber-card::before{top:-14px;left:-10px;transform:rotate(-20deg)}
@@ -5822,16 +5827,28 @@ document.getElementById('btn-save-inv').addEventListener('click', saveInvitation
 
 /* ---------------- кічове запрошення «для тьоті у Viber» ---------------- */
 // монохромні дингбати (не айфон-емоджі), розфарбовані під Територію-А (глам 90х)
-const VIBER_EMOJI = ['✿','❀','♥','★','✧','❁','✽','❧','⋆','✤','❦','✾','✻','❣'];
-const VIBER_SPARK = ['✧','⋆','★','✦','✩','♥','❋'];
-const VIBER_COLORS = ['#e05aa0','#f4c84a','#ff8fce','#c02a7a','#ffd98a','#a0248a','#ff5aa0'];
+// ЖІНОЧА версія: троянди-глітер-рожеве; ЧОЛОВІЧА: вовк-зорі-сталь (класика всратих листівок)
+const VIBER_SETS = {
+  f: { emoji:['✿','❀','♥','❁','✽','❧','✤','❦','✾','❣','✧','⋆'],
+       spark:['✧','⋆','★','✦','✩','♥','❋'],
+       colors:['#e05aa0','#f4c84a','#ff8fce','#c02a7a','#ffd98a','#a0248a','#ff5aa0'],
+       hello:'Дорогенька', corner:'✿' },
+  m: { emoji:['★','✠','♞','⚜','✦','◆','▲','♠','✪','⚔'],
+       spark:['★','✦','◆','⚜','✪'],
+       colors:['#4a90d8','#c8a050','#8a8494','#2a6a8a','#d8b25a','#5a7ea6','#9aa8b8'],
+       hello:'Шановний пане', corner:'⚜' },
+};
+const vset = () => VIBER_SETS[viberGender] || VIBER_SETS.f;
+const VIBER_EMOJI = VIBER_SETS.f.emoji;   // (легасі-посилання)
+const VIBER_SPARK = VIBER_SETS.f.spark;
+const VIBER_COLORS = VIBER_SETS.f.colors;
 let viberTimer = null, viberSpark = null, vSeed = 1;
 function vrand(){ vSeed = (vSeed*1103515245 + 12345) & 0x7fffffff; return vSeed/0x7fffffff; }
 function viberSpawn(){
   const box = document.getElementById('viber-emojis');
   const s = document.createElement('span');
-  s.textContent = VIBER_EMOJI[(vrand()*VIBER_EMOJI.length)|0];
-  s.style.color = VIBER_COLORS[(vrand()*VIBER_COLORS.length)|0];
+  s.textContent = vset().emoji[(vrand()*vset().emoji.length)|0];
+  s.style.color = vset().colors[(vrand()*vset().colors.length)|0];
   s.style.textShadow = '0 0 6px currentColor';
   s.style.left = (vrand()*96) + 'vw';
   const dur = 4 + vrand()*4;                                // 4–8с
@@ -5844,8 +5861,8 @@ function viberSparkle(){                                     // блискітк
   const box = document.getElementById('viber-emojis');
   const s = document.createElement('span');
   s.className = 'v-spark';
-  s.textContent = VIBER_SPARK[(vrand()*VIBER_SPARK.length)|0];
-  s.style.color = VIBER_COLORS[(vrand()*VIBER_COLORS.length)|0];
+  s.textContent = vset().spark[(vrand()*vset().spark.length)|0];
+  s.style.color = vset().colors[(vrand()*vset().colors.length)|0];
   s.style.textShadow = '0 0 5px currentColor';
   s.style.left = (vrand()*94) + 'vw';
   s.style.top = (vrand()*88) + 'vh';
@@ -5867,8 +5884,11 @@ function inviteHello(){
   return (viberGender==='f' ? 'Шановна гостя' : 'Шановний гість') + '!';   // без імені — ввічливо й за статтю
 }
 function viberRefresh(){
-  document.getElementById('viber-hello').textContent = inviteHello();
+  const n=inviteName();
+  document.getElementById('viber-hello').textContent =
+    n && n.toLowerCase()!=='гість' ? (vset().hello+', '+n+'!') : vset().hello+'!';
   document.getElementById('viber-venue').textContent = viberVenue();
+  document.getElementById('viber-invite').classList.toggle('male', viberGender==='m');
 }
 function openViber(fromTitle){
   viberFrom = fromTitle ? 'title' : 'end';
@@ -7017,7 +7037,12 @@ function buildPartyDeck(){
   return deck;
 }
 function openParty(){
-  partyDeck = buildPartyDeck(); partyIdx = 0; partyBusy = false;
+  partyDeck = buildPartyDeck(); partyIdx = 0; partyBusy = false; sessionMatches = [];
+  // хто лайкнув тебе раніше — показуємо в шапці
+  loadMyMatches().then(names=>{
+    const h=document.querySelector('#party-screen .s-head span');
+    if(h && names.length) h.textContent = '💘 тебе лайкнули: ' + names.slice(0,4).join(', ') + (names.length>4?' +'+(names.length-4):'') + ' · свайпай у відповідь!';
+  });
   document.getElementById('party-match').classList.add('hidden');
   document.getElementById('party-screen').classList.remove('hidden');
   renderPartyTop();
@@ -7031,7 +7056,9 @@ function renderPartyTop(){
   if(partyIdx >= partyDeck.length){
     stack.style.display = 'none'; acts.style.display = 'none';
     empty.classList.remove('hidden');
-    empty.textContent = 'Колода скінчилась. Додай своє фото — і зіграймо ще (тоді тебе свайпатимуть інші гості).';
+    empty.textContent = sessionMatches.length
+      ? '💘 Твої метчі: ' + sessionMatches.join(', ') + '. На весіллі знайди їх і привітайся! А додаси фото — свайпатимуть і тебе.'
+      : 'Колода скінчилась без метчів — буває) Додай своє фото — і зіграймо ще.';
     return;
   }
   stack.style.display = ''; acts.style.display = 'flex'; empty.classList.add('hidden');
@@ -7084,9 +7111,36 @@ function swipeParty(card, dir, el){
   setTimeout(() => {
     partyBusy = false;
     // лайк на гостя → приблизно половина «метчить у відповідь» (без набридливих попапів)
-    if(dir > 0 && card.kind === 'guest' && (((card.name||'').length + partyIdx) % 2 === 0)){ showPartyMatch(card); return; }
+    if(dir > 0 && card.kind === 'guest' && (((card.name||'').length + partyIdx) % 2 === 0)){
+      sessionMatches.push(card.name); saveMatch(card.name);
+      showPartyMatch(card); return; }
     partyIdx++; renderPartyTop();
   }, 340);
+}
+let sessionMatches = [];
+async function saveMatch(toName){
+  if(typeof TEST_MODE!=='undefined' && TEST_MODE) return;
+  const from = (localStorage.getItem('wed-player-name')||'').trim(); if(!from) return;
+  try{
+    await fetch(FS_BASE+'matches?key='+FB.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fields:{ from:{stringValue:from}, to:{stringValue:toName}, at:{integerValue:String(Date.now())} }}),
+    });
+  }catch(e){}
+}
+async function loadMyMatches(){
+  const me=(localStorage.getItem('wed-player-name')||'').trim().toLowerCase(); if(!me) return [];
+  try{
+    const r=await fetch(FS_BASE+'matches?key='+FB.apiKey+'&pageSize=300');
+    const j=await r.json();
+    const names=new Set();
+    (j.documents||[]).forEach(d=>{
+      const f=d.fields||{};
+      if((f.to&&f.to.stringValue||'').toLowerCase()===me) names.add(f.from&&f.from.stringValue||'');
+    });
+    names.delete('');
+    return [...names];
+  }catch(e){ return []; }
 }
 function showPartyMatch(card){
   const face = document.getElementById('party-match-face');
