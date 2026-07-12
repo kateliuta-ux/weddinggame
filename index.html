@@ -4227,12 +4227,17 @@ function ensureAudio(){
   if(audioCtx.state==='suspended') audioCtx.resume();
   return audioCtx;
 }
+let noteBus = null;   // шина всіх нот — щоб запис міг «чути» семплер
+function getNoteBus(){
+  if(!noteBus){ noteBus = audioCtx.createGain(); noteBus.gain.value = 1; noteBus.connect(audioCtx.destination); }
+  return noteBus;
+}
 function playNote(f, t, d, type, vol){
   const o = audioCtx.createOscillator(), gn = audioCtx.createGain();
   o.type = type; o.frequency.value = f;
   gn.gain.setValueAtTime(vol, t);
   gn.gain.exponentialRampToValueAtTime(0.001, t+d*0.92);
-  o.connect(gn); gn.connect(audioCtx.destination);
+  o.connect(gn); gn.connect(getNoteBus());
   o.start(t); o.stop(t+d);
 }
 /* короткий приємний «дзинь» на очки/влучання (поважає кнопку звуку) */
@@ -6906,11 +6911,24 @@ async function smpRecord(){
   if(recMedia){ recMedia.stop(); return; }                       // друге натискання — стоп
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    ensureAudio();
+    // МІКС: голос із мікрофона + ноти семплера → один запис
+    const dest = audioCtx.createMediaStreamDestination();
+    const micSrc = audioCtx.createMediaStreamSource(stream);
+    micSrc.connect(dest);
+    getNoteBus().connect(dest);                                  // семплер чутно в записі
+    recMedia = {_ctxTap:{dest, micSrc}};                          // тимчасово, замінимо нижче
+    const hasPattern = SMP.grid.some(row=>row.some(v=>v));
+    if(hasPattern && !SMP.playing) document.getElementById('s-play').click();   // трек грає під запис
     recChunks=[];
-    recMedia = new MediaRecorder(stream);
+    recMedia = new MediaRecorder(dest.stream);
+    recMedia._tap = {dest, micSrc};
     recMedia.ondataavailable = e => { if(e.data.size) recChunks.push(e.data); };
     recMedia.onstop = async ()=>{
       stream.getTracks().forEach(t=>t.stop());                   // мікрофон гаситься одразу
+      try{ getNoteBus().disconnect(recMedia._tap.dest); }catch(_){}
+      try{ recMedia._tap.micSrc.disconnect(); }catch(_){}
+      if(SMP.playing) samplerStop();                              // сітка стихає разом із записом
       clearTimeout(recTimer); btn.textContent='🎙 ЗАПИСАТИ ГОЛОС';
       sStat('обробляю запис…');
       try{
@@ -6927,7 +6945,9 @@ async function smpRecord(){
     };
     recMedia.start();
     btn.textContent='⏹ СТОП (пише…)';
-    sStat('записую (до 30с)… співай, бітбокс, що завгодно!');
+    const hasP = SMP.grid.some(row=>row.some(v=>v));
+    sStat(hasP ? 'пише ТРЕК + ГОЛОС разом (до 30с) — співай поверх мелодії!'
+               : 'пише голос (до 30с)… хочеш із мелодією — спершу накидай ноти');
     stopChip();                                                   // фонова музика не лізе в запис
     recTimer=setTimeout(()=>{ if(recMedia) recMedia.stop(); }, 30000);
   }catch(e){ sStat('мікрофон недоступний — дозволь доступ у браузері'); recMedia=null; }
