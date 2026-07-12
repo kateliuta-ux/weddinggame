@@ -666,6 +666,11 @@ const CHARS = {
   katya:{ name:'КАТЯ', hair:'#cfa96f', top:COL.rose, topD:COL.roseD, topH:'#c9788c', skirt:true, skirtCol:'#8a3f52', cls:'name-katya', style:'bob'    },
   dima: { name:'ДІМА', hair:'#4a3423', top:COL.sage, topD:COL.sageD, topH:'#5fa89c', cls:'name-dima',  style:'fringe' },
   starosta:{ name:'СТАРОСТА', hair:'#9a9488', top:'#7a5c3e', topD:'#5f462e', cls:'', style:'fringe' },
+  // батьки на сватанні — повнорозмірні, з різними вбраннями
+  mamaK:{ name:'МАМА КАТІ', hair:'#b98a4e', top:'#7a5c8a', topD:'#5f4670', topH:'#94729e', skirt:true, skirtCol:'#5f4670', cls:'', style:'bob' },
+  tatoK:{ name:'ТАТО КАТІ', hair:'#7a746a', top:'#4a5c7a', topD:'#374660', cls:'', style:'fringe' },
+  mamaD:{ name:'МАМА ДІМИ', hair:'#8a6a4e', top:'#5a7c6a', topD:'#446354', topH:'#74927e', skirt:true, skirtCol:'#446354', cls:'', style:'bob' },
+  tatoD:{ name:'ТАТО ДІМИ', hair:'#6a645a', top:'#7a5c4a', topD:'#604836', cls:'', style:'fringe' },
   // креативник-напарник у кадрі Штормнадо (2021)
   guy:{ name:'КРЕАТИВНИК', hair:'#2e2a26', top:'#3a4a5a', topD:'#2a3644', cls:'', style:'fringe' },
 };
@@ -2785,10 +2790,10 @@ function drawSvat(){
   });
   // батьки спостерігають за сватанням (обличчя з'являються, коли додадуть селфі)
   const pf = pat => { const f=GUEST_FACES.find(g=>(g.name||'').toLowerCase().includes(pat)); return f?f.img:null; };
-  drawGuest(24,  FLOOR_Y+2, '#7a5c8a', false, game.t,     pf('леся')||pf('мама'));   // мама Каті
-  drawGuest(48,  FLOOR_Y+2, '#6a4c7a', false, game.t+45,  pf('паша')||pf('папа'));   // тато Каті
-  drawGuest(206, FLOOR_Y+2, '#5a7c6a', false, game.t+90,  pf('світлан'));            // мама Діми
-  drawGuest(228, FLOOR_Y+2, '#4a6c5a', false, game.t+135, pf('олег'));               // тато Діми
+  drawParent(22,  FLOOR_Y+2, 'mamaK', 1, pf('леся')||pf('мама'), game.t);     // мама Каті
+  drawParent(48,  FLOOR_Y+2, 'tatoK', 1, pf('паша')||pf('папа'), game.t+45);  // тато Каті
+  drawParent(204, FLOOR_Y+2, 'mamaD', -1, pf('світлан'), game.t+90);          // мама Діми
+  drawParent(230, FLOOR_Y+2, 'tatoD', -1, pf('олег'), game.t+135);            // тато Діми
   // брат Костя — по відеодзвінку з Лондона (телефон на табуреті)
   { const bx=66, byTop=FLOOR_Y-46;
     ctx.fillStyle='#6a4a30'; ctx.fillRect(bx-8,FLOOR_Y-14,16,14); ctx.fillRect(bx-10,FLOOR_Y-16,20,3);  // табурет
@@ -3477,6 +3482,17 @@ function drawGuest(x, y, col, seated, t, faceImg){
   ctx.fillStyle = '#f4e8c8';
   ctx.fillRect(x+6, y-(seated?31:39)-b*2, 3, 5);
   ctx.fillStyle = '#d8b25a'; ctx.fillRect(x+6, y-(seated?29:37)-b*2, 3, 2);
+}
+/* повнорозмірний «дорослий» персонаж з фото-обличчям поверх голови (для сватання) */
+function drawParent(x, y, who, dir, faceImg, t){
+  const bob = ((t>>5)+x)&1;
+  drawPerson(x, y-bob, who, 0, dir, false);
+  if(faceImg && faceImg.complete && faceImg.naturalWidth){
+    const cx=x, cy=y-bob-44, r=9;
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.clip();
+    ctx.imageSmoothingEnabled=false; ctx.drawImage(faceImg,cx-r,cy-r,r*2,r*2); ctx.restore();
+    ctx.strokeStyle='#221c26'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  }
 }
 /* обличчя гостя за індексом (циклічно), або null поки фото не завантажені */
 function guestFace(i){
