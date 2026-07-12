@@ -4796,9 +4796,24 @@ function drawNovel(){
 }
 
 /* Сітком-заставка: полароїди з реальних фото у 8-біт, потім титр */
+// чи фото кольорове (ч/б нечитабельні — відкидаємо); результат кешується
+const _colorCache = new WeakMap();
+function isColorful(img){
+  if(!img || !img.complete || !img.naturalWidth) return true;   // ще не завантажилось — не відкидаємо передчасно
+  if(_colorCache.has(img)) return _colorCache.get(img);
+  let colorful = true;
+  try{
+    const c=document.createElement('canvas'); c.width=c.height=24; const g=c.getContext('2d');
+    g.drawImage(img,0,0,24,24); const d=g.getImageData(0,0,24,24).data; let s=0,n=0;
+    for(let i=0;i<d.length;i+=4){ const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]); s+=mx-mn; n++; }
+    colorful = (s/n) > 12;                                        // поріг насиченості: ч/б ≈ 0
+    _colorCache.set(img, colorful);
+  }catch(_){}
+  return colorful;
+}
 function sitcomFrames(){
-  // базові 5 + спільні фото гостей (кожне з підписом)
-  return SITCOM_PH.map(img=>({img, cap:null}))
+  // ТІЛЬКИ кольорові базові + спільні фото гостей (кожне з підписом)
+  return SITCOM_PH.filter(isColorful).map(img=>({img, cap:null}))
     .concat(SITCOM_EXTRA.map(m=>({img:m.img, cap:m.name})));
 }
 function drawSitcom(){
@@ -4810,7 +4825,7 @@ function drawSitcom(){
   if(idx < n){
     const fr = frames[idx], img = fr.img;
     const pop = Math.min(1, (t%DUR)/6);                 // швидкий поп-ін
-    const maxW = Math.min(192, (H-140)/0.75);           // влазить і в ландшафт
+    const maxW = Math.min(272, W-36, (H-120)/0.75);     // побільше (влазить і в ландшафт)
     const pw = maxW*pop, phh = maxW*0.75*pop;
     ctx.save();
     ctx.translate(W/2, H/2-6);
@@ -4840,7 +4855,7 @@ function drawSitcom(){
     ctx.fillRect(W/2-n*7+i*14, H-40, 8, 8);
   }
   ctx.fillStyle = 'rgba(216,212,196,.5)'; ctx.font = '7px monospace'; ctx.textAlign='center';
-  ctx.fillText(game.watch ? '' : 'тап — далі', W/2, H-28);
+  ctx.fillText(game.watch ? '' : 'тап — наступне фото', W/2, H-28);
   ctx.textAlign='left';
 }
 
@@ -5670,12 +5685,16 @@ function update(){
       }
       break;
 
-    case 'sitcom':
-      if(game.phaseT > sitcomFrames().length*52 + 90 || (!game.watch && input.actionEdge && game.phaseT>8)){
-        input.actionEdge = false;
-        setPhase('cap1');
+    case 'sitcom': {
+      const nf = sitcomFrames().length, DUR = 80;
+      if(!game.watch && input.actionEdge && game.phaseT>6){ input.actionEdge=false;
+        const curIdx = Math.floor(game.phaseT/DUR);
+        if(curIdx < nf) game.phaseT = (curIdx+1)*DUR + 1;   // тап → НАСТУПНА фото (не пропускає все)
+        else setPhase('cap1');                              // на фінальній картці тап виходить
       }
+      if(game.phaseT > nf*DUR + 110) setPhase('cap1');       // авто-кінець
       break;
+    }
 
     case 'cap1':
       if(game.phaseT > 95 || input.actionEdge) setPhase('set');
