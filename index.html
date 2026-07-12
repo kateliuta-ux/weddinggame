@@ -1600,7 +1600,9 @@ function flashHyper(who, opts){
   opts = opts || {};
   let img;
   if(who==='kitana') img = HEAD_KIT;
-  else { const fr = headFrames(who); img = fr ? fr[opts.frame!=null?opts.frame:0] : null; }
+  else { const fr = headFrames(who);
+    const defFrame = who==='katya' ? 3 : 0;               // Катя у драм-кадрах — усміхнена
+    img = fr ? (fr[opts.frame!=null?opts.frame:defFrame] || fr[0]) : null; }
   if(!headReady(img)) return;
   game.hyper = { img, t:0, dur:(opts.dur||66),
     z0:(opts.z0||0.92), z1:(opts.z1||1.08), tint:(opts.tint||'#20140f'), label:(opts.label||null) };
@@ -2110,7 +2112,9 @@ function drawMatch(){
 function startKiss(){ game.kiss = {t:0, ring:1.55, hit:false, hitT:0, msgT:0, msg:''}; setPhase('kiss'); }
 function updateKiss(){
   const k = game.kiss; if(!k) return; k.t++;
-  if(k.hit){ k.hitT++; if(k.hitT>190) setPhase('cap4'); return; }
+  if(k.hit){ k.hitT++;
+    if(k.hitT===42) flashHyper('katya', {frame:3, dur:64, tint:'#3a1a2e', label:'♥ …мов у сні ♥'});
+    if(k.hitT>190) setPhase('cap4'); return; }
   k.ring = 1.55 - ((k.t%110)/110)*1.35;                  // кільце сходиться до серця
   const press = game.watch ? (Math.abs(k.ring-0.26)<0.05 && k.t>140) : input.actionEdge;
   if(press){
@@ -2354,6 +2358,79 @@ const BEERS = [
 ];
 function beerRects(){ const y=FLOOR_Y-80; return [44,116,188,260].map(cx=>({x:cx-25,y,w:50,h:68,cx})); }
 function startBeerChoice(){ setPhase('beer'); game.beer={picked:-1, okT:0, wrong:0}; }
+/* ПОВ Каті: після пікніка — трошки весела. Дійди до Діми рівненько! */
+function startWalkline(){
+  game.walkline = {x:30, tilt:0, tv:0, gust:12, done:false, doneT:0, oops:0, oopsT:0};
+  setPhase('walkline');
+}
+function updateWalkline(){
+  const wl = game.walkline; if(!wl) return;
+  if(wl.done){ wl.doneT++;
+    if(wl.doneT===30) startDialog(dateScript(game.pov), ()=> startBattle());
+    return; }
+  wl.gust--;
+  if(wl.gust<=0){ wl.tv += (Math.random()-0.5)*0.5; wl.gust = 24+Math.random()*38; }   // весела ж!
+  wl.tv += wl.tilt*0.0012;
+  if(game.watch){ wl.tv += -wl.tilt*0.02; }
+  else{
+    if(keys['ArrowLeft']) wl.tv -= 0.06;
+    if(keys['ArrowRight']) wl.tv += 0.06;
+    if(game._tapPos){ wl.tv += (game._tapPos.x < W/2 ? -0.45 : 0.45); game._tapPos=null; }
+  }
+  wl.tv *= 0.97; wl.tilt += wl.tv;
+  if(wl.tilt > 32){ wl.tilt = 32; wl.tv = Math.min(0,wl.tv)*0.3; }
+  if(wl.tilt < -32){ wl.tilt = -32; wl.tv = Math.max(0,wl.tv)*0.3; }
+  const steady = Math.abs(wl.tilt) < 12;
+  wl.x += steady ? 0.9 : 0.25;                                     // рівно = йдеш, хилить = тупцюєш
+  if(!steady && (game.t&15)===0 && wl.oopsT<=0){ wl.oopsT=40; try{sfxScore(200);}catch(_){} }
+  if(wl.oopsT>0) wl.oopsT--;
+  if(wl.x >= W-78){ wl.done = true; wl.doneT = 0; try{sfxScore(880);}catch(_){} }
+}
+function drawWalkline(){
+  const wl = game.walkline; if(!wl) return;
+  // вечірня Пейзажка (як у пивній сцені)
+  const g=ctx.createLinearGradient(0,0,0,FLOOR_Y); g.addColorStop(0,'#43305e'); g.addColorStop(1,'#d1936f');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle='rgba(255,238,200,.92)'; ctx.beginPath(); ctx.arc(58,58,14,0,7); ctx.fill();
+  ctx.fillStyle='rgba(255,238,200,.12)'; ctx.beginPath(); ctx.arc(58,58,24,0,7); ctx.fill();
+  ctx.fillStyle='#3e5a3e'; ctx.fillRect(0,FLOOR_Y-18,W,18);
+  ctx.fillStyle='#8a5e40'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  drawChestnut(-8,-8,1); drawChestnut(W+8,-8,-1);
+  // пунктирна «рівна лінія» бруківкою
+  ctx.fillStyle='rgba(244,232,200,.5)';
+  for(let lx=16; lx<W-70; lx+=18) ctx.fillRect(lx, FLOOR_Y+8, 10, 3);
+  // лавка з Дімою і банками (сюрприз чекає)
+  ctx.fillStyle='#6a4a30'; ctx.fillRect(W-64,FLOOR_Y-6,52,6); ctx.fillRect(W-58,FLOOR_Y,5,14); ctx.fillRect(W-22,FLOOR_Y,5,14);
+  if(BEER_CAN.complete && BEER_CAN.naturalWidth){
+    const bw2=7, bh2=Math.round(bw2*BEER_CAN.naturalHeight/BEER_CAN.naturalWidth);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(BEER_CAN, W-52, FLOOR_Y-6-bh2, bw2, bh2); ctx.drawImage(BEER_CAN, W-42, FLOOR_Y-6-bh2, bw2, bh2);
+  }
+  drawPerson(W-30, FLOOR_Y+2, 'dima', 0, -1, false);
+  if(((game.t>>4)&3)===0){ ctx.fillStyle=COL.rose; ctx.fillRect(W-33, FLOOR_Y-52, 3, 3); ctx.fillRect(W-28, FLOOR_Y-52, 3, 3);
+    ctx.fillRect(W-33, FLOOR_Y-50, 8, 3); ctx.fillRect(W-31, FLOOR_Y-47, 4, 2); }
+  // Катя йде (нахил = вся фігурка хилиться)
+  ctx.save();
+  ctx.translate(wl.x, FLOOR_Y+2);
+  ctx.rotate((wl.tilt||0)*Math.PI/180*0.55);
+  ctx.translate(-wl.x, -(FLOOR_Y+2));
+  drawPerson(wl.x, FLOOR_Y+2, 'katya', (wl.x>>3), 1, true);
+  ctx.restore();
+  if(wl.oopsT>20){ ctx.fillStyle='#f4c46a'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    ctx.fillText('іккк!', wl.x, FLOOR_Y-64); ctx.textAlign='left'; }
+  // плашка-пояснення
+  ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,14+TITLE_Y,W,26);
+  ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!', W-16, 9, true);
+  ctx.fillText('ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!', W/2, 25+TITLE_Y);
+  ctx.fillStyle='#e8e2d0'; fitText('трошки весела — тапай лівим/правим боком і тримай рівновагу', W-16, 8, false);
+  ctx.fillText('трошки весела — тапай лівим/правим боком і тримай рівновагу', W/2, 35+TITLE_Y);
+  // прогрес шляху
+  ctx.fillStyle='rgba(255,255,255,.3)'; ctx.fillRect(60,H-16,200,4);
+  ctx.fillStyle='#8fd07a'; ctx.fillRect(60,H-16,200*Math.min(1,(wl.x-30)/(W-108-30)),4);
+  if(wl.done){ ctx.fillStyle='rgba(10,8,14,.7)'; ctx.fillRect(W/2-70,H*0.3,140,22);
+    ctx.fillStyle='#8fd07a'; ctx.font='bold 10px monospace'; ctx.fillText('ДІЙШЛА! 💅', W/2, H*0.3+15); }
+  ctx.textAlign='left';
+}
 function beerPick(px,py){
   const b=game.beer; if(!b||b.okT>0) return;
   const rs=beerRects();
@@ -2388,7 +2465,7 @@ function drawBeer(){
   const sub = b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
     : b.wrong>0 ? MISS[(b.wrong-1)%MISS.length] : 'тапни банку з її улюбленим — і подаруй 🍺';
   ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,16+TITLE_Y-HUD_Y,W,32);
-  const bqt = game.pov==='dima' ? 'Пригадай, яке пиво любить Катя!' : 'Чи запамʼятав Діма твоє пиво?';
+  const bqt = 'Пригадай, яке пиво любить Катя!';
   ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText(bqt, W-14, 10, true);
   ctx.fillText(bqt, W/2, 30+TITLE_Y-HUD_Y);
   ctx.fillStyle = b.okT>0?'#8fd07a':(b.wrong>0?'#e0959f':'#e8e2d0'); fitText(sub, W-14, 8, false); ctx.fillText(sub, W/2, 42+TITLE_Y-HUD_Y);
@@ -2413,7 +2490,7 @@ const VYKUP_ROUNDS = [
     {label:'Серце. Одне. Назавжди', ok:true, note:'Дружки: «Оце курс. Забирай наречену!»'} ]},
 ];
 function startVykup(){
-  game.vykup = {round:0, sel:1, noteT:0, note:'', done:false, doneT:0,
+  game.vykup = {round:0, sel:1, noteT:0, note:'', done:false, doneT:0, intro:true, introT:0,
     res:{sweets:3, fizz:2, heart:1}, spend:null};             // казна викупу (H3-стиль)
   setPhase('vykup');
 }
@@ -2423,7 +2500,11 @@ function vykupPay(v, opt){
 }
 function updateVykup(){
   const v = game.vykup; if(!v) return;
-  if(v.done){ v.doneT++; if(v.doneT>90) setPhase('wed'); return; }
+  if(v.intro){ v.introT++;                                     // картка з правилами
+    if((game.watch && v.introT>170) || (input.actionEdge && v.introT>20) || (game._tapPos && v.introT>20)){
+      input.actionEdge=false; game._tapPos=null; v.intro=false; }
+    return; }
+  if(v.done){ v.doneT++; if(v.doneT>110) setPhase('wed'); return; }
   if(v.noteT>0){ v.noteT--; if(v.noteT===0){
     if(v.pass){ v.round++; v.sel=1; if(v.round>=VYKUP_ROUNDS.length){ v.done=true; v.doneT=0; try{sfxScore(880);}catch(_){} } }
   } return; }
@@ -2475,18 +2556,42 @@ function drawVykup(){
   drawAttendant(16, uy, BRIDES[0], 1.6); drawAttendant(74, uy-bob, BRIDES[1], 1.6);
   drawPerson(W-46, uy, 'dima', 0, -1, false, DIMA_FEB26);
   drawAttendant(W-18, uy-bob, GROOMS[0], 1.6); drawAttendant(W-76, uy, GROOMS[1], 1.6);
-  // ЧЕРВОНА СТРІЧКА-перепона: дружки тримають, доки викуп не сплачено
-  if(!v.done){
-    const rx1=96, rx2=W-80, rsag=6+Math.sin(game.t*0.06)*2;
+  // ЧЕРВОНА СТРІЧКА-перепона (весільний звичай: дорогу молодому перегороджують,
+  // поки не заплатить викуп). Після викупу — дружки опускають стрічку.
+  {
+    const drop = v.done ? Math.min(1, v.doneT/50) : 0;                          // спадає після викупу
+    const rx1=96, rx2=W-80, rsag=6+Math.sin(game.t*0.06)*2 + drop*54;
+    ctx.globalAlpha = 1 - drop*0.6;
     ctx.strokeStyle='#c0303c'; ctx.lineWidth=4;
-    ctx.beginPath(); ctx.moveTo(rx1,uy-36); ctx.quadraticCurveTo((rx1+rx2)/2, uy-36+rsag, rx2, uy-34); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rx1,uy-36+drop*40); ctx.quadraticCurveTo((rx1+rx2)/2, uy-36+rsag, rx2, uy-34+drop*40); ctx.stroke();
     ctx.strokeStyle='#e05a64'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.moveTo(rx1,uy-37); ctx.quadraticCurveTo((rx1+rx2)/2, uy-37+rsag, rx2, uy-35); ctx.stroke();
-    const bxm=(rx1+rx2)/2, bym=uy-36+rsag;                                     // бантик по центру
+    ctx.beginPath(); ctx.moveTo(rx1,uy-37+drop*40); ctx.quadraticCurveTo((rx1+rx2)/2, uy-37+rsag, rx2, uy-35+drop*40); ctx.stroke();
+    const bxm=(rx1+rx2)/2, bym=uy-36+rsag;                                      // бантик по центру
     ctx.fillStyle='#c0303c';
     ctx.beginPath(); ctx.moveTo(bxm,bym); ctx.lineTo(bxm-8,bym-6); ctx.lineTo(bxm-8,bym+6); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(bxm,bym); ctx.lineTo(bxm+8,bym-6); ctx.lineTo(bxm+8,bym+6); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    if(!v.done){                                                                // підпис, ЩО це за стрічка
+      ctx.fillStyle='rgba(26,18,10,.8)'; ctx.fillRect(bxm-72, bym-26, 144, 13);
+      ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('стрічка викупу: не пройдеш, поки не заплатиш!', 138, 7, false);
+      ctx.fillText('стрічка викупу: не пройдеш, поки не заплатиш!', bxm, bym-17);
+    }
   }
+  // деталі почту: ВІНКИ зі стрічками у дружок, БРИЛІ у бояр
+  const deco=(x, isBride)=>{
+    const hy2 = uy-66;                                                          // маківка голови (1.6×)
+    if(isBride){
+      ['#e05aa0','#f4cf5e','#3F7C77','#c0303c','#e05aa0'].forEach((c,k)=>{      // вінок-квіти
+        ctx.fillStyle=c; ctx.fillRect(x-9+k*4.4, hy2-2+((k%2)?1:0), 4, 4); });
+      ctx.fillStyle='#c0303c'; ctx.fillRect(x-9, hy2+2, 3, 12);                 // стрічки вінка
+      ctx.fillStyle='#f4cf5e'; ctx.fillRect(x+9, hy2+2, 3, 10);
+    } else {
+      ctx.fillStyle='#5a3a1e'; ctx.fillRect(x-10, hy2+1, 22, 4);                // бриль: криси
+      ctx.fillStyle='#6e4a28'; ctx.fillRect(x-6, hy2-5, 14, 7);                 // наголовок
+      ctx.fillStyle='#c0303c'; ctx.fillRect(x-6, hy2, 14, 2);                   // стрічка на брилі
+    }
+  };
+  deco(16+1.6, true); deco(74+1.6, true); deco(W-18+1.6, false); deco(W-76+1.6, false);
   [[46,'3'],[W-46,'3']].forEach(([ux,n])=>{
     ctx.fillStyle='#2a1f14'; ctx.fillRect(ux-11, uy+4, 22, 11);
     ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(ux-10.5, uy+4.5, 21, 10);
@@ -2499,9 +2604,24 @@ function drawVykup(){
   ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(14,16,W-28,34);
   ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(14.5,16.5,W-29,33);
   ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText('· ВИКУП НАРЕЧЕНОЇ ·', W/2, 30);
+  if(v.intro){                                                   // ── ПРАВИЛА ГРИ (картка на старті) ──
+    ctx.fillStyle='rgba(26,18,10,.92)'; ctx.fillRect(24, H*0.30, W-48, 132);
+    ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(25, H*0.30+1, W-50, 130);
+    ctx.textAlign='center'; ctx.fillStyle='#f4cf5e'; ctx.font='bold 11px monospace';
+    ctx.fillText('ЯК ГРАТИ У ВИКУП', W/2, H*0.30+22);
+    ctx.fillStyle='#f4e8c8'; ctx.font='8px monospace';
+    ['Дружки натягнули СТРІЧКУ через дорогу —','старий звичай: молодого не пускають,',
+     'поки не заплатить викуп за наречену.','',
+     'У кожному з 3 раундів обери правильний хід.','Помилка — дружки беруть штраф із казни 🍬🍾.',
+     'Пройдеш усі три — стрічку опустять!'].forEach((ln,li)=> ctx.fillText(ln, W/2, H*0.30+40+li*13));
+    ctx.fillStyle='rgba(244,232,200,.6)'; ctx.font='8px monospace';
+    ctx.fillText(game.watch?'…':'тап — почати', W/2, H*0.30+126);
+    ctx.textAlign='left';
+    return;
+  }
   ctx.fillStyle='#f4e8c8';
-  if(v.done){ fitText('ВИКУП СПЛАЧЕНО! Стрічку знято, дружки пропускають ✔', W-36, 8, false);
-    ctx.fillText('ВИКУП СПЛАЧЕНО! Стрічку знято, дружки пропускають ✔', W/2, 44); }
+  if(v.done){ fitText('ВИКУП СПЛАЧЕНО! Стрічку опущено — проходь до нареченої ✔', W-36, 8, false);
+    ctx.fillText('ВИКУП СПЛАЧЕНО! Стрічку опущено — проходь до нареченої ✔', W/2, 44); }
   else{ fitText(VYKUP_ROUNDS[v.round].q, W-36, 8, false); ctx.fillText(VYKUP_ROUNDS[v.round].q, W/2, 44);
     ctx.fillStyle='rgba(244,232,200,.55)'; ctx.font='7px monospace';
     ctx.fillText('раунд '+(v.round+1)+' з '+VYKUP_ROUNDS.length+' · обери хід. Помилка — штраф із казни!', W/2, 55); }
@@ -3265,29 +3385,35 @@ function drawSvat(){
     // ── КРУПНИЙ ПЛАН: колупання печі (комедійний інсет) ──
     const px2=W/2-105, py2=Math.round(H*0.16), pw2=210, ph2=170;
     ctx.fillStyle='#141018'; ctx.fillRect(px2-4,py2-4,pw2+8,ph2+8);
-    ctx.fillStyle='#d9a05e'; ctx.fillRect(px2,py2,pw2,ph2);                       // глина печі
-    ctx.fillStyle='#c98e4c';
-    for(let k=0;k<26;k++){ ctx.fillRect(px2+(k*37)%pw2, py2+(k*53)%ph2, 6, 3); }   // фактура
-    // розпис на печі (квіти)
-    [[40,30],[160,26],[102,20]].forEach(([fx,fy])=>{
-      ctx.fillStyle='#a8323c'; ctx.fillRect(px2+fx,py2+fy,6,6);
-      ctx.fillStyle='#3F7C77'; ctx.fillRect(px2+fx+2,py2+fy+8,2,8);
+    ctx.fillStyle='#f2ede0'; ctx.fillRect(px2,py2,pw2,ph2);                        // БІЛА піч (як на плані)
+    ctx.fillStyle='#e4dccb';
+    for(let k=0;k<22;k++){ ctx.fillRect(px2+(k*41)%pw2, py2+(k*57)%ph2, 8, 2); }    // фактура побілки
+    // народний розпис (квіти з листям — як на печі в хаті)
+    [[34,26],[158,22],[96,18]].forEach(([fx,fy])=>{
+      ctx.fillStyle='#a8323c'; ctx.fillRect(px2+fx,py2+fy,6,6); ctx.fillRect(px2+fx-4,py2+fy+2,3,3); ctx.fillRect(px2+fx+7,py2+fy+2,3,3);
+      ctx.fillStyle='#3F7C77'; ctx.fillRect(px2+fx+2,py2+fy+8,2,10); ctx.fillRect(px2+fx-2,py2+fy+12,4,2); ctx.fillRect(px2+fx+4,py2+fy+15,4,2);
     });
-    // виколупана ямка росте з прогресом
+    // ВІДКОЛОТА ПОБІЛКА: кутастий скол росте з прогресом (видно руду глину під нею)
     const dig=Math.min(1,s.meter/100);
-    ctx.fillStyle='#8a5e30'; ctx.beginPath(); ctx.ellipse(px2+pw2*0.42, py2+ph2*0.6, 14+dig*26, 10+dig*18, 0, 0, 7); ctx.fill();
-    ctx.fillStyle='#6a4520'; ctx.beginPath(); ctx.ellipse(px2+pw2*0.42, py2+ph2*0.6, 8+dig*18, 6+dig*12, 0, 0, 7); ctx.fill();
-    // великий палець Каті колупає (рухається від тапів)
+    const sx0=px2+pw2*0.40, sy0=py2+ph2*0.58, sw=(20+dig*54), sh=(12+dig*34);
+    ctx.fillStyle='#c98e4c';                                                        // глина під побілкою
+    ctx.fillRect(sx0-sw/2, sy0-sh/2, sw, sh);
+    ctx.fillRect(sx0-sw/2+6, sy0-sh/2-5, sw*0.4, 6); ctx.fillRect(sx0+2, sy0+sh/2-2, sw*0.35, 6);  // кутасті краї
+    ctx.fillStyle='#a86e34'; ctx.fillRect(sx0-sw*0.25, sy0-sh*0.2, sw*0.5, sh*0.45);               // глибший шар
+    ctx.fillStyle='#f2ede0';                                                        // нерівний край побілки
+    for(let k=0;k<7;k++) ctx.fillRect(sx0-sw/2+(k*sw/7), sy0-sh/2-2+((k%2)*2), sw/9, 3);
+    // рука Каті ЗБОКУ шкрябає нігтем побілку (рухається від тапів)
     const poke=(game.t>>2)&1;
-    const hx2=px2+pw2*0.42+26+dig*10, hy2=py2+ph2*0.6-8-poke*7;
-    ctx.fillStyle='#eebc96'; ctx.fillRect(hx2,hy2,34,16);                          // долоня
-    ctx.fillRect(hx2-14,hy2+3,18,9);                                               // палець-колупалка
-    ctx.fillStyle='#d49a72'; ctx.fillRect(hx2-14,hy2+9,18,3);
-    ctx.fillStyle='#c9788c'; ctx.fillRect(hx2+28,hy2-2,8,20);                      // рукав вишиванки
-    // крихти летять
-    for(let k=0;k<5;k++){ const ct2=(game.t*2+k*31)%40;
-      ctx.fillStyle='rgba(138,94,48,'+(1-ct2/40)+')';
-      ctx.fillRect(px2+pw2*0.42-6+k*5, py2+ph2*0.6+6+ct2*0.8, 3, 3); }
+    const hx2=sx0+sw/2+8, hy2=sy0-6+poke*5;
+    ctx.fillStyle='#c9788c'; ctx.fillRect(hx2+26,hy2-4,12,22);                      // рукав вишиванки
+    ctx.fillStyle='#eebc96'; ctx.fillRect(hx2+4,hy2,24,14);                         // долоня
+    ctx.fillRect(hx2-10,hy2+3,16,6);                                                // вказівний палець до сколу
+    ctx.fillStyle='#d49a72'; ctx.fillRect(hx2-10,hy2+7,16,2);
+    ctx.fillStyle='#f8e4d0'; ctx.fillRect(hx2-12,hy2+3,3,6);                        // ніготь
+    // крихти побілки сиплються вниз
+    for(let k=0;k<6;k++){ const ct2=(game.t*2+k*31)%44;
+      ctx.fillStyle='rgba(238,232,216,'+(1-ct2/44)+')';
+      ctx.fillRect(sx0-8+k*4, sy0+sh/2+ct2*0.9, 3, 3); }
     ctx.fillStyle='#f4e8c8'; ctx.font='7px monospace'; ctx.textAlign='center';
     ctx.fillText('(так, за традицією наречена СПРАВДІ колупала піч)', W/2, py2+ph2+14);
     ctx.textAlign='left';
@@ -3779,32 +3905,45 @@ function drawProp(){
       ctx.fillStyle = '#333'; ctx.fillRect(80,48+TITLE_Y,160,7);
       ctx.fillStyle = COL.rose;
       ctx.fillRect(80,48+TITLE_Y,160*Math.min(1,p.meter/100),7);
-      // ── ВЕЛИКЕ обличчя Каті, що дедалі більше дивується ──
+      // ── СПРАВЖНЄ фото Каті, яке дедалі більше дивується ──
       const m = Math.min(1, p.meter/100);
-      const fcx = W/2, fcy = Math.round(H*0.42), fs = 4;               // «піксель» 4×4
-      const px2 = (gx,gy,w2,h2,c)=>{ ctx.fillStyle=c; ctx.fillRect(fcx+gx*fs, fcy+gy*fs, w2*fs, h2*fs); };
-      px2(-15,-17,30,32,'#221c26');                                    // контур голови
-      px2(-14,-16,28,30,'#eebc96');                                    // шкіра
-      px2(-14,-16,28,6,'#c99a52');                                     // волосся
-      px2(-14,-10,3,5,'#c99a52'); px2(11,-10,3,5,'#c99a52');           // пасма
-      px2(-14,-16,28,1,'#a8854e');
-      const brow = m*4;                                                // брови летять угору
-      px2(-10,-7-brow,7,1.4,'#7a5c34'); px2(3,-7-brow,7,1.4,'#7a5c34');
-      const er = (1.6 + m*4.2)*fs;                                     // очі СТАЮТЬ БІЛЬШИМИ
-      [[-6,-3],[6,-3]].forEach(([ex,ey])=>{
-        ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.arc(fcx+ex*fs, fcy+ey*fs, er+2, 0, 7); ctx.fill();
-        ctx.fillStyle='#fff';    ctx.beginPath(); ctx.arc(fcx+ex*fs, fcy+ey*fs, er, 0, 7); ctx.fill();
-        ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.arc(fcx+ex*fs, fcy+ey*fs, Math.max(2,er*0.4), 0, 7); ctx.fill();
-        ctx.fillStyle='#fff';    ctx.fillRect(fcx+ex*fs-1, fcy+ey*fs-er*0.35, 2, 2);
+      const fcx = W/2, fcy = Math.round(H*0.42);
+      const kfr = headFrames('katya');
+      const kimg = kfr && headReady(kfr[0]) ? kfr[0] : null;
+      let fw2 = 112, fh2 = 130;
+      if(kimg){
+        fh2 = 132; fw2 = Math.round(fh2*kimg.width/kimg.height);
+        ctx.fillStyle='#141018'; ctx.fillRect(fcx-fw2/2-3, fcy-fh2/2-3, fw2+6, fh2+6);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(kimg, fcx-fw2/2, fcy-fh2/2, fw2, fh2);
+      } else {
+        ctx.fillStyle='#221c26'; ctx.fillRect(fcx-fw2/2-2, fcy-fh2/2-2, fw2+4, fh2+4);
+        ctx.fillStyle='#eebc96'; ctx.fillRect(fcx-fw2/2, fcy-fh2/2, fw2, fh2);
+        ctx.fillStyle='#c99a52'; ctx.fillRect(fcx-fw2/2, fcy-fh2/2, fw2, 24);
+      }
+      // мультяшні ОЧІ ростуть поверх фото
+      const er = 7 + m*17;
+      const eyeY = fcy - fh2*0.12, mouthY = fcy + fh2*0.26;
+      [[-0.19],[0.19]].forEach(([exf])=>{
+        const ex2 = fcx + exf*fw2;
+        ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.arc(ex2, eyeY, er+2, 0, 7); ctx.fill();
+        ctx.fillStyle='#fff';    ctx.beginPath(); ctx.arc(ex2, eyeY, er, 0, 7); ctx.fill();
+        ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.arc(ex2, eyeY, Math.max(2.5, er*0.42), 0, 7); ctx.fill();
+        ctx.fillStyle='#fff';    ctx.fillRect(ex2-2, eyeY-er*0.4, 3, 3);
       });
-      const mr = (1 + m*4.6)*fs;                                       // рот — «Оооооо!»
-      ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.ellipse(fcx, fcy+8*fs, mr*0.75+2, mr+2, 0, 0, 7); ctx.fill();
-      ctx.fillStyle='#7a2430'; ctx.beginPath(); ctx.ellipse(fcx, fcy+8*fs, mr*0.75, mr, 0, 0, 7); ctx.fill();
-      ctx.fillStyle='#a8323c'; ctx.beginPath(); ctx.ellipse(fcx, fcy+8*fs+mr*0.3, mr*0.5, mr*0.5, 0, 0, 7); ctx.fill();
+      // брови летять угору
+      ctx.fillStyle='#5a3d24';
+      ctx.fillRect(fcx-0.19*fw2-er, eyeY-er-5-m*8, er*2, 3);
+      ctx.fillRect(fcx+0.19*fw2-er, eyeY-er-5-m*8, er*2, 3);
+      // рот — «Оооооо!» росте поверх фото
+      const mr = 5 + m*19;
+      ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.ellipse(fcx, mouthY, mr*0.75+2, mr+2, 0, 0, 7); ctx.fill();
+      ctx.fillStyle='#7a2430'; ctx.beginPath(); ctx.ellipse(fcx, mouthY, mr*0.75, mr, 0, 0, 7); ctx.fill();
+      ctx.fillStyle='#a8323c'; ctx.beginPath(); ctx.ellipse(fcx, mouthY+mr*0.3, mr*0.5, mr*0.5, 0, 0, 7); ctx.fill();
       if(m>0.25){ ctx.fillStyle='rgba(10,8,14,.7)'; const ow=(2+Math.round(m*5))*11+26;
-        ctx.fillRect(fcx-ow/2, fcy-24*fs-14, ow, 20);
+        ctx.fillRect(fcx-ow/2, fcy-fh2/2-30, ow, 20);
         ctx.fillStyle='#f4cf5e'; ctx.font='bold 13px monospace'; ctx.textAlign='center';
-        ctx.fillText('«'+'О'.repeat(2+Math.round(m*5))+'!»', fcx, fcy-24*fs); }
+        ctx.fillText('«'+'О'.repeat(2+Math.round(m*5))+'!»', fcx, fcy-fh2/2-16); }
       ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
       drawHint(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
     }
@@ -4782,6 +4921,7 @@ function bgmFadeTo(vol, ms){
 function playChip(key){
   try{ stopBandSong(); }catch(_){}
   try{ stopShtolnya(); }catch(_){}
+  Object.keys(bgmEls).forEach(k=>{ if(k!==key){ try{ bgmEls[k].pause(); }catch(_){} } });   // ніколи не грає два треки
   if(musicMuted){ chipKey = key; return; }               // запам'ятали, але не граємо
   const cur = bgmEls[chipKey];
   if(chipKey === key && cur && !cur.paused) return;       // той самий трек — грає далі
@@ -4807,6 +4947,13 @@ function stopChip(){
 }
 function stopMusic(){ if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause(); }  // пауза поточного
 function startMusic(){}                                   // сумісність (весілля йде через chipForPhase)
+/* повернулись у застосунок — аудіоконтекст міг заснути, трек міг застрягти */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) return;
+  try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(_){}
+  const el = chipKey && bgmEls[chipKey];
+  if(el && el.paused && !musicMuted){ try{ el.play(); }catch(_){} }
+});
 function setMute(m){
   musicMuted = m; localStorage.setItem('wed-mute', m ? '1' : '0');
   const btn = document.getElementById('mute-btn'); if(btn) btn.textContent = m ? '🔇' : '🔊';
@@ -5106,9 +5253,9 @@ function novelData(){
       N('Одинадцять тисяч листів — за місяць лік,\nвернулась раніш, бо серцю невтерпік.'),
     ]},
     {bg:4, cap:['ОСІНЬ 2023 · Білогородка','Кітана'], lines:[
-      N('Осінь. У Даниному дворі, в Білогородці,\nкошенята — й одне тулиться до Каті.'),
+      N('Осінь. У Дана, у Білогородці,\nкошенята граються на осонці.'),
       {who:'katya', emo:'happy', text:'Це вона.'},
-      N('Приїхали по неї — а мала\nсама в коробку скочила. Й своя вже стала.'),
+      N('Одне до Каті тулиться щосили, —\nприїхали — й в коробку запросили.'),
     ]},
     {bg:5, cap:['СВАТАННЯ','за давнім звичаєм'], lines:[
       N('Перш ніж весілля — йдуть у хату свати:\nстарости з хлібом, за руку просити.'),
@@ -6122,6 +6269,7 @@ cv.addEventListener('pointerdown', e=>{
   }
   else if(game.phase==='beer'){ const p=canvasPos(e); beerPick(p.x, p.y); }
   else if(game.phase==='vykup'){ game._tapPos = canvasPos(e); }
+  else if(game.phase==='walkline'){ game._tapPos = canvasPos(e); }
   else if(game.phase==='set'){ game._tapPos = canvasPos(e); }   // панорама камери тапом
   else if(game.phase==='montage' || game.phase==='run'){ input.actionEdge = true; }
   else if(game.phase==='secret'){ game._holdPtr = true; }
@@ -6217,7 +6365,7 @@ function startGame(pov, watch){
   initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.run = null; game.svat = null; game.prop = null;
-  game.kiss = null; game.picnic = null; game.diia = null; game.shoot = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null; game.hyper = null;
+  game.kiss = null; game.walkline = null; game.picnic = null; game.diia = null; game.shoot = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null; game.hyper = null;
   dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
@@ -6832,7 +6980,7 @@ function skipScene(){
     set: pov==='katya'?'capMont':'capBand',
     capMont:'cap2', montage:'cap2', capBand:'cap2', band:'cap2',
     cap2:'cap3', tinder:'cap3', swipe:'cap3', match:'cap3', chat:'cap3', picnic:'cap3',
-    cap3:'cap4', date:'cap4', beer:'cap4', battle:'cap4', kiss:'cap4',
+    cap3:'cap4', date:'cap4', beer:'cap4', walkline:'cap4', battle:'cap4', kiss:'cap4',
     cap4:'capK', run:'capK',
     capK:'cap5', kitana:'cap5',
     cap5:'capS', svat:'capS',
@@ -7071,12 +7219,17 @@ function update(){
       walkJumpAndCollect(p);
       if(!game.dialog && Math.abs(p.x-npc.x) < 36 && !game._dateDone){
         game._dateDone = true;
-        startBeerChoice();
+        if(game.pov==='dima') startBeerChoice();        // Діма пригадує її пиво
+        else startWalkline();                            // Катя після пікніка — дійди рівненько
       }
       const target2 = Math.max(0, Math.min(LEVEL_W-W, p.x - 130));
       game.camX += (target2 - game.camX)*0.12;
       break;
     }
+
+    case 'walkline':
+      updateWalkline();
+      break;
 
     case 'beer':
       if(game.watch && game.phaseT>50 && game.beer && game.beer.okT===0){ game.beer.picked=0; game.beer.okT=1; }
@@ -7327,6 +7480,10 @@ function render(){
     }
     case 'beer':
       drawBeer();
+      break;
+
+    case 'walkline':
+      drawWalkline();
       break;
     case 'battle':
       drawBattle();
