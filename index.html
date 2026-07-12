@@ -6182,42 +6182,94 @@ document.getElementById('viber-f').addEventListener('click', ()=>{ viberGender='
 document.getElementById('viber-m').addEventListener('click', ()=>{ viberGender='m'; viberRefresh(); });
 /* збереження: кічова картинка (золотий блиск + троянди + рамка сердечками) */
 function buildViberCard(){
+  const male = viberGender==='m';
   const c = document.createElement('canvas'); c.width = 720; c.height = 1000;
   const g = c.getContext('2d');
-  const bg = g.createRadialGradient(360,300,60, 360,300,760);
-  bg.addColorStop(0,'#6b1f80'); bg.addColorStop(.7,'#33104a'); bg.addColorStop(1,'#180626');
-  g.fillStyle = bg; g.fillRect(0,0,720,1000);
-  // золоті блискітки-крапки по всьому тлу
   let seed = 7; const rnd = ()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
-  for(let i=0;i<140;i++){
-    const x=rnd()*720, y=rnd()*1000, r=rnd()*2+0.5;
-    g.fillStyle = ['rgba(255,243,176,','rgba(255,255,255,','rgba(255,180,230,'][i%3] + (0.4+rnd()*0.5) + ')';
+  // ── тло: рожеве (або сталеве) з БОКЕ ──
+  const bg = g.createLinearGradient(0,0,720,1000);
+  if(male){ bg.addColorStop(0,'#1a2436'); bg.addColorStop(.55,'#2a3a52'); bg.addColorStop(1,'#141c2a'); }
+  else { bg.addColorStop(0,'#ffd9ec'); bg.addColorStop(.45,'#ffb3d9'); bg.addColorStop(.75,'#f9cfe4'); bg.addColorStop(1,'#ffe9f5'); }
+  g.fillStyle = bg; g.fillRect(0,0,720,1000);
+  for(let i=0;i<26;i++){ // боке-кола
+    const x=rnd()*720, y=rnd()*1000, r=30+rnd()*80;
+    g.fillStyle = male ? 'rgba(110,150,210,'+(0.08+rnd()*0.14)+')' : 'rgba(255,'+(170+(rnd()*70|0))+','+(210+(rnd()*40|0))+','+(0.15+rnd()*0.3)+')';
     g.beginPath(); g.arc(x,y,r,0,7); g.fill();
   }
-  // рамка з дингбатів-квітів (Територія-А глам, без айфон-емоджі)
-  const dbTop=['✿','♥','❀','✧','❁','✽','❦','★'], dbCol=['#e05aa0','#f4c84a','#ff8fce','#ffd98a'];
-  g.font = 'bold 34px serif'; g.textAlign='center';
-  for(let i=0;i<11;i++){ g.fillStyle=dbCol[i%4]; g.fillText(dbTop[i%dbTop.length], 40+i*64, 46); g.fillStyle=dbCol[(i+1)%4]; g.fillText(dbTop[(i+3)%dbTop.length], 40+i*64, 986); }
-  for(let i=0;i<14;i++){ g.fillStyle=dbCol[i%4]; g.fillText(['✿','♥','❀','✧'][i%4], 30, 90+i*62); g.fillStyle=dbCol[(i+2)%4]; g.fillText(['❁','✽','⋆','❦'][i%4], 690, 90+i*62); }
-  g.fillStyle = '#ffd7f0';
-  { const hn = inviteHello(); g.font = 'italic ' + (hn.length>18?22:hn.length>12?26:30) + 'px Georgia, serif'; g.fillText(hn, 360, 150); }
-  // золотий блискучий заголовок
-  const grad = g.createLinearGradient(120,0,600,0);
-  grad.addColorStop(0,'#b8860b'); grad.addColorStop(.5,'#fff3b0'); grad.addColorStop(1,'#b8860b');
-  g.fillStyle = grad; g.font = 'bold 62px Georgia, serif';
-  g.fillText('ЗАПРОШУЄМО', 360, 250); g.fillText('НА ВЕСІЛЛЯ!!!', 360, 320);
-  g.fillStyle = '#ff8fd0'; g.font = 'bold 52px Georgia, serif';
-  g.fillText('Катерина  ♥  Дмитро', 360, 440);
-  g.fillStyle = '#ffe9a8'; g.font = 'bold 34px Georgia, serif';
-  g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 505);
-  g.fillStyle = '#ffd7f0'; g.font = 'bold 26px Georgia, serif';
-  g.fillText(viberVenue(), 360, 552);
-  g.fillStyle = '#f0d6ff'; g.font = 'italic 26px Georgia, serif';
+  for(let i=0;i<160;i++){ // блискітки
+    const x=rnd()*720, y=rnd()*1000, r=rnd()*2.2+0.6;
+    g.fillStyle = (male?['rgba(244,226,160,','rgba(255,255,255,','rgba(200,160,80,']:['rgba(255,243,176,','rgba(255,255,255,','rgba(255,215,120,'])[i%3] + (0.4+rnd()*0.5) + ')';
+    g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+  }
+  // ── золота блискітка-РАМКА (шахматка з золотих плиток) ──
+  const gold = male?['#c8a050','#f4e2a0','#8a6a2a']:['#d8a83c','#f9e9b0','#b8862a'];
+  const B=26;
+  const tile=(x,y,w,h,i)=>{ g.fillStyle=gold[i%3]; g.fillRect(x,y,w,h);
+    g.fillStyle='rgba(255,255,255,'+(0.15+rnd()*0.3)+')'; g.fillRect(x+w*0.2,y+h*0.15,w*0.3,h*0.3); };
+  for(let i=0;i<20;i++){ tile(i*36,0,36,B,i); tile(i*36,1000-B,36,B,i+1); }
+  for(let i=0;i<28;i++){ tile(0,i*36,B,36,i+2); tile(720-B,i*36,B,36,i); }
+  g.strokeStyle='#fff'; g.lineWidth=4; g.strokeRect(B+2,B+2,720-2*B-4,1000-2*B-4);
+  // ── голуби (кути) ──
+  const dove=(x,y,fl)=>{ g.save(); g.translate(x,y); if(fl)g.scale(-1,1);
+    g.fillStyle='#fff'; g.strokeStyle='#e8ddc8'; g.lineWidth=2; g.beginPath();
+    g.moveTo(8,22); g.quadraticCurveTo(18,8,34,12); g.quadraticCurveTo(30,4,40,2);
+    g.quadraticCurveTo(38,10,46,10); g.quadraticCurveTo(58,10,56,18); g.quadraticCurveTo(54,26,40,26);
+    g.lineTo(36,30); g.quadraticCurveTo(34,26,28,28); g.quadraticCurveTo(16,32,8,22);
+    g.closePath(); g.fill(); g.stroke();
+    g.fillStyle='#8a7048'; g.beginPath(); g.arc(43,8,1.6,0,7); g.fill(); g.restore(); };
+  dove(50,50,false); dove(670,50,true);
+  // ── золоті ОБРУЧКИ з бантом (центр верх) ──
+  const ring=(x,y,r,c1,c2)=>{ g.strokeStyle=c1; g.lineWidth=9; g.beginPath(); g.arc(x,y,r,0,7); g.stroke();
+    g.strokeStyle=c2; g.lineWidth=3.5; g.beginPath(); g.arc(x,y,r,0,7); g.stroke(); };
+  g.fillStyle='#f6efe2'; g.strokeStyle='#d8c8a8'; g.lineWidth=2.5; g.beginPath();
+  g.moveTo(322,74); g.quadraticCurveTo(360,50,398,74); g.quadraticCurveTo(382,66,360,74); g.quadraticCurveTo(338,66,322,74);
+  g.closePath(); g.fill(); g.stroke();
+  ring(340,110,26,'#d8a83c','#f4e2a0'); ring(384,114,23,'#c89428','#f4e2a0');
+  // ── тексти ──
+  g.textAlign='center';
+  g.fillStyle = male?'#d8e4f0':'#c02a7a';
+  { const hn = inviteHello(); g.font = 'italic ' + (hn.length>18?24:hn.length>12?28:32) + 'px Georgia, serif'; g.fillText(hn, 360, 196); }
+  // каліграфічний заголовок із золотим градієнтом
+  const grad = g.createLinearGradient(0,215,0,340);
+  grad.addColorStop(0, male?'#f4e2a0':'#f9e9b0'); grad.addColorStop(.55, male?'#c8a050':'#d8a83c'); grad.addColorStop(1, male?'#6a4a14':'#8a5c14');
+  g.font = 'italic bold 64px "Snell Roundhand","Apple Chancery","Savoye LET",cursive';
+  g.shadowColor='rgba(120,60,0,.5)'; g.shadowOffsetX=2; g.shadowOffsetY=3; g.shadowBlur=3;
+  g.fillStyle='#fff'; g.fillText('Запрошуємо', 358, 268); g.fillText('на весілля!', 358, 342);
+  g.shadowColor='transparent';
+  g.fillStyle = grad; g.fillText('Запрошуємо', 360, 265); g.fillText('на весілля!', 360, 339);
+  g.fillStyle = male?'#e8eef6':'#e0356a'; g.font = 'bold 50px Georgia, serif';
+  g.fillText('Катерина  ♥  Дмитро', 360, 448);
+  g.fillStyle = male?'#f4e2a0':'#a8681c'; g.font = 'bold 34px Georgia, serif';
+  g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 512);
+  g.fillStyle = male?'#d8e4f0':'#8a2a5a'; g.font = 'bold 26px Georgia, serif';
+  g.fillText(viberVenue(), 360, 560);
+  g.fillStyle = male?'#c8d4e4':'#a0407a'; g.font = 'italic 27px Georgia, serif';
   ['Нехай ваша присутність','принесе нам щастя й любов!',"З любов'ю та повагою"].forEach((ln,i)=>
-    g.fillText(ln, 360, 620+i*38));
-  g.fillStyle = '#ff8fce'; g.font = 'bold 40px serif';
-  g.fillText('❧  ⋆  ✿  ⋆  ❧', 360, 782);
-  g.fillStyle = '#f4c84a'; g.fillText('✿  ♥  ❀  ♥  ✿', 360, 852);
+    g.fillText(ln, 360, 630+i*40));
+  // ── келихи (право низ) ──
+  g.save(); g.translate(560,770); g.scale(1.3,1.3);
+  g.fillStyle='rgba(255,252,240,.85)'; g.strokeStyle='#d8c8a8'; g.lineWidth=2;
+  g.beginPath(); g.moveTo(18,8); g.quadraticCurveTo(18,34,30,38); g.lineTo(30,72); g.lineTo(20,80); g.lineTo(44,80); g.lineTo(34,72); g.lineTo(34,38); g.quadraticCurveTo(46,34,46,8); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle='#f4d98a'; g.beginPath(); g.moveTo(20,10); g.quadraticCurveTo(20,20,24,26); g.lineTo(40,26); g.quadraticCurveTo(44,20,44,10); g.closePath(); g.fill();
+  g.save(); g.translate(55,45); g.rotate(0.14); g.translate(-55,-45);
+  g.fillStyle='rgba(255,252,240,.8)'; g.beginPath(); g.moveTo(44,12); g.quadraticCurveTo(46,36,57,41); g.lineTo(59,73); g.lineTo(50,82); g.lineTo(72,80); g.lineTo(61,71); g.lineTo(59,40); g.quadraticCurveTo(69,34,67,10); g.closePath(); g.fill(); g.stroke(); g.restore();
+  g.fillStyle='#fff'; [[30,14,2],[36,18,1.6],[52,20,1.8]].forEach(([x,y,r])=>{g.beginPath();g.arc(x,y,r,0,7);g.fill();});
+  g.restore();
+  // ── троянди (ліво низ; лише жіноча) ──
+  if(!male){
+    g.save(); g.translate(60,790); g.scale(1.35,1.35);
+    const rose=(x,y,r,c1,c2,c3)=>{ g.fillStyle=c1; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+      g.fillStyle=c2; g.beginPath(); g.arc(x+r*0.15,y-r*0.2,r*0.55,0,7); g.fill();
+      g.fillStyle=c3; g.beginPath(); g.arc(x,y,r*0.3,0,7); g.fill(); };
+    g.strokeStyle='#3f6b3a'; g.lineWidth=3; g.beginPath(); g.moveTo(32,42); g.quadraticCurveTo(42,52,58,48); g.stroke();
+    g.fillStyle='#4f7b46'; g.beginPath(); g.moveTo(38,46); g.quadraticCurveTo(36,54,28,55); g.quadraticCurveTo(33,47,38,46); g.closePath(); g.fill();
+    rose(24,30,13,'#c9303c','#a8202c','#8a1622'); rose(52,38,11,'#e05a68','#c9404e','#a82836');
+    g.restore();
+  } else { // чоловіча: ⚜ замість троянд
+    g.fillStyle='#c8a050'; g.font='bold 58px serif'; g.fillText('⚜', 110, 830);
+  }
+  g.fillStyle = male?'#c8a050':'#e05aa0'; g.font = 'bold 40px serif';
+  g.fillText(male?'★  ⚜  ✦  ⚜  ★':'❧  ⋆  ✿  ⋆  ❧', 360, 924);
   return c;
 }
 document.getElementById('viber-save').addEventListener('click', ()=>{
