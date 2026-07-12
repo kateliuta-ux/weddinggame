@@ -925,10 +925,6 @@ function svatIntroScript(pov){
     {who:null, emo:null, text:'— У вас куниця, у нас мисливець!'},
     {who: pov, emo:'shy', text:'(це про нас)'},
   ];
-  // гра памʼятає твій минулий гарбуз (Undertale-стайл)
-  if(localStorage.getItem('wed-harbuz')){
-    lines.push({who:null, emo:null, text:'(Старости памʼятають минулий гарбуз.\nПильнують.)'});
-  }
   lines.push({who:null, emo:null, text:'За традицією гарбуз означає «ні».\nГоловне — не переплутати.'});
   return lines;
 }
@@ -2738,8 +2734,8 @@ function updateSvat(){
 }
 /* іспит старостів — питання зі справжньої переписки */
 const SVAT_EXAM = [
-  {q:'ІСПИТ СТАРОСТІВ!\nЯке було перше повідомлення Діми в тіндері?',
-   opts:['«Привіт!»','«Віриш у кохання з першого свайпу?»','«Я в твітері не дуже шарю»'], ok:0,
+  {q:'ІСПИТ СТАРОСТІВ!\nЧим Діма пояснив, що не памʼятає ту зйомку 2021-го?',
+   opts:['«Був у команді нахапченків»','«Мене там не було»','«Памʼятаю кожен дубль!»'], ok:0,
    no:'«Куниця б памʼятала!» — хитають головами старости.'},
   {q:'Як Діма найчастіше кличе Катю в чаті?',
    opts:['«пані режисерко»','«Катерино Батьківно»','«киць»'], ok:2,
@@ -2869,8 +2865,8 @@ function drawSvat(){
     ctx.fillText('Костя · з Лондона', bx, byTop-3); ctx.textAlign='left';
   }
   // Катя біля печі, Діма з хлібом посередині, Кітана гріється при печі
-  drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
-  drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
+  drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false, VYSH_K);
+  drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false, VYSH_D);
   drawKitana(112, FLOOR_Y+2, -1);
   if(s.purrT > 0){
     s.purrT--;
@@ -2953,6 +2949,12 @@ function drawSvat(){
 /* ================= Освідчення (Мінімаліст, 14.02.2026) ================= */
 const DIMA_FEB26 = {top:'#26242c', topD:'#141218', style:'curly'};   // чорна водолазка, кучері
 const KATYA_FEB26 = {top:'#c4c0ce', topD:'#9a95aa'};                 // сіра флісова кофта
+// ── одяг по сценах (Катя просила перевдягати на кожну сцену) ──
+const VYSH_K = {top:'#f6f2e6', topD:'#d8d0bc', topH:'#fff', skirtCol:'#a8323c'};  // вишиванка + червона плахта
+const VYSH_D = {top:'#f6f2e6', topD:'#d8d0bc', topH:'#e8e2d0'};                    // вишиванка Діми
+const DATE_K = {top:'#e0a34e', topD:'#b8813a', topH:'#f0bc6a', skirtCol:'#6a4a30'};// тепла осіння куртка
+const DATE_D = {top:'#4a5c7a', topD:'#374660', topH:'#5c7090'};          // джинсовка
+const OFFICE_K = {top:'#3a3a44', topD:'#26262e', topH:'#4a4a56'};                  // чорне режисерське
 
 function startProposal(){
   game.prop = {
@@ -4181,11 +4183,18 @@ function chipForPhase(phase){
   if(phase==='wed' && game.wedLoc==='khv') return 'pozniaky';   // Хвильовий — жвавіша «центрова» (замість спільної стежини)
   return CHIP_MAP[phase] || null;
 }
+// плавний перехід між треками: коротке приглушення замість різкого обриву
+function bgmFadeTo(vol, ms){
+  try{ const g=bgmMaster().gain, now=audioCtx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(vol, now + (ms||250)/1000); }catch(_){}
+}
 function playChip(key){
   if(musicMuted){ chipKey = key; return; }               // запам'ятали, але не граємо
   const cur = bgmEls[chipKey];
   if(chipKey === key && cur && !cur.paused) return;       // той самий трек — грає далі
   stopChip();
+  bgmFadeTo(BGM_VOL, 300);                                 // плавний в'їзд нового треку
   const src = BGM_TRACKS[key]; if(!src){ chipKey = null; return; }
   let el = bgmEls[key];
   if(!el){ el = new Audio(src); el.loop = true; el.volume = BGM_VOL; bgmEls[key] = el; routeBgm(el); }
@@ -6357,8 +6366,8 @@ function render(){
       drawCollect(camX);
       const other = game.pov==='katya' ? 'dima' : 'katya';
       const npcBob = (game.t>>5)&1;
-      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false);
-      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking);
+      drawPerson(game.npc.x-camX, FLOOR_Y+2-npcBob, other, 0, game.npc.dir, false, other==='katya'?DATE_K:DATE_D);
+      drawPerson(game.player.x-camX, FLOOR_Y+2+game.player.dy, game.pov, game.player.phase, game.player.dir, game.player.walking, game.pov==='katya'?DATE_K:DATE_D);
       if(!game.dialog && !game._dateDone){
         const nx = Math.round(game.npc.x-camX);
         if(nx>-20 && nx<W+20){
@@ -6375,7 +6384,7 @@ function render(){
       drawBattle();
       break;
     case 'cap4':
-      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'Катя на місяць у відрядженні — 11 223 повідомлення', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
+      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'війна розкидає: Катя на місяць у Лондоні — 11 223 повідомлення', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
       break;
     case 'run':
       drawRun();
@@ -7250,47 +7259,48 @@ function drawKitanaScene(){
   // двір: небо + паркан-тло + земля
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,'#c9b78a'); g.addColorStop(1,'#e8dcc0'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle = '#a8935e'; ctx.fillRect(0,H-14,W,14);           // земля
+  ctx.fillStyle = '#a8935e'; ctx.fillRect(0,H-74,W,14);           // земля
+  ctx.fillStyle = '#141018'; ctx.fillRect(0,H-60,W,60);            // смуга під підлогою — тут живе текст
   // осіннє листя
   for(let i=0;i<10;i++){
-    const lx=(i*61 + game.t)%(W+20)-10, ly=40+(i*29+game.t*0.6)%(H-50);
+    const lx=(i*61 + game.t)%(W+20)-10, ly=40+(i*29+game.t*0.6)%(H-110);
     ctx.fillStyle = ['#b5652e','#c98a3e','#8a6b2e'][i%3]; ctx.fillRect(lx,ly,3,3);
   }
   // осінні дерева (парлакс, повільніше за паркан)
   for(let tx=-Math.round((k.dist*0.7)%140); tx<W+40; tx+=140){
-    ctx.fillStyle='#6a4a2a'; ctx.fillRect(tx+34,H-92,5,36);
+    ctx.fillStyle='#6a4a2a'; ctx.fillRect(tx+34,H-152,5,36);
     ctx.fillStyle=['#c98a3e','#b5652e','#d9a83a'][(((tx+420)/140)|0)%3];
-    ctx.beginPath(); ctx.arc(tx+36,H-98,17,0,7); ctx.fill();
-    ctx.fillStyle='rgba(255,230,150,.22)'; ctx.beginPath(); ctx.arc(tx+30,H-104,6,0,7); ctx.fill();
+    ctx.beginPath(); ctx.arc(tx+36,H-158,17,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,230,150,.22)'; ctx.beginPath(); ctx.arc(tx+30,H-164,6,0,7); ctx.fill();
   }
   // мазанка Дана з солом'яним дахом (двір, куди біжить Кітана)
-  { const hx=W-72; ctx.fillStyle='#ece0c4'; ctx.fillRect(hx,H-74,56,60);
-    ctx.fillStyle='#b58a4a'; ctx.beginPath(); ctx.moveTo(hx-6,H-74); ctx.lineTo(hx+28,H-98); ctx.lineTo(hx+62,H-74); ctx.closePath(); ctx.fill();
-    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+23,H-44,14,30);
-    ctx.fillStyle='#bfe0e8'; ctx.fillRect(hx+7,H-64,12,12); ctx.fillRect(hx+40,H-64,12,12);
-    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+12,H-64,2,12); ctx.fillRect(hx+45,H-64,2,12); }
+  { const hx=W-72; ctx.fillStyle='#ece0c4'; ctx.fillRect(hx,H-134,56,60);
+    ctx.fillStyle='#b58a4a'; ctx.beginPath(); ctx.moveTo(hx-6,H-134); ctx.lineTo(hx+28,H-158); ctx.lineTo(hx+62,H-134); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+23,H-104,14,30);
+    ctx.fillStyle='#bfe0e8'; ctx.fillRect(hx+7,H-124,12,12); ctx.fillRect(hx+40,H-124,12,12);
+    ctx.fillStyle='#7a5c3e'; ctx.fillRect(hx+12,H-124,2,12); ctx.fillRect(hx+45,H-124,2,12); }
   // паркан-тло прокручується зі швидкістю бігу
   ctx.fillStyle = '#8a6b46';
   for(let px = -((k.dist*2)%46); px < W; px += 46){
-    ctx.fillRect(px, H-58, 8, 44);
-    ctx.fillStyle = '#7a5c3a'; ctx.fillRect(px+2, H-58, 2, 44); ctx.fillStyle = '#8a6b46';
+    ctx.fillRect(px, H-118, 8, 44);
+    ctx.fillStyle = '#7a5c3a'; ctx.fillRect(px+2, H-118, 2, 44); ctx.fillStyle = '#8a6b46';
   }
-  ctx.fillRect(0, H-56, W, 3);                          // перекладина
+  ctx.fillRect(0, H-116, W, 3);                          // перекладина
   // Катя і Діма чекають наприкінці — наближаються з фінішем
   const endX = 150 + (1 - Math.min(1,k.dist/k.goal))*220;
   if(endX < W+16){
-    drawPerson(endX, H-14, 'katya', 0, 1, false);
-    drawPerson(endX+20, H-14, 'dima', 0, -1, false);
+    drawPerson(endX, H-74, 'katya', 0, 1, false);
+    drawPerson(endX+20, H-74, 'dima', 0, -1, false);
     ctx.fillStyle = COL.rose; ctx.font='9px monospace'; ctx.textAlign='center';
-    ctx.fillText('кс-кс-кс', endX+10, H-52+((game.t>>3)&1));
+    ctx.fillText('кс-кс-кс', endX+10, H-112+((game.t>>3)&1));
   }
   // Кітана біжить по землі — справжнє фото-спрайт із галоп-анімацією
   const running = k.speed > 0.2;
   const gallop = running ? Math.abs(Math.sin(k.dist*0.25))*4.5 : Math.sin(k.t*0.06);
   // тінь під кішкою
   ctx.fillStyle = 'rgba(0,0,0,.28)';
-  ctx.beginPath(); ctx.ellipse(52, H-13, 12-gallop*0.6, 3, 0,0,7); ctx.fill();
-  ctx.save(); ctx.translate(52, H-13 - gallop);
+  ctx.beginPath(); ctx.ellipse(52, H-73, 12-gallop*0.6, 3, 0,0,7); ctx.fill();
+  ctx.save(); ctx.translate(52, H-73 - gallop);
   if(running) ctx.rotate(-0.05 - Math.min(0.1, k.speed*0.025));   // нахил уперед на бігу
   if(headReady(KITANA_CAT)){
     ctx.imageSmoothingEnabled = true;
@@ -7303,11 +7313,11 @@ function drawKitanaScene(){
   }
   ctx.restore();
   // курява з-під лап на бігу
-  if(running && (k.t&3)===0) eggParticles.push({x:42, y:H-13, vx:-0.6-Math.random(), vy:-0.4, kind:'confetti'});
+  if(running && (k.t&3)===0) eggParticles.push({x:42, y:H-73, vx:-0.6-Math.random(), vy:-0.4, kind:'confetti'});
   // «?» коли стоїть і тиша
   if(!running && !k.reached){
     ctx.fillStyle = 'rgba(26,26,36,.7)'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-    ctx.fillText('?', 52, H-46 - ((k.t>>4)&1)*2);
+    ctx.fillText('?', 52, H-106 - ((k.t>>4)&1)*2);
   }
   // прогрес-смуга «додому»
   ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(40,8+HUD_Y,240,8);
@@ -7323,7 +7333,7 @@ function drawKitanaScene(){
       ctx.fillStyle='#fff'; ctx.font='6px monospace'; ctx.textAlign='right'; ctx.fillText('🎤', W-46, 27);
     }
     drawHint(micAnalyser ? '🐈 нявкай частіше — біжить швидше!' :
-      (isTouch?'тапай — кожен тап це «няв»':'ПРОБІЛ — кожне натискання це «няв»'), W/2, H-4);
+      (isTouch?'тапай — кожен тап це «няв»':'ПРОБІЛ — кожне натискання це «няв»'), W/2, H-34);
   } else {
     ctx.fillStyle = COL.rose; ctx.font='bold 12px monospace'; ctx.textAlign='center';
     ctx.fillText('КІТАНА ВДОМА ♥', W/2, 40);
@@ -7762,6 +7772,16 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
+
+/* музика стартує з найпершого дотику до сторінки (раніше браузер не дозволяє) */
+function kickMusic(){
+  try{ ensureAudio(); if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(_){}
+  if(!musicMuted && !chipKey) playChip('planeta');
+  removeEventListener('pointerdown', kickMusic, true);
+  removeEventListener('keydown', kickMusic, true);
+}
+addEventListener('pointerdown', kickMusic, true);
+addEventListener('keydown', kickMusic, true);
 
 /* ================= PWA: додати на робочий стіл ================= */
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
