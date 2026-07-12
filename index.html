@@ -7043,6 +7043,33 @@ document.getElementById('s-save').addEventListener('click', async ()=>{
     ? '✓ збережено! твоя мелодія — у весільному плейлисті (автор: '+author+')'
     : 'поки не вдалося зберегти — плейлист відкриється незабаром. Мелодія лишилась тут.';
 });
+/* прослуховування мелодії ПРЯМО в плейлисті (чуже — тільки слухати, не редагувати) */
+let plTimer=null, plRow=null;
+function plStopPattern(){
+  if(plTimer){ clearInterval(plTimer); plTimer=null; }
+  if(plRow){ plRow.style.outline=''; plRow=null; }
+}
+function plPlayPattern(t, rowEl){
+  ensureAudio(); stopChip();
+  if(plRow===rowEl){ plStopPattern(); return; }              // повторний клік — стоп
+  plStopPattern();
+  if(plVoiceSrc){ try{ plVoiceSrc.stop(); }catch(_){} plVoiceSrc=null; }
+  // розібрати патерн у тимчасову сітку (сітка семплера НЕ чіпається)
+  const grid = SMP.rows.map(()=>Array(SMP.steps).fill(null));
+  (t.pattern||'').split(/[;,]/).forEach(tok=>{
+    const [n,c,w]=tok.split(':');
+    const r=SMP.rows.findIndex(row=>row.n===n);
+    if(r>=0 && c>=0 && c<SMP.steps) grid[r][+c]=(SMP_WAVES[+w||0]||SMP_WAVES[0])[0];
+  });
+  plRow=rowEl; rowEl.style.outline='2px solid #f4cf5e';
+  let col=0, loops=0;
+  plTimer=setInterval(()=>{
+    const time=audioCtx.currentTime;
+    SMP.rows.forEach((row,r)=>{ const w=grid[r][col]; if(w) playNote(row.f, time, 0.24, w, 0.06); });
+    col=(col+1)%SMP.steps;
+    if(col===0 && ++loops>=2) plStopPattern();               // два кола — і тиша
+  }, 240);
+}
 async function openPlaylist(fromSampler){
   document.getElementById('sampler-screen').classList.add('hidden');
   elTitle.classList.add('hidden');
@@ -7066,23 +7093,19 @@ async function openPlaylist(fromSampler){
     row.addEventListener('click', ()=> playVoiceTrack(t, row));
     list.appendChild(row);
   });
-  tracks.forEach(t=>{
+  (tracks||[]).forEach(t=>{
     const row = document.createElement('button');
     row.className = 'btn';
     row.style.cssText = 'background:#2b2b38;display:flex;justify-content:space-between;gap:8px';
     row.innerHTML = '<span>▶ '+t.author.replace(/</g,'&lt;')+'</span><span style="opacity:.55">🎹</span>';
-    row.addEventListener('click', ()=>{
-      smpDeserialize(t.pattern);
-      document.getElementById('playlist-screen').classList.add('hidden');
-      document.getElementById('sampler-screen').classList.remove('hidden');
-      document.getElementById('s-status').textContent = '🎧 грає мелодія: '+t.author;
-      if(!SMP.playing) document.getElementById('s-play').click();
-    });
+    row.addEventListener('click', ()=> plPlayPattern(t, row));   // ЛИШЕ прослуховування — чужі треки не редагуються
     list.appendChild(row);
   });
 }
 document.getElementById('s-playlist').addEventListener('click', ()=> openPlaylist(true));
 document.getElementById('pl-back').addEventListener('click', ()=>{
+  plStopPattern();
+  if(plVoiceSrc){ try{ plVoiceSrc.stop(); }catch(_){} plVoiceSrc=null; }
   document.getElementById('playlist-screen').classList.add('hidden');
   if(document.getElementById('playlist-screen').dataset.from === 'sampler')
     document.getElementById('sampler-screen').classList.remove('hidden');
