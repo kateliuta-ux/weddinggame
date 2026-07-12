@@ -6387,14 +6387,30 @@ function render(){
     drawOrnament(10);                       // вишиванковий кант тайтла
     drawOrnament(H-16);
     const bob = (game.t>>4)&1;
-    // святкове вбрання: Катя в сукні, Діма в костюмі — стоять УНИЗУ, під меню (щоб не перекривало обличчя)
+    // ТРАДИЦІЙНИЙ ВЕСІЛЬНИЙ СТРІЙ: Катя — вишиванка, плахта, вінок зі стрічками; Діма — вишиванка з крайкою
     const tby = H-22;
-    drawPerson(100, tby-bob, 'katya', 0, 1, false, {top:'#e7a9bd', topD:'#c9819a', topH:'#f0bccb', skirtCol:'#d68fa6'});
-    drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, {top:'#33333f', topD:'#1e1e28'});
-    // букетик у Каті + метелик-краватка у Діми
-    ctx.fillStyle='#a8323c'; ctx.fillRect(106, tby-18-bob, 3,3); ctx.fillRect(103, tby-16-bob,3,3); ctx.fillRect(109, tby-16-bob,3,3);
-    ctx.fillStyle='#3f6b3a'; ctx.fillRect(106, tby-13-bob, 2,5);
-    ctx.fillStyle='#a8323c'; ctx.fillRect(217, tby-26-(1-bob), 3,2); ctx.fillRect(221, tby-26-(1-bob), 3,2);
+    drawPerson(100, tby-bob, 'katya', 0, 1, false, VYSH_K);
+    drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, VYSH_D);
+    { const hx=100, hy=tby-52-bob;                       // ВІНОК на голові Каті
+      ctx.fillStyle='#3f6b3a'; ctx.fillRect(hx-10,hy,20,3);                       // основа-зелень
+      [['#a8323c',-9],['#f4cf5e',-4],['#e08aa0',1],['#a8323c',6]].forEach(([c,dx])=>{  // квіти
+        ctx.fillStyle=c; ctx.fillRect(hx+dx,hy-3,4,4); });
+      ctx.fillStyle='#fff'; ctx.fillRect(hx-2,hy-4,3,3);                          // біла квітка по центру
+      // стрічки, що маяться за вітром
+      const wav=Math.sin(game.t*0.08)*2;
+      [['#a8323c',-9],['#f4cf5e',-5],['#3F7C77',9],['#e08aa0',12]].forEach(([c,dx],i)=>{
+        ctx.fillStyle=c;
+        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 14);
+        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+15, 2, 8); });
+      ctx.fillStyle='#a8323c';                                                     // намисто
+      ctx.fillRect(hx-5,tby-44-bob,2,2); ctx.fillRect(hx-1,tby-43-bob,2,2); ctx.fillRect(hx+3,tby-44-bob,2,2);
+    }
+    { const dx2=220, dy2=tby-(1-bob);                    // вишиті вставки + крайка Діми
+      ctx.fillStyle='#a8323c';
+      ctx.fillRect(dx2-2, dy2-46, 4, 10);                                          // вишита манишка
+      ctx.fillRect(dx2-8, dy2-30, 16, 3);                                          // червона крайка-пояс
+      ctx.fillStyle='#7d1f2a'; ctx.fillRect(dx2+5, dy2-27, 3, 6);                  // кінець пояса
+    }
     // Кітана між ними
     ctx.save();
     ctx.translate(160, tby); ctx.scale(1.8,1.8); ctx.translate(-160, -tby);
@@ -7467,8 +7483,8 @@ function drawKitanaScene(){
   // Катя і Діма чекають наприкінці — наближаються з фінішем
   const endX = 150 + (1 - Math.min(1,k.dist/k.goal))*220;
   if(endX < W+16){
-    drawPerson(endX, H-74, 'katya', 0, 1, false);
-    drawPerson(endX+20, H-74, 'dima', 0, -1, false);
+    drawPerson(endX, H-74, 'katya', 0, 1, false, DATE_K);   // осінь у Білогородці — теплі куртки
+    drawPerson(endX+20, H-74, 'dima', 0, -1, false, DATE_D);
     ctx.fillStyle = COL.rose; ctx.font='9px monospace'; ctx.textAlign='center';
     ctx.fillText('кс-кс-кс', endX+10, H-112+((game.t>>3)&1));
   }
