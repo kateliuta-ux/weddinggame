@@ -6942,6 +6942,7 @@ async function playVoiceTrack(t, btn){
     const buf = await audioCtx.decodeAudioData(arr.buffer);
     const dig = await digitalizeBuffer(buf);
     plVoiceSrc = audioCtx.createBufferSource(); plVoiceSrc.buffer = dig;
+    bgmFadeTo(BGM_VOL, 120);
     plVoiceSrc.connect(bgmMaster()); plVoiceSrc.start();
     plVoiceSrc.onended = ()=>{ plVoiceSrc=null; btn.style.opacity=1; };
   }catch(e){ btn.style.opacity=1; }
@@ -7025,6 +7026,7 @@ document.getElementById('s-myplay').addEventListener('click', ()=>{
   stopChip(); samplerStop();
   myTrackSrc = audioCtx.createBufferSource(); myTrackSrc.buffer = myTrackBuf;
   myTrackSrc.loop = myTrackLoop;                                  // 2-коловий запис крутиться лупом
+  bgmFadeTo(BGM_VOL, 120);                                        // stopChip міг лишити майстер на 0 — повертаємо звук
   myTrackSrc.connect(bgmMaster()); myTrackSrc.start();
   document.getElementById('s-myplay').textContent = myTrackLoop ? '⏹ СТОП (луп 🔁)' : '⏹ СТОП';
   myTrackSrc.onended = ()=>{ myTrackSrc=null; document.getElementById('s-myplay').textContent='▶ МІЙ ТРЕК'; };
