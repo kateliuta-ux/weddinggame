@@ -4481,7 +4481,7 @@ function novelData(){
       N('Ще мирний рік. На зйомці, на рекламній, —\nвона режисерка, він у кадрі, під камерою.'),
       {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nБув якийсь бриф про метаверс.'},
       {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
-      N('Не впізнав, що поряд ходить доля, —\nлиш блондинку-режисерку запамʼятав, і все.'),
+      N('Імені він так і не спитав тоді, —\nне знав, що поряд доля походжала.'),
     ]},
     {bg:1, cap:['СЕРПЕНЬ 2022 · вже інше життя','Тіндер'], lines:[
       N('А потім — впала на нас війна,\nусе, що «до», лягло за темну стіну.'),
@@ -4581,7 +4581,7 @@ function novelBg(i){
     ctx.fillStyle='#4a4458'; ctx.beginPath(); ctx.arc(W/2,cy+42,22,0,7); ctx.fill();
     ctx.fillStyle='#3a3648'; ctx.fillRect(cx+12,cy+64,cw-24,ch-64);
     ctx.fillStyle='#e8dfd0'; ctx.fillRect(cx+4,cy+ch-22,cw-8,18);
-    ctx.fillStyle='#1a1a24'; ctx.font='bold 8px monospace'; ctx.textAlign='left'; ctx.fillText('Дмитро, 32',cx+8,cy+ch-10);
+    ctx.fillStyle='#1a1a24'; ctx.font='bold 8px monospace'; ctx.textAlign='left'; ctx.fillText('Дмитро, 29',cx+8,cy+ch-10);
     ctx.strokeStyle='#3F7C77'; ctx.lineWidth=2; ctx.strokeRect(cx+6,cy+6,32,14); ctx.fillStyle='#3F7C77'; ctx.font='bold 8px monospace'; ctx.fillText('LIKE',cx+9,cy+16);
     // намальоване полум'я (замість айфон-емоджі)
     ctx.fillStyle='#ff8f4a'; ctx.beginPath(); ctx.moveTo(W/2,cy-18); ctx.quadraticCurveTo(W/2+10,cy-4,W/2,cy+8); ctx.quadraticCurveTo(W/2-10,cy-4,W/2,cy-18); ctx.fill();
@@ -5129,28 +5129,35 @@ function drawNovel(){
     const cw=76, ch=100, cx = W/2 + t2*t2*220, cy = 120, rot = t2*0.5;
     ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
     ctx.globalAlpha = 1 - t2*0.85;
-    ctx.fillStyle='#16121c'; ctx.fillRect(-cw/2-2,-ch/2-2,cw+4,ch+4);
-    ctx.fillStyle='#f4f0e4'; ctx.fillRect(-cw/2,-ch/2,cw,ch);
-    // справжнє тіндер-фото Діми на картці
+    ctx.fillStyle=GBC[0]; ctx.fillRect(-cw/2-2,-ch/2-2,cw+4,ch+4);
+    ctx.fillStyle=GBC[3]; ctx.fillRect(-cw/2,-ch/2,cw,ch);
+    // справжнє тіндер-фото Діми — у GB-тонах, щоб не випадало зі стилю новели
     if(TINDER_PIC.complete && TINDER_PIC.naturalWidth){
+      if(!TINDER_PIC._gb){ try{ TINDER_PIC._gb = toGameBoy(TINDER_PIC, 64); }catch(_){} }
       ctx.imageSmoothingEnabled=false;
-      ctx.drawImage(TINDER_PIC, -cw/2, -ch/2, cw, ch-24);
+      ctx.drawImage(TINDER_PIC._gb || TINDER_PIC, -cw/2, -ch/2, cw, ch-24);
     } else {
       ctx.fillStyle='#2a3644'; ctx.fillRect(-cw/2,-ch/2,cw,ch-24);
       ctx.fillStyle='#e8c49c'; ctx.fillRect(-8,-ch/2+16,16,16);
       ctx.fillStyle='#221c26'; ctx.fillRect(-8,-ch/2+16,16,6);
       ctx.fillStyle='#3F7C77'; ctx.fillRect(-11,-ch/2+32,22,16);
     }
-    ctx.fillStyle='#1a1a24'; ctx.font='bold 7px monospace'; ctx.textAlign='center';
-    ctx.fillText('Дмитро, 32', 0, ch/2-13);
-    ctx.font='6px monospace'; ctx.fillStyle='#777'; ctx.fillText('синтезатори · жарти', 0, ch/2-4);
-    if(t2>0.05){ ctx.strokeStyle='#4ea86a'; ctx.lineWidth=2; ctx.strokeRect(-cw/2+6,-ch/2+6,34,14);
-      ctx.fillStyle='#4ea86a'; ctx.font='bold 8px monospace'; ctx.fillText('LIKE', -cw/2+23, -ch/2+16); }
+    ctx.fillStyle=GBC[0]; ctx.font='bold 7px monospace'; ctx.textAlign='center';
+    ctx.fillText('Дмитро, 29', 0, ch/2-13);
+    ctx.font='6px monospace'; ctx.fillStyle=GBC[1]; ctx.fillText('синтезатори · жарти', 0, ch/2-4);
+    if(t2>0.05){ ctx.strokeStyle=GBC[2]; ctx.lineWidth=2; ctx.strokeRect(-cw/2+6,-ch/2+6,34,14);
+      ctx.fillStyle=GBC[2]; ctx.font='bold 8px monospace'; ctx.fillText('LIKE', -cw/2+23, -ch/2+16); }
     ctx.restore(); ctx.globalAlpha = 1;
-    // палець, що свайпає
-    const fx = W/2 - 14 + t2*90;
-    ctx.fillStyle='rgba(238,188,150,.92)'; ctx.beginPath(); ctx.arc(fx, cy+44, 7, 0, 7); ctx.fill();
-    ctx.fillRect(fx-3, cy+44, 6, 16);
+    // піксельна рука, що свайпає (GB-стиль із контуром)
+    const fx = Math.round(W/2 - 14 + t2*90), fy2 = cy+46;
+    ctx.fillStyle=GBC[0];
+    ctx.fillRect(fx-8, fy2-2, 18, 14);           // контур долоні
+    ctx.fillRect(fx-3, fy2-9, 6, 9);             // контур вказівного
+    ctx.fillStyle=GBC[2];
+    ctx.fillRect(fx-6, fy2, 14, 10);             // долоня
+    ctx.fillRect(fx-2, fy2-7, 4, 8);             // вказівний палець
+    ctx.fillStyle=GBC[1];
+    ctx.fillRect(fx+2, fy2+2, 5, 6);             // зігнуті пальці (тінь)
   }
   if(chap.bg===8){                                         // поверх весільної сцени — головне запрошення
     const v = guestVenue();                                // sofi / khv / null(обидві)
