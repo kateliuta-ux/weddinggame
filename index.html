@@ -343,7 +343,7 @@
       <button class="btn" id="btn-rsvp" style="background:var(--rose)">✍️ Відповісти</button>
       <button class="btn" id="btn-save-inv" style="background:var(--terra)">💾 Зберегти запрошення</button>
       <button class="btn" id="btn-ics" style="background:var(--gold)">📅 В календар</button>
-      <button class="btn" id="btn-stream" style="background:#2f6f8a">📺 Дивитись трансляцію</button>
+      <button class="btn" id="btn-stream" style="background:#2f6f8a">📺 Не в Україні? Буде трансляція</button>
       <button class="btn" id="btn-viber">Гарне запрошення</button>
       <button class="btn" id="btn-restart">На початок</button>
     </div>
@@ -5220,7 +5220,8 @@ function finishGame(){
   // коротко на екрані: тепла формула + місце/час; решта деталей — у збереженому запрошенні
   const zaprosyny =
     '<i style="opacity:.92">Просили тато й мама, і ми просимо:<br>приходь до нас на свято 🍞</i><br><br>';
-  const more = '<br><span style="opacity:.6;font-size:.9em">дрес-код, квіти й решта — у «Зберегти запрошення» 💾</span>';
+  const more = '<br><span style="opacity:.6;font-size:.9em">дрес-код, квіти й решта — у «Зберегти запрошення» 💾</span>' +
+    '<br><span style="opacity:.75;font-size:.9em">🌍 не в Україні? — це запрошення все одно для тебе: буде трансляція церемонії</span>';
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
