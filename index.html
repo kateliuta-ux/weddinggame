@@ -7769,7 +7769,12 @@ function showPartyMatch(card){
   face.innerHTML = '';
   const im = document.createElement('img'); im.className = 'pm-face'; im.src = card.src || '';
   const h = document.createElement('span'); h.textContent = '♥';
-  const k = document.createElement('img'); k.className = 'pm-face'; k.src = partyFaceSrc('katya');
+  // праворуч — ТИ (метч між тобою і гостем, не з Катею)
+  const meName = (localStorage.getItem('wed-player-name')||'').trim();
+  const mine = GUEST_FACES.find(f => (f.name||'').toLowerCase().trim() === meName.toLowerCase());
+  const mySrc = selfieShot || (mine && mine.img && mine.img.src && mine.img.src.startsWith('data:') ? mine.img.src : null)
+    || placeholderAvatar(meName || 'ти');
+  const k = document.createElement('img'); k.className = 'pm-face'; k.src = mySrc;
   face.append(im, h, k);
   const nm = (card.name||'Гість').replace(/[,—].*/,'').trim();
   document.getElementById('party-match-text').textContent =
