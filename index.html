@@ -2503,7 +2503,8 @@ function vykupPay(v, opt){
 function updateVykup(){
   const v = game.vykup; if(!v) return;
   if(v.intro){ v.introT++;                                     // картка з правилами
-    if((game.watch && v.introT>300) || (input.actionEdge && v.introT>40) || (game._tapPos && v.introT>40)){
+    if(v.introT<=120){ input.actionEdge=false; game._tapPos=null; }      // перші 2с — читаємо, тапи не діють
+    if((game.watch && v.introT>480) || (input.actionEdge && v.introT>120) || (game._tapPos && v.introT>120)){
       input.actionEdge=false; game._tapPos=null; v.intro=false; }
     return; }
   if(v.done){ v.doneT++; if(v.doneT>110) setPhase('wed'); return; }
@@ -2617,7 +2618,8 @@ function drawVykup(){
      'У кожному з 3 раундів обери правильний хід.','Помилка — дружки беруть штраф із казни 🍬🍾.',
      'Пройдеш усі три — стрічку опустять!'].forEach((ln,li)=> ctx.fillText(ln, W/2, H*0.30+40+li*13));
     ctx.fillStyle='rgba(244,232,200,.6)'; ctx.font='8px monospace';
-    ctx.fillText(game.watch?'…':'тап — почати', W/2, H*0.30+140);
+    const ready = v.introT>120;
+    ctx.fillText(game.watch ? '…' : (ready ? '👇 тап — почати' : '·'.repeat(1+Math.floor(v.introT/40))), W/2, H*0.30+140);
     ctx.textAlign='left';
     return;
   }
