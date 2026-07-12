@@ -7317,8 +7317,12 @@ function update(){
         // фінал за слотом гостя: A → тераса «Бути Софі», B → дворик «Хвильового».
         // Пріоритет: персональний код (slot) → мапа гість→локація за іменем → обидва по черзі
         const vByName = guestVenue();
-        game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : (vByName || 'sofi');
-        game.wedBoth = !GUEST && !vByName;
+        if(typeof coupleMode!=='undefined' && coupleMode){
+          game.wedLoc = 'sofi'; game.wedBoth = true;          // молодята бачать ОБИДВІ зали: Софі → Хвильовий
+        } else {
+          game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : (vByName || 'sofi');
+          game.wedBoth = !GUEST && !vByName;
+        }
         if(game.watch) setPhase('wed'); else startVykup();                         // музика — «Горіла сосна» (через chipForPhase)
       }
       break;
