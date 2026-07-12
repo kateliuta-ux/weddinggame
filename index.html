@@ -586,7 +586,6 @@ const ACHS = [
   {id:'both',   icon:'👀', title:'Обидві сторони',   desc:'пройти за Катю і за Діму'},
   {id:'konami', icon:'🎮', title:'↑↑↓↓←→←→BA',      desc:'згадати старий код'},
   {id:'flappy', icon:'🐈', title:'Котолов',          desc:'покликати Кітану нявканням'},
-  {id:'dvoye',  icon:'📼', title:'Гурт «ДВОЄ»',       desc:'знайти касету на тайтлі'},
   {id:'quiz',   icon:'🧠', title:'Знавець пари',      desc:'усі відповіді у квізі про пару'},
   // пасхалки — окремий бейдж за кожну знайдену
   {id:'egg_heart',  icon:'💗', title:'Серце між ними',  desc:'знайти серце на тайтлі'},
@@ -5439,10 +5438,7 @@ cv.addEventListener('pointerdown', e=>{
     novelAdvance(); return;
   }
   if(game.state==='title'){
-    if(game.cassetteShow){ game.cassetteShow = false; elTitle.classList.remove('hidden'); return; }
-    const pos = canvasPos(e);
-    if(Math.abs(pos.x-44) < 16 && pos.y > FLOOR_Y-20){ game.cassetteShow = true; elTitle.classList.add('hidden'); achUnlock('dvoye'); return; }
-    tryEgg(pos); return;
+    tryEgg(canvasPos(e)); return;
   }
   if(game.watch){ if(game.state==='play') tryEgg(canvasPos(e)); return; }  // у перегляді — лише пасхалки
   if(game.phase==='battle' && game.battle && game.battle.over && !game.battle.chosen && game.battle.overT>50){
@@ -6412,7 +6408,7 @@ function render(){
     const tby = H-22;
     drawPerson(100, tby-bob, 'katya', 0, 1, false, VYSH_K);
     drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, VYSH_D);
-    { const hx=100, hy=tby-52-bob;                       // ВІНОК на голові Каті
+    { const hx=100, hy=tby-59-bob;                       // ВІНОК на голові Каті (над чолом)
       ctx.fillStyle='#3f6b3a'; ctx.fillRect(hx-10,hy,20,3);                       // основа-зелень
       [['#a8323c',-9],['#f4cf5e',-4],['#e08aa0',1],['#a8323c',6]].forEach(([c,dx])=>{  // квіти
         ctx.fillStyle=c; ctx.fillRect(hx+dx,hy-3,4,4); });
@@ -6423,8 +6419,8 @@ function render(){
         ctx.fillStyle=c;
         ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 14);
         ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+15, 2, 8); });
-      ctx.fillStyle='#a8323c';                                                     // намисто
-      ctx.fillRect(hx-5,tby-44-bob,2,2); ctx.fillRect(hx-1,tby-43-bob,2,2); ctx.fillRect(hx+3,tby-44-bob,2,2);
+      ctx.fillStyle='#a8323c';                                                     // намисто (під підборіддям)
+      ctx.fillRect(hx-5,tby-32-bob,2,2); ctx.fillRect(hx-1,tby-31-bob,2,2); ctx.fillRect(hx+3,tby-32-bob,2,2);
     }
     { const dx2=220, dy2=tby-(1-bob);                    // вишиті вставки + крайка Діми
       ctx.fillStyle='#a8323c';
@@ -6434,7 +6430,6 @@ function render(){
     }
     // Кітана між ними
     ctx.save();
-    ctx.translate(160, tby); ctx.scale(1.8,1.8); ctx.translate(-160, -tby);
     drawKitana(160, tby, 1);
     ctx.restore();
     drawEggParticles();
@@ -6442,21 +6437,6 @@ function render(){
     ctx.fillStyle = COL.rose;
     ctx.fillRect(156,hy,4,4); ctx.fillRect(162,hy,4,4);
     ctx.fillRect(156,hy+3,10,4); ctx.fillRect(158,hy+7,6,3); ctx.fillRect(160,hy+10,2,2);
-    // прихована касета гурту «ДВОЄ» — лежить на підлозі
-    ctx.save(); ctx.translate(44, FLOOR_Y-8); ctx.rotate(-0.18);
-    ctx.fillStyle='#2a2a3a'; ctx.fillRect(-11,-7,22,14);
-    ctx.fillStyle='#c0c4c8'; ctx.fillRect(-9,-5,18,10);
-    ctx.fillStyle='#1a1a24'; ctx.fillRect(-6,-2,5,4); ctx.fillRect(1,-2,5,4);
-    ctx.fillStyle='#e85aa0'; ctx.fillRect(-9,-5,3,10); ctx.fillStyle='#3F7C77'; ctx.fillRect(6,-5,3,10);
-    ctx.restore();
-    // розгорнута обкладинка
-    if(game.cassetteShow){
-      ctx.fillStyle='rgba(8,8,14,.85)'; ctx.fillRect(0,0,W,H);
-      drawCassette(W/2, H/2-10, Math.min(150, W*0.62));
-      ctx.fillStyle='#c9c4b4'; ctx.font='8px monospace'; ctx.textAlign='center';
-      ctx.fillText('«такой себе син», але хіт · тапни, щоб закрити', W/2, H/2+H*0.28);
-      ctx.textAlign='left';
-    }
     return;
   }
   if(game.state==='end'){ return; }
@@ -6691,7 +6671,7 @@ async function loadVoiceTracks(){
       audio: d.fields?.audio?.stringValue || '',
       mime: d.fields?.mime?.stringValue || 'audio/webm',
       at: +(d.fields?.at?.integerValue || 0),
-    })).filter(t=>t.audio).sort((a,b)=> b.at-a.at);
+    })).filter(t=>t.audio && t.author!=='__selftest').sort((a,b)=> b.at-a.at);
   }catch(e){ return []; }
 }
 let plVoiceSrc=null;
@@ -7206,7 +7186,8 @@ async function loadMyMatches(){
     const names=new Set();
     (j.documents||[]).forEach(d=>{
       const f=d.fields||{};
-      if((f.to&&f.to.stringValue||'').toLowerCase()===me) names.add(f.from&&f.from.stringValue||'');
+      const fr=(f.from&&f.from.stringValue)||''; if(fr==='__selftest') return;
+      if((f.to&&f.to.stringValue||'').toLowerCase()===me) names.add(fr);
     });
     names.delete('');
     return [...names];
