@@ -2905,9 +2905,15 @@ function startProposal(){
 // Реальний back-rank мат: король Діми на g8 затиснутий власними пішаками f7-g7-h7,
 // тура Каті з d1 йде на d8 — і це чистий лінійний мат, тікати нікуди.
 const CHESS_MOVES = [
-  {label:'Турою на d7 — тисну', sub:'Тd7',   good:false, note:'це навіть не шах'},
-  {label:'Тура на d8 — це МАТ', sub:'Тd8#',  good:true,  note:'мат!'},
-  {label:'Королем ближче',      sub:'Крf2',  good:false, note:'король тут ні до чого — час матувати'},
+  {label:'Тура на d8 — мат по 8-й', sub:'Тd8#', good:true, instant:true, note:'класика задньої горизонталі!'},
+  {label:'Ферзь на b8 — теж мат',   sub:'Фb8#', good:true, instant:true, note:'ферзь добіг перший!'},
+  {label:'Тура d7 — задушити',      sub:'Тd7',  good:true, instant:false, note:'повільно, але теж виграш: мат за два ходи'},
+];
+// ходи Діми — всі програють (реальна пастка: куди не піди, мат поруч)
+const CHESS_MOVES_D = [
+  {label:'Пішак g6 — дірка для короля', sub:'g6',  note:'Тd8+ Крg7, Фb2-h8 — мат.'},
+  {label:'Пішак f6 — тікати на f7',     sub:'f6',  note:'Фb7! — і поле f7 уже під боєм. Мат наступним.'},
+  {label:'Просто здатися',              sub:'🏳',  note:'чесно. і романтично.'},
 ];
 /* спільний layout кнопок-ходів (щоб малювання й тапи збігались) */
 function chessBtn(i){
@@ -2924,13 +2930,15 @@ function updateProp(){
   if(p.step==='chess'){
     if(p.solved || game.dialog) return;
     if(p.wrongT>0){ p.wrongT--; return; }
-    // ── ПОВ Діми: виходу з мату нема, єдина кнопка — «Здатися» ──
+    // ── ПОВ Діми: три ходи — і всі програють (обирай, який саме) ──
     if(game.pov==='dima'){
-      if(game.watch){ if(game.phaseT>150) confirmChess(); return; }
+      if(game.watch){ if(game.phaseT>150){ p.sel = 2; confirmChess(); } return; }
+      if(keys['ArrowLeft'] && !p._l){ p.sel = (p.sel+2)%3; } p._l = keys['ArrowLeft'];
+      if(keys['ArrowRight'] && !p._r){ p.sel = (p.sel+1)%3; } p._r = keys['ArrowRight'];
       if(game._tapPos){
-        const tp = game._tapPos, b = chessBtn(1);   // кнопка «Здатися» на позиції 1
-        game._tapPos = null;
-        if(tp.x>=b.x && tp.x<=b.x+b.w && tp.y>=b.y && tp.y<=b.y+b.h) input.actionEdge = true;
+        const tp = game._tapPos; game._tapPos = null;
+        for(let i=0;i<3;i++){ const b=chessBtn(i);
+          if(tp.x>=b.x && tp.x<=b.x+b.w && tp.y>=b.y && tp.y<=b.y+b.h){ p.sel=i; input.actionEdge=true; break; } }
       }
       if(input.actionEdge){ input.actionEdge = false; confirmChess(); }
       return;
@@ -3006,12 +3014,15 @@ function updateProp(){
 }
 function confirmChess(){
   const p = game.prop;
-  const move = CHESS_MOVES[p.sel];
-  if(game.pov==='katya' && !move.good){ p.wrongT = 70; p._missed = true; shake(2); return; }
-  p.solved = true;
-  if(game.pov==='katya'){ flashHyper('katya', {frame:3, dur:58, tint:'#2a1a3a', label:'ШАХ І МАТ.'}); }
-  else { flashHyper('dima', {frame:0, dur:58, tint:'#1a2438', label:'ЗДАЮСЬ.'}); }
-  if(game.pov==='katya' && !p._missed) achUnlock('mate1');
+  if(game.pov==='katya'){
+    const move = CHESS_MOVES[p.sel];
+    p.solved = true;
+    flashHyper('katya', {frame:3, dur:58, tint:'#2a1a3a', label: move.instant ? 'ШАХ І МАТ.' : 'ВИГРАШ. ПОВІЛЬНИЙ І БОЛЮЧИЙ.'});
+    if(move.instant && !p._missed) achUnlock('mate1');
+  } else {
+    p.solved = true;
+    flashHyper('dima', {frame:0, dur:58, tint:'#1a2438', label:'ПРОГРАВ. ЯК ЗАВЖДИ.'});
+  }
   startDialog(propChessOutroScript(game.pov), ()=>{ game.prop.step='rummage'; game.prop.meter=0; });
 }
 function drawCabin(){
@@ -3137,19 +3148,22 @@ function drawProp(){
     [[5,1],[6,1],[7,1]].forEach(([c,r])=>{ const q=sq(c,r); ctx.fillText('♟', q.x, q.y); });  // його ж пішаки f7-g7-h7 (клітка)
     ctx.fillStyle='#A8505F';
     s=sq(3,7); ctx.fillText('♜', s.x, s.y);                                      // тура Каті (d1)
+    s=sq(1,6); ctx.fillText('♛', s.x, s.y);                                      // ферзь Каті (b2) — друга загроза
     if(game.pov==='dima'){
-      // єдина кнопка — здатися (виходу з мату нема)
-      const b = chessBtn(1);
-      const pulse = 0.5 + 0.5*Math.sin(game.t*0.12);
-      ctx.fillStyle = '#7d3a46'; ctx.fillRect(b.x, b.y, b.w, b.h);
-      ctx.strokeStyle = 'rgba(255,255,255,'+(0.5+0.5*pulse)+')'; ctx.lineWidth = 2;
-      ctx.strokeRect(b.x, b.y, b.w, b.h);
-      ctx.fillStyle = '#fff'; ctx.font='bold '+(isP?14:10)+'px monospace'; ctx.textAlign='center';
-      ctx.fillText('ЗДАТИСЯ', b.x+b.w/2, b.y+(isP?20:14));
-      ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font=(isP?10:7)+'px monospace';
-      ctx.fillText('легального ходу немає', b.x+b.w/2, b.y+(isP?37:24));
-      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font=(isP?10:9)+'px monospace';
-      drawHint(game.watch?'':(isTouch?'тапни, щоб здатись':'ПРОБІЛ — здатись'), W/2, H-6, isP?10:9);
+      // три ходи — і кожен програє (нотатка чесно пояснює чому)
+      CHESS_MOVES_D.forEach((m,i)=>{
+        const b = chessBtn(i), on = i===p.sel;
+        ctx.fillStyle = on ? '#7d3a46' : '#2b2b38';
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.strokeStyle = on ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.2)'; ctx.lineWidth=2;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = '#fff'; ctx.font='bold '+(isP?11:8)+'px monospace'; ctx.textAlign='center';
+        ctx.fillText(m.label, b.x+b.w/2, b.y+(isP?20:14));
+        ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font=(isP?8:6)+'px monospace';
+        ctx.fillText(m.sub, b.x+b.w/2, b.y+(isP?34:24));
+      });
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      drawHint(p.wrongT>0 ? CHESS_MOVES_D[p.sel].note : (game.watch?'':(isTouch?'обери хід (спойлер: всі програють)':'← → і ПРОБІЛ')), W/2, isP?H-40:H-6, isP?9:8);
       ctx.textAlign='left';
       return;
     }
