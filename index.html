@@ -587,9 +587,10 @@ function achUnlock(id){
   achDone.add(id);
   localStorage.setItem('wed-ach', JSON.stringify([...achDone]));
   const a = ACHS.find(x=>x.id===id);
-  achToasts.push({text: a.icon+' '+a.title, t: 170});
+  achToasts.push({text: a.icon+' '+a.title+'  +1 🏆', t: 170});
   if(typeof sfxScore==='function') sfxScore(1175);   // чарівний дзинь за бейдж
   updateAchButton();
+  try{ updateHudAndControls(); }catch(_){}           // 🏆 у HUD одразу підріс
 }
 function drawAchToasts(){
   // тости нижче зони підписів фаз (щоб не перекривати верхній текст гри)
@@ -2741,6 +2742,19 @@ function drawSvat(){
   drawGuest(48,  FLOOR_Y+2, '#6a4c7a', false, game.t+45,  pf('паша')||pf('папа'));   // тато Каті
   drawGuest(206, FLOOR_Y+2, '#5a7c6a', false, game.t+90,  pf('світлан'));            // мама Діми
   drawGuest(228, FLOOR_Y+2, '#4a6c5a', false, game.t+135, pf('олег'));               // тато Діми
+  // брат Костя — по відеодзвінку з Лондона (телефон на табуреті)
+  { const bx=66, byTop=FLOOR_Y-46;
+    ctx.fillStyle='#6a4a30'; ctx.fillRect(bx-8,FLOOR_Y-14,16,14); ctx.fillRect(bx-10,FLOOR_Y-16,20,3);  // табурет
+    ctx.fillStyle='#16121c'; ctx.fillRect(bx-9,byTop,18,32);                                             // телефон
+    ctx.fillStyle='#2a3644'; ctx.fillRect(bx-7,byTop+2,14,26);                                           // екран
+    const kf=pf('кост');
+    if(kf && kf.complete && kf.naturalWidth){ ctx.save(); ctx.beginPath(); ctx.rect(bx-7,byTop+2,14,26); ctx.clip();
+      ctx.imageSmoothingEnabled=false; ctx.drawImage(kf,bx-7,byTop+4,14,14); ctx.restore(); }
+    else { ctx.fillStyle='#e8c49c'; ctx.fillRect(bx-4,byTop+5,8,8); ctx.fillStyle='#221c26'; ctx.fillRect(bx-4,byTop+5,8,3); }
+    ctx.fillStyle=((game.t>>4)&1)?'#8fd07a':'#5a9a4a'; ctx.fillRect(bx+3,byTop+24,3,3);                  // зелений індикатор дзвінка
+    ctx.fillStyle='rgba(244,240,228,.85)'; ctx.font='6px monospace'; ctx.textAlign='center';
+    ctx.fillText('Костя · з Лондона', bx, byTop-3); ctx.textAlign='left';
+  }
   // Катя біля печі, Діма з хлібом посередині, Кітана гріється при печі
   drawPerson(86, FLOOR_Y+2-bob, 'katya', 0, 1, false);
   drawPerson(168, FLOOR_Y+2-(1-bob), 'dima', 0, 1, false);
@@ -4124,7 +4138,7 @@ function drawHint(txt, x, y, size){
   ctx.fillText(txt, x, y);
   ctx.restore();
 }
-function drawCaption(line1, line2){
+function drawCaption(line1, line2, part){
   const t = game.t;
   // фон — глибокий градієнт (не голий чорний)
   const g = ctx.createLinearGradient(0,0,0,H);
@@ -4141,6 +4155,10 @@ function drawCaption(line1, line2){
   for(let i=0;i<11;i++){ const px=Math.round((i*37+t*0.5)%(W-30))+16, py=Math.round((i*61+t*1.0)%H);
     ctx.fillStyle=i%2?'rgba(232,138,160,.5)':'rgba(255,255,255,.35)'; ctx.fillRect(px,py,3,2); }
   ctx.textAlign='center';
+  if(part){                                             // частина традиційного весілля
+    ctx.fillStyle='rgba(232,138,160,.85)'; ctx.font='bold 9px monospace';
+    ctx.fillText('· '+part+' ·', W/2, H/2-62);
+  }
   drawOrnament(H/2-46);
   ctx.fillStyle='rgba(244,207,94,.12)'; ctx.beginPath(); ctx.ellipse(W/2,H/2-6,108,30,0,0,7); ctx.fill();  // сяйво
   ctx.fillStyle = COL.gold; ctx.font='bold 15px monospace';
@@ -5093,7 +5111,7 @@ const elEnd = document.getElementById('end-screen');
 const elHud = document.getElementById('hud');
 
 function updateHudAndControls(){
-  elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name;
+  elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name + ' · 🏆 ' + computeScore();
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
   const padPhase = walkPhase;
   // під час діалогу кнопки ховаються, щоб не перекривати вікно
@@ -5984,7 +6002,7 @@ function render(){
       drawSitcom();
       break;
     case 'cap1':
-      drawCaption('КИЇВ · 2021 · ЩЕ ДО ВІЙНИ', 'офіс агенції · зйомка ШТОРМНАДО');
+      drawCaption('КИЇВ · 2021 · ЩЕ ДО ВІЙНИ', 'на зйомці шоу вони побачились уперше', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'set': {
       const sh = game.shoot || {sub:W/2, vf:W/2, focus:0, dir:1, done:false};
@@ -6003,19 +6021,19 @@ function render(){
       break;
     }
     case 'capMont':
-      drawCaption('ПІСЛЯ ЗЙОМКИ · 2021', 'монтажна Каті');
+      drawCaption('ПІСЛЯ ЗЙОМКИ · 2021', 'Катя монтує те шоу (воно так і не вийде)', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'montage':
       drawMontage();
       break;
     case 'capBand':
-      drawCaption('ТОГО Ж РОКУ', 'репетиція SPACE SPICE BOY');
+      drawCaption('ТОГО Ж РОКУ', 'Діма грає у гурті SPACE SPICE BOY', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'band':
       drawBand();
       break;
     case 'cap2':
-      drawCaption('СЕРПЕНЬ 2022 · ВЖЕ ІНШЕ ЖИТТЯ', 'десь у тіндері…');
+      drawCaption('СЕРПЕНЬ 2022 · ВЖЕ ІНШЕ ЖИТТЯ', 'війна все змінила. а тіндер звів їх — удруге', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'tinder':
     case 'swipe':
@@ -6026,7 +6044,7 @@ function render(){
       drawMatch();
       break;
     case 'cap3':
-      drawCaption('ЗА КІЛЬКА ДНІВ', 'Пейзажна алея · перше побачення');
+      drawCaption('ЗА КІЛЬКА ДНІВ', 'Пейзажна алея · перше побачення', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'date': {
       const camX = Math.round(game.camX);
@@ -6052,43 +6070,43 @@ function render(){
       drawBattle();
       break;
     case 'cap4':
-      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'місяць на відстані одного чату');
+      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'Катя на місяць у відрядженні — 11 223 повідомлення', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
       break;
     case 'run':
       drawRun();
       break;
     case 'capK':
-      drawCaption('ОСІНЬ 2023 · БІЛОГОРОДКА', 'у друга Дана вас знайшла Кітана');
+      drawCaption('ОСІНЬ 2023 · БІЛОГОРОДКА', 'у дворі друга Дана їх знайшла киця Кітана', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
       break;
     case 'kitana':
       drawKitanaScene();
       break;
     case 'cap5':
-      drawCaption('СВАТАННЯ', '(робимо вигляд, що було)');
+      drawCaption('СВАТАННЯ', 'старости, рушник — і гарбуз напоготові', 'ЧАСТИНА ТРЕТЯ · СВАТАННЯ');
       break;
     case 'svat':
       drawSvat();
       break;
     case 'capS':
-      drawCaption('ЛЮТИЙ 2026 · ПОЗНЯКИ', game.pov==='dima' ? 'таємна операція «Коробочка»' : 'ти нічого не бачила (бачила)');
+      drawCaption('ЛЮТИЙ 2026 · ПОЗНЯКИ', game.pov==='dima' ? 'Діма ховає вдома коробочку з каблучкою' : 'вдома зʼявилась дивна коробочка. Катя «нічого не бачила»', 'ЧАСТИНА ЧЕТВЕРТА · ЗАРУЧИНИ');
       break;
     case 'secret':
       drawSecret();
       break;
     case 'cap6':
-      drawCaption('14 ЛЮТОГО 2026 · МІНІМАЛІСТ', 'будиночки за містом. сніг. очікування.');
+      drawCaption('14 ЛЮТОГО 2026 · МІНІМАЛІСТ', 'будиночки за містом. сніг. Діма освідчується', 'ЧАСТИНА ЧЕТВЕРТА · ЗАРУЧИНИ');
       break;
     case 'prop':
       drawProp();
       break;
     case 'cap7':
-      drawCaption('16 ЧЕРВНЯ 2026', 'заява. так, у застосунку.');
+      drawCaption('16 ЧЕРВНЯ 2026', 'подають заяву — так, у Дії', 'ЧАСТИНА ПʼЯТА · РОЗПИС');
       break;
     case 'diia':
       drawDiia();
       break;
     case 'cap8':
-      drawCaption('6 ВЕРЕСНЯ 2026 · КИЇВ', 'день, заради якого ця гра');
+      drawCaption('6 ВЕРЕСНЯ 2026 · КИЇВ', 'день, заради якого ця гра', 'ЧАСТИНА ШОСТА · ВЕСІЛЛЯ');
       break;
     case 'wed':
       drawWed();
