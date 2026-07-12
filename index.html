@@ -327,6 +327,9 @@
     <div id="s-grid"></div>
     <div class="s-controls">
       <button class="btn s-btn" id="s-play">▶ ПРОГРАТИ</button>
+      <button class="btn s-btn" id="s-wave" style="background:#6a5cff">ЗВУК: МЕАНДР</button>
+      <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
+      <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
       <button class="btn s-btn" id="s-clear">ЧИСТКА</button>
       <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
@@ -6567,7 +6570,7 @@ const SMP = {
         e.preventDefault();
         SMP.grid[r][c] = !SMP.grid[r][c];
         cell.classList.toggle('on', SMP.grid[r][c]);
-        if(SMP.grid[r][c]){ ensureAudio(); playNote(row.f, audioCtx.currentTime, 0.22, 'square', 0.06); }
+        if(SMP.grid[r][c]){ ensureAudio(); playNote(row.f, audioCtx.currentTime, 0.22, SMP.wave||'square', 0.06); }
       });
       el.appendChild(cell);
     }
@@ -6590,10 +6593,71 @@ document.getElementById('s-play').addEventListener('click', ()=>{
   document.getElementById('s-play').textContent = '■ СТОП';
   SMP.timer = setInterval(()=>{
     const t = audioCtx.currentTime;
-    SMP.rows.forEach((row,r)=>{ if(SMP.grid[r][SMP.col]) playNote(row.f, t, 0.24, 'square', 0.06); });
+    SMP.rows.forEach((row,r)=>{ if(SMP.grid[r][SMP.col]) playNote(row.f, t, 0.24, SMP.wave||'square', 0.06); });
     samplerHighlight(SMP.col);
     SMP.col = (SMP.col+1) % SMP.steps;
   }, 240);
+});
+/* ── СЕМПЛЕР v2: вибір звуку + запис голосу до 30с → діджиталізований трек ── */
+const SMP_WAVES=[['square','МЕАНДР'],['triangle','ТРИКУТНИК'],['sawtooth','ПИЛКА'],['sine','ФЛЕЙТА']];
+let smpWaveIdx=0; SMP.wave='square';
+document.getElementById('s-wave').addEventListener('click', ()=>{
+  smpWaveIdx=(smpWaveIdx+1)%SMP_WAVES.length;
+  SMP.wave=SMP_WAVES[smpWaveIdx][0];
+  document.getElementById('s-wave').textContent='ЗВУК: '+SMP_WAVES[smpWaveIdx][1];
+  ensureAudio(); playNote(440, audioCtx.currentTime, 0.25, SMP.wave, 0.07);   // прев'ю звуку
+});
+let recMedia=null, recChunks=[], recTimer=null, myTrackBuf=null, myTrackSrc=null;
+const sStat = t => { document.getElementById('s-status').textContent = t; };
+async function smpRecord(){
+  const btn=document.getElementById('s-rec');
+  if(recMedia){ recMedia.stop(); return; }                       // друге натискання — стоп
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks=[];
+    recMedia = new MediaRecorder(stream);
+    recMedia.ondataavailable = e => { if(e.data.size) recChunks.push(e.data); };
+    recMedia.onstop = async ()=>{
+      stream.getTracks().forEach(t=>t.stop());                   // мікрофон гаситься одразу
+      clearTimeout(recTimer); btn.textContent='🎙 ЗАПИСАТИ ГОЛОС';
+      sStat('обробляю запис…');
+      try{
+        ensureAudio();
+        const raw = await new Blob(recChunks).arrayBuffer();
+        const buf = await audioCtx.decodeAudioData(raw);
+        // діджиталізація: рендер на 9кГц + біткраш-квантування (як фонові треки)
+        const sr = 9000, off = new OfflineAudioContext(1, Math.ceil(buf.duration*sr), sr);
+        const src = off.createBufferSource(); src.buffer = buf;
+        const crush = off.createWaveShaper();
+        const steps = 22, curve = new Float32Array(256);
+        for(let i=0;i<256;i++){ const x=i/127.5-1; curve[i]=Math.round(x*steps)/steps; }
+        crush.curve = curve;
+        const comp = off.createDynamicsCompressor();
+        src.connect(crush); crush.connect(comp); comp.connect(off.destination); src.start();
+        myTrackBuf = await off.startRendering();
+        document.getElementById('s-myplay').classList.remove('hidden');
+        sStat('готово! «▶ МІЙ ТРЕК» — послухати свій діджиталізований запис ('+Math.round(myTrackBuf.duration)+'с)');
+      }catch(e){ sStat('не вдалось обробити запис — спробуй ще раз'); }
+      recMedia=null;
+    };
+    recMedia.start();
+    btn.textContent='⏹ СТОП (пише…)';
+    sStat('записую (до 30с)… співай, бітбокс, що завгодно!');
+    stopChip();                                                   // фонова музика не лізе в запис
+    recTimer=setTimeout(()=>{ if(recMedia) recMedia.stop(); }, 30000);
+  }catch(e){ sStat('мікрофон недоступний — дозволь доступ у браузері'); recMedia=null; }
+}
+document.getElementById('s-rec').addEventListener('click', smpRecord);
+document.getElementById('s-myplay').addEventListener('click', ()=>{
+  if(!myTrackBuf) return;
+  ensureAudio();
+  if(myTrackSrc){ try{ myTrackSrc.stop(); }catch(_){} myTrackSrc=null;
+    document.getElementById('s-myplay').textContent='▶ МІЙ ТРЕК'; return; }
+  stopChip(); samplerStop();
+  myTrackSrc = audioCtx.createBufferSource(); myTrackSrc.buffer = myTrackBuf;
+  myTrackSrc.connect(bgmMaster()); myTrackSrc.start();
+  document.getElementById('s-myplay').textContent='⏹ СТОП';
+  myTrackSrc.onended = ()=>{ myTrackSrc=null; document.getElementById('s-myplay').textContent='▶ МІЙ ТРЕК'; };
 });
 document.getElementById('s-clear').addEventListener('click', ()=>{
   SMP.grid.forEach(r=>r.fill(false));
