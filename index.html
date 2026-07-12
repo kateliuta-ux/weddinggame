@@ -826,7 +826,7 @@ function guestCameo(sceneKey){
 }
 // ── мапа гість→локація за іменем: родичі/сусіди → Софі (день), решта → Хвильовий (вечір) ──
 const GUEST_VENUE = [
-  { v:'sofi', match:/шаблія|луїз|яра|дядя саша|дядьк|брат саша|брат.* саш|костя|костянтин|давід|георгій|ліка|бабус|тітк|тьот|хрещен|сусід|дідор|кукрицьк|пінаєвськ|маріч|плахотн|соколовськ|ярік|ярик|олег бур|бурий|олег смір|сміря/ },
+  { v:'sofi', match:/мама|папа|тато|батьк|шаблія|луїз|яра|дядя саша|дядьк|брат саша|брат.* саш|костя|костянтин|давід|георгій|ліка|бабус|тітк|тьот|хрещен|сусід|дідор|кукрицьк|пінаєвськ|маріч|плахотн|соколовськ|ярік|ярик|олег бур|бурий|олег смір|сміря/ },
 ];
 function guestVenue(){
   const pn = (localStorage.getItem('wed-player-name')||'').toLowerCase().trim();
@@ -2045,16 +2045,24 @@ function beerPick(px,py){
 }
 function drawBeer(){
   const b=game.beer||{};
-  drawPeizazhka(0);
+  // самодостатній вечірній фон (Пейзажка) — без залежності від стану інших сцен
+  const g=ctx.createLinearGradient(0,0,0,FLOOR_Y); g.addColorStop(0,'#43305e'); g.addColorStop(1,'#d1936f');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle='rgba(255,238,200,.92)'; ctx.beginPath(); ctx.arc(58,58,14,0,7); ctx.fill();          // сонце
+  ctx.fillStyle='rgba(255,238,200,.12)'; ctx.beginPath(); ctx.arc(58,58,24,0,7); ctx.fill();
+  ctx.fillStyle='#3e5a3e'; ctx.fillRect(0,FLOOR_Y-18,W,18);                                            // берег
+  ctx.fillStyle='#8a5e40'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);                                        // земля
+  ctx.fillStyle='#6a4a30'; ctx.fillRect(20,FLOOR_Y-6,W-40,6); ctx.fillRect(28,FLOOR_Y,5,16); ctx.fillRect(W-33,FLOOR_Y,5,16);  // лавка
   const rs=beerRects();
   rs.forEach((r,i)=>{ const be=BEERS[i];
+    ctx.fillStyle='#141018'; ctx.fillRect(r.x-2,r.y-2,r.w+4,r.h+4);                                    // темний контур (видно на будь-якому тлі)
     ctx.fillStyle=be.c; ctx.fillRect(r.x,r.y,r.w,r.h);
-    ctx.fillStyle=be.cap; ctx.fillRect(r.x,r.y,r.w,6); ctx.fillRect(r.x,r.y+r.h-6,r.w,6);
-    ctx.fillStyle='rgba(255,255,255,.22)'; ctx.fillRect(r.x+5,r.y+9,4,r.h-18);
-    ctx.fillStyle='#fff'; ctx.font='7px monospace'; ctx.textAlign='center';
-    be.lbl.forEach((t,k)=> ctx.fillText(t, r.cx, r.y+r.h+11+k*8));
-    if(b.picked===i && !be.ok){ ctx.strokeStyle='#e0555f'; ctx.lineWidth=2; ctx.strokeRect(r.x-2,r.y-2,r.w+4,r.h+4); }
-    if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-3,r.y-3,r.w+6,r.h+6); }
+    ctx.fillStyle=be.cap; ctx.fillRect(r.x,r.y,r.w,7); ctx.fillRect(r.x,r.y+r.h-7,r.w,7);
+    ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(r.x+6,r.y+10,4,r.h-20);
+    ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    be.lbl.forEach((t,k)=> ctx.fillText(t, r.cx, r.y+r.h+12+k*9));
+    if(b.picked===i && !be.ok){ ctx.strokeStyle='#e0555f'; ctx.lineWidth=2; ctx.strokeRect(r.x-3,r.y-3,r.w+6,r.h+6); }
+    if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-4,r.y-4,r.w+8,r.h+8); }
   });
   drawCaption('Яке пиво любить Катя? Тапни банку', b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
     : b.wrong>0 ? 'не те… вона любить темне, кокосове. Тапни ще' : 'тапни банку з її улюбленим — і подаруй 🍺');
