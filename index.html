@@ -3005,17 +3005,20 @@ function updateSvat(){
       // ── БАЛАНС: хліб хилиться, нахил треба вирівнювати тапами по половинах екрана ──
       if(s.tilt===undefined){ s.tilt=0; s.tv=0; s.gust=0; }
       s.gust--;
-      if(s.gust<=0){ s.tv += (Math.random()-0.5)*0.55; s.gust = 26+Math.random()*40; }   // «протяг» смикає
-      s.tv += s.tilt*0.004;                                                              // нестійкість: що більший нахил, то швидше валиться
+      if(s.gust<=0){ s.tv += (Math.random()-0.5)*0.4; s.gust = 30+Math.random()*45; }    // «протяг» смикає
+      s.tv += s.tilt*0.0012;                                                             // легка нестійкість
       if(game.watch){ s.tv += -s.tilt*0.02; }                                            // автопілот у перегляді
       else{
-        if(keys['ArrowLeft']) s.tv -= 0.05;
-        if(keys['ArrowRight']) s.tv += 0.05;
-        if(game._tapPos){ s.tv += (game._tapPos.x < W/2 ? -0.16 : 0.16); game._tapPos=null; }
+        if(keys['ArrowLeft']) s.tv -= 0.06;
+        if(keys['ArrowRight']) s.tv += 0.06;
+        if(game._tapPos){ s.tv += (game._tapPos.x < W/2 ? -0.45 : 0.45); game._tapPos=null; }   // тап — сильний поштовх
       }
-      s.tv *= 0.985; s.tilt = Math.max(-40, Math.min(40, s.tilt + s.tv));
-      const level = Math.abs(s.tilt) < 9;                                                // рівно = прогрес
-      s.meter += level ? 0.55 : -0.35;
+      s.tv *= 0.97;
+      s.tilt += s.tv;
+      if(s.tilt > 34){ s.tilt = 34; s.tv = Math.min(0, s.tv)*0.3; }                      // на межі не залипає
+      if(s.tilt < -34){ s.tilt = -34; s.tv = Math.max(0, s.tv)*0.3; }
+      const level = Math.abs(s.tilt) < 10;                                               // рівно = прогрес
+      s.meter += level ? 0.6 : -0.2;
       s.meter = Math.max(0, s.meter);
       if(!level && (game.t&3)===0) s.particles.push({ x:168+(Math.random()-0.5)*20, y:90,
         vx:(Math.random()-0.5)*2, vy:-Math.random()*1.5-0.4, life:24 });                 // крихти сиплються
