@@ -138,7 +138,10 @@
   #pad-down{right:calc(2% + clamp(62px,17cqw,94px))}
 
   /* ---------- HUD / hints ---------- */
-  #hud{position:absolute;top:2.5%;left:2.5%;color:#fff;font-size:clamp(9px,2cqw,14px);letter-spacing:1px;text-shadow:2px 2px 0 #000}
+  #hud{position:absolute;top:8.5%;right:2.5%;left:auto;display:flex;align-items:center;gap:5px;
+    color:#fff;font-size:clamp(9px,2cqw,13px);letter-spacing:.5px;text-shadow:1px 1px 0 #000;
+    background:rgba(10,8,16,.62);padding:.28em .6em;border-radius:14px;border:1px solid rgba(244,207,94,.5);z-index:40}
+  #hud img{width:20px;height:20px;border-radius:50%;border:1.5px solid #f4cf5e;image-rendering:pixelated;background:#cbd3da}
   #watch-hint{
     position:absolute;top:2.5%;left:50%;transform:translateX(-50%);
     color:#ffd;font-size:clamp(8px,1.9cqw,13px);white-space:nowrap;
@@ -6334,7 +6337,12 @@ const elEnd = document.getElementById('end-screen');
 const elHud = document.getElementById('hud');
 
 function updateHudAndControls(){
-  elHud.textContent = game.watch ? 'ПЕРЕГЛЯД' : 'ПОВ: ' + CHARS[game.pov].name + ' · 🏆 ' + computeScore();
+  {  // куточок: іконка героя + чий ПОВ + зібрані бали
+    let ic=''; try{ ic = offOf(game.pov).toDataURL(); }catch(_){}
+    elHud.innerHTML = (ic ? '<img src="'+ic+'" alt="">' : '') +
+      '<span><b>' + CHARS[game.pov].name + '</b>' +
+      (game.watch ? ' · перегляд 🍿' : ' · 🏆 ' + computeScore()) + '</span>';
+  }
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
   const padPhase = walkPhase;
   // під час діалогу кнопки ховаються, щоб не перекривати вікно
