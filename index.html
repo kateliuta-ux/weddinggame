@@ -4862,6 +4862,96 @@ function drawNovelGuests(boxY){
   ctx.fillStyle='rgba(150,196,178,.8)'; ctx.font='7px monospace'; ctx.textAlign='center';
   ctx.fillText('· гості святкують з вами ·', W/2, y+20);
 }
+// ── РЕАНАЛІЗ НОВЕЛИ: кожен розділ має власну АНІМАЦІЮ, а не лише говоріння ──
+// GB-палітра для оверлеїв (щоб анімація лишалась у стилі Game Boy)
+const GBC = ['#161e26','#386664','#96c4b2','#e2f2e2'];
+function drawNovelFx(i, boxY){
+  const t = game.t;
+  if(i===0){                                  // ОФІС: блимає REC + хлопавка «ляск» + таймер брифу
+    ctx.fillStyle = ((t>>4)&1) ? GBC[3] : GBC[1];
+    ctx.beginPath(); ctx.arc(30, 76, 4, 0, 7); ctx.fill();
+    ctx.fillStyle=GBC[3]; ctx.font='bold 8px monospace'; ctx.textAlign='left'; ctx.fillText('REC', 38, 79);
+    const cyc=(t%180)/180;                    // хлопавка раз на 3с
+    if(cyc<0.12){ const a=cyc/0.12;
+      ctx.save(); ctx.translate(W-58, 92);
+      ctx.fillStyle=GBC[0]; ctx.fillRect(-16,0,32,20);
+      ctx.save(); ctx.rotate(-0.9*(1-a)); ctx.fillStyle=GBC[2]; ctx.fillRect(-16,-6,32,6); ctx.restore();
+      ctx.fillStyle=GBC[3]; ctx.font='6px monospace'; ctx.textAlign='center'; ctx.fillText('ДУБЛЬ 3', 0, 13);
+      ctx.restore();
+      if(a>0.85) shake(1,3);
+    }
+  } else if(i===2){                           // ПОБАЧЕННЯ: банки цокаються + сердечка вгору
+    const cyc=(t%160)/160;
+    const tilt = cyc<0.15 ? Math.sin(cyc/0.15*Math.PI)*0.35 : 0;
+    [[W/2-22,1],[W/2+22,-1]].forEach(([bx,s])=>{
+      ctx.save(); ctx.translate(bx, 150); ctx.rotate(tilt*s);
+      ctx.fillStyle=GBC[1]; ctx.fillRect(-7,-14,14,28); ctx.fillStyle=GBC[2]; ctx.fillRect(-7,-14,14,5);
+      ctx.restore();
+    });
+    if(tilt>0.3){ ctx.fillStyle=GBC[3]; ctx.font='7px monospace'; ctx.textAlign='center'; ctx.fillText('дзінь!', W/2, 122); }
+    for(let k=0;k<4;k++){ const hy=(200-((t*0.7+k*45)%110)), hx=W/2+((k%2)?18:-18)+Math.sin((t+k*30)*0.05)*8;
+      ctx.fillStyle=k%2?GBC[2]:GBC[3];
+      ctx.fillRect(hx-2,hy-2,2,2); ctx.fillRect(hx+1,hy-2,2,2); ctx.fillRect(hx-2,hy,5,2); ctx.fillRect(hx-1,hy+2,3,1); }
+  } else if(i===3){                           // КИЇВ↔ЛОНДОН: повідомлення літають дугою туди-сюди
+    for(let k=0;k<3;k++){
+      const ph=((t*0.9+k*70)%210)/210, ltr = (k%2)===0;
+      const x = ltr ? 30+ph*(W-60) : W-30-ph*(W-60);
+      const y = 120 - Math.sin(ph*Math.PI)*46;
+      ctx.fillStyle=GBC[0]; ctx.fillRect(x-9,y-6,18,12);
+      ctx.fillStyle=ltr?GBC[2]:GBC[3]; ctx.fillRect(x-8,y-5,16,10);
+      ctx.fillStyle=GBC[0]; ctx.fillRect(x-5,y-2,10,1); ctx.fillRect(x-5,y+1,7,1);
+    }
+  } else if(i===4){                           // КІТАНА: кошеня перебігає сцену, хвіст, «няв»
+    const ph=((t*1.1)%260)/260, kx=-20+ph*(W+40), ky=176;
+    const run=(t>>3)&1;
+    ctx.fillStyle=GBC[1];
+    ctx.fillRect(kx-8,ky-6,16,7);                                  // тіло
+    ctx.fillRect(kx+6,ky-11,7,7);                                  // голова
+    ctx.fillStyle=GBC[0]; ctx.fillRect(kx+7,ky-13,2,3); ctx.fillRect(kx+11,ky-13,2,3); // вушка
+    ctx.fillStyle=GBC[1];
+    ctx.fillRect(kx-8+(run?2:0),ky+1,2,4); ctx.fillRect(kx+4-(run?2:0),ky+1,2,4);      // лапки
+    ctx.save(); ctx.translate(kx-8,ky-5); ctx.rotate(Math.sin(t*0.2)*0.4); ctx.fillRect(-7,-2,8,2); ctx.restore(); // хвіст
+    if(((t>>5)&3)===0){ ctx.fillStyle=GBC[3]; ctx.font='7px monospace'; ctx.textAlign='center'; ctx.fillText('няв!', kx+9, ky-17); }
+  } else if(i===5){                           // СВАТАННЯ: пара з печі + гарбуз котиться-дражнить
+    for(let k=0;k<3;k++){ const sy=(t*0.8+k*40)%90;
+      ctx.fillStyle='rgba(150,196,178,'+(0.5-sy/200)+')';
+      ctx.fillRect(64+Math.sin((t+k*50)*0.06)*5, 130-sy, 4, 4); }
+    const cyc=(t%300)/300;
+    if(cyc>0.62){ const gph=(cyc-0.62)/0.38, gx=W+16-gph*(W*0.55);
+      ctx.save(); ctx.translate(gx, 196); ctx.rotate(-gph*7);
+      ctx.fillStyle=GBC[1]; ctx.beginPath(); ctx.arc(0,0,9,0,7); ctx.fill();
+      ctx.fillStyle=GBC[0]; ctx.fillRect(-1,-12,3,4);
+      ctx.restore();
+      ctx.fillStyle=GBC[3]; ctx.font='6px monospace'; ctx.textAlign='center'; ctx.fillText('(не сьогодні)', W*0.7, 176);
+    }
+  } else if(i===6){                           // ПОЗНЯКИ: коробочка світиться й підстрибує, лапа тягнеться
+    const bx=W*0.72, by=150, hop=((t%120)<12)?-3:0;
+    ctx.fillStyle='rgba(226,242,226,'+(0.25+0.2*Math.sin(t*0.1))+')';
+    ctx.beginPath(); ctx.arc(bx+5, by+hop, 16, 0, 7); ctx.fill();
+    ctx.fillStyle=GBC[0]; ctx.fillRect(bx-2,by-2+hop,14,12);
+    ctx.fillStyle=GBC[2]; ctx.fillRect(bx,by+hop,10,8); ctx.fillRect(bx+4,by-4+hop,2,14);
+    const pph=(t%200)/200;
+    if(pph>0.5){ const pa=Math.sin((pph-0.5)*2*Math.PI);
+      ctx.fillStyle=GBC[1]; ctx.fillRect(bx-18, by+6+hop-pa*6, 14, 4); ctx.fillRect(bx-6, by+7+hop-pa*7, 4, 3); }
+  } else if(i===7){                           // ОСВІДЧЕННЯ: сніг + промені від каблучки
+    for(let k=0;k<10;k++){ const sx2=(k*37+t*0.4)%W, sy2=(k*53+t*0.9)%(boxY-20);
+      ctx.fillStyle='rgba(226,242,226,.7)'; ctx.fillRect(sx2,sy2,2,2); }
+    const rx=W/2, ry=136, tw=(t%90)/90;
+    if(tw<0.5){ const a=Math.sin(tw*2*Math.PI);
+      ctx.strokeStyle='rgba(226,242,226,'+(0.5*a)+')'; ctx.lineWidth=1.5;
+      for(let k=0;k<4;k++){ const ang=k*Math.PI/4 + t*0.02;
+        ctx.beginPath(); ctx.moveTo(rx+Math.cos(ang)*7, ry+Math.sin(ang)*7);
+        ctx.lineTo(rx+Math.cos(ang)*(13+a*5), ry+Math.sin(ang)*(13+a*5)); ctx.stroke(); } }
+  } else if(i===8){                           // ВЕСІЛЛЯ: пелюстки + голуби + дзвін гойдається
+    for(let k=0;k<8;k++){ const px2=(k*41+t*0.5)%W, py2=(k*67+t*1.0)%(boxY-30);
+      ctx.fillStyle = k%2 ? 'rgba(150,196,178,.75)' : 'rgba(226,242,226,.6)';
+      ctx.fillRect(px2,py2,3,2); }
+    for(let d=0;d<2;d++){ const dx2=((t*1.4+d*160)%(W+60))-30, dy2=58+d*16+Math.sin(t*0.07+d*2)*5;
+      const wing=((t>>3)&1)?4:0;
+      ctx.strokeStyle=GBC[3]; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(dx2-6,dy2+wing-2); ctx.lineTo(dx2,dy2); ctx.lineTo(dx2+6,dy2+wing-2); ctx.stroke(); }
+  }
+}
 function drawNovel(){
   const n = game.nov; if(!n){ finishGame(); return; }
   const chap = n.chapters[n.ch]; if(!chap){ finishGame(); return; }
@@ -4871,6 +4961,7 @@ function drawNovel(){
   // GB-панель: фон у бірюзовому монохромі + GB-бюсти зверху
   drawNovelBgGB(chap.bg, boxY);
   ctx.fillStyle='rgba(10,8,14,.3)'; ctx.fillRect(0,0,W,boxY);
+  drawNovelFx(chap.bg, boxY);                              // жива анімація розділу
   if(chap.bg===8 || chap.bg===5) drawNovelGuests(boxY);   // весілля / сватання — гості з вами
   if(chap.bg===1){                                         // тіндер: анімована картка свайпається вправо
     const cyc = (game.t % 140) / 140;                      // цикл ~2.3с
