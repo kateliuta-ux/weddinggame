@@ -3595,6 +3595,8 @@ function drawCredits(){
     ctx.fillRect((i*53)%W, (i*71)%H, 2, 2); }
   const scroll = game.phaseT*0.9;
   ctx.textAlign='center';
+  ctx.fillStyle='rgba(232,138,160,.9)'; ctx.font='bold 9px monospace';
+  ctx.fillText('· ПЕРЕЗВА · гуляння після весілля ·', W/2, 28);
   creditsList().forEach(([big, small], i)=>{
     const y = H + i*26 - scroll;
     if(y<-20||y>H+20) return;
@@ -6431,7 +6433,7 @@ function render(){
       drawSitcom();
       break;
     case 'cap1':
-      drawCaption('КИЇВ · 2021 · ЩЕ ДО ВІЙНИ', 'на зйомці шоу вони побачились уперше', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
+      drawCaption('КИЇВ · 2021 · ЩЕ ДО ВІЙНИ', 'вечорниці — де молодь сходилась за ділом. у наших це зйомка', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'set': {
       const sh = game.shoot || {sub:W/2, vf:W/2, focus:0, dir:1, done:false};
@@ -6450,19 +6452,19 @@ function render(){
       break;
     }
     case 'capMont':
-      drawCaption('ПІСЛЯ ЗЙОМКИ · 2021', 'Катя монтує те шоу (воно так і не вийде)', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
+      drawCaption('ПІСЛЯ ЗЙОМКИ · 2021', 'оглядини: дивляться, хто що вміє. Катине ремесло — монтаж', 'ОГЛЯДИНИ · РЕМЕСЛО МОЛОДОЇ');
       break;
     case 'montage':
       drawMontage();
       break;
     case 'capBand':
-      drawCaption('ТОГО Ж РОКУ', 'Діма грає у гурті SPACE SPICE BOY', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
+      drawCaption('ТОГО Ж РОКУ', 'а Дімине ремесло — синтезатори і сцена: SPACE SPICE BOY', 'ОГЛЯДИНИ · РЕМЕСЛО МОЛОДОГО');
       break;
     case 'band':
       drawBand();
       break;
     case 'cap2':
-      drawCaption('СЕРПЕНЬ 2022 · ВЖЕ ІНШЕ ЖИТТЯ', 'війна все змінила. а тіндер звів їх — удруге', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
+      drawCaption('СЕРПЕНЬ 2022 · ВЖЕ ІНШЕ ЖИТТЯ', 'війна все змінила. сучасні вечорниці звуться тіндер', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'tinder':
     case 'swipe':
@@ -6473,7 +6475,7 @@ function render(){
       drawMatch();
       break;
     case 'cap3':
-      drawCaption('ЗА КІЛЬКА ДНІВ', 'Пейзажна алея · перше побачення', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
+      drawCaption('ЗА КІЛЬКА ДНІВ', 'на вечорницях годилось частувати. у нас — кокосове темне', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
     case 'date': {
       const camX = Math.round(game.camX);
@@ -6499,13 +6501,13 @@ function render(){
       drawBattle();
       break;
     case 'cap4':
-      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'війна розкидає: Катя на місяць у Лондоні — 11 223 повідомлення', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
+      drawCaption('ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН', 'женихання здавна велось листами. у нас — 11 223 повідомлення', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
       break;
     case 'run':
       drawRun();
       break;
     case 'capK':
-      drawCaption('ОСІНЬ 2023 · БІЛОГОРОДКА', 'у дворі друга Дана їх знайшла киця Кітана', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
+      drawCaption('ОСІНЬ 2023 · БІЛОГОРОДКА', 'пара заводить перше спільне господарство: кицю Кітану', 'ЧАСТИНА ДРУГА · ЖЕНИХАННЯ');
       break;
     case 'kitana':
       drawKitanaScene();
@@ -6517,7 +6519,7 @@ function render(){
       drawSvat();
       break;
     case 'capS':
-      drawCaption('ЛЮТИЙ 2026 · ПОЗНЯКИ', game.pov==='dima' ? 'Діма ховає вдома коробочку з каблучкою' : 'вдома зʼявилась дивна коробочка. Катя «нічого не бачила»', 'ЧАСТИНА ЧЕТВЕРТА · ЗАРУЧИНИ');
+      drawCaption('ЛЮТИЙ 2026 · ПОЗНЯКИ', game.pov==='dima' ? 'перед заручинами дари ховають: Діма ховає коробочку' : 'перед заручинами дари ховають. Катя «нічого не бачила»', 'ЧАСТИНА ЧЕТВЕРТА · ЗАРУЧИНИ');
       break;
     case 'secret':
       drawSecret();
@@ -6529,7 +6531,7 @@ function render(){
       drawProp();
       break;
     case 'cap7':
-      drawCaption('16 ЧЕРВНЯ 2026', 'подають заяву — так, у Дії', 'ЧАСТИНА ПʼЯТА · РОЗПИС');
+      drawCaption('16 ЧЕРВНЯ 2026', 'розпис — по-сучасному: заява в Дії', 'ЧАСТИНА ПʼЯТА · РОЗПИС');
       break;
     case 'diia':
       drawDiia();
