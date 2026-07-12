@@ -5745,6 +5745,24 @@ function finishGame(){
       '<span style="opacity:.8">місце й час підтвердимо особисто ближче до дати</span>' + surn + more;
   }
   stopChip(); if(!musicMuted) playChip('planeta');   // фінальна музика не лупиться на екрані запрошення
+  // автолист із запрошенням на пошту гостя (в кінці гри)
+  setTimeout(async ()=>{
+    if(!localStorage.getItem('wed-email') && !localStorage.getItem('wed-invite-mailed')){
+      const es=document.getElementById('email-screen');
+      es.querySelector('.s-head').innerHTML='📮 Куди надіслати запрошення?<span>лист прилетить одразу — з місцем, часом і посиланням</span>';
+      es.classList.remove('hidden');
+      document.getElementById('email-go').addEventListener('click', async ()=>{
+        setTimeout(async ()=>{ es.classList.add('hidden');
+          const res=await sendInvitationEmail();
+          if(res==='sent') alert('✉️ Запрошення вже летить на твою пошту!');
+        }, 1500);
+      }, {once:true});
+    } else {
+      const res = await sendInvitationEmail();
+      if(res==='sent'){ const b=document.getElementById('inv-body');
+        if(b) b.innerHTML += '<br><span style="color:#8fd07a;font-size:.9em">✉️ копія запрошення надіслана на твою пошту</span>'; }
+    }
+  }, 1800);
   elEnd.classList.remove('hidden');
   elHud.classList.add('hidden');
   document.getElementById('watch-hint').classList.add('hidden');
@@ -8253,6 +8271,39 @@ function kickMusic(){
 addEventListener('pointerdown', kickMusic, true);
 addEventListener('keydown', kickMusic, true);
 
+/* ── АВТОЛИСТ ІЗ ЗАПРОШЕННЯМ у кінці гри (через EmailJS) ──
+   Оживає, коли Катя вставить ключі зі свого акаунта emailjs.com (див. EMAILJS_SETUP.md) */
+const EMAILJS = {
+  service: '',        // TODO: Service ID з EmailJS
+  template: '',       // TODO: Template ID
+  pubkey: '',         // TODO: Public Key
+};
+async function sendInvitationEmail(){
+  if(!EMAILJS.service || !EMAILJS.template || !EMAILJS.pubkey) return 'noconfig';
+  const email = localStorage.getItem('wed-email'); if(!email) return 'noemail';
+  if(localStorage.getItem('wed-invite-mailed')) return 'already';
+  const name = (localStorage.getItem('wed-player-name')||'Гість').trim();
+  const v = guestVenue();
+  const blocks = [];
+  if(v!=='khv') blocks.push(SLOTS.A.what+' — '+SLOTS.A.where+', '+SLOTS.A.when);
+  if(v!=='sofi') blocks.push(SLOTS.B.what+' — '+SLOTS.B.where+', '+SLOTS.B.when);
+  try{
+    const r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.pubkey,
+        template_params: {
+          to_email: email, guest_name: name,
+          venue_info: blocks.join('\n'),
+          dress_code: (typeof DRESS_CODE!=='undefined' && DRESS_CODE!=='—') ? DRESS_CODE : 'підкажемо ближче до дати',
+          game_link: 'https://kateliuta-ux.github.io/weddinggame/',
+        },
+      }),
+    });
+    if(r.ok){ localStorage.setItem('wed-invite-mailed','1'); return 'sent'; }
+    return 'fail';
+  }catch(e){ return 'fail'; }
+}
 /* ── збір пошти при першому відкритті (копія запрошення + новини гри) ── */
 async function saveEmail(email){
   if(TEST_MODE) return true;
@@ -8287,6 +8338,7 @@ document.getElementById('email-go').addEventListener('click', async ()=>{
   const ok = await saveEmail(v);
   if(ok){
     localStorage.setItem('wed-email-asked','1');
+    localStorage.setItem('wed-email', v);
     st.textContent='✓ дякуємо! запрошення прилетить на '+v;
     setTimeout(()=> document.getElementById('email-screen').classList.add('hidden'), 1400);
   } else st.textContent='не вдалось зберегти — спробуй пізніше (або грай далі, це не обовʼязково)';
