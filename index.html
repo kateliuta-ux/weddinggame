@@ -2064,8 +2064,13 @@ function drawBeer(){
     if(b.picked===i && !be.ok){ ctx.strokeStyle='#e0555f'; ctx.lineWidth=2; ctx.strokeRect(r.x-3,r.y-3,r.w+6,r.h+6); }
     if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-4,r.y-4,r.w+8,r.h+8); }
   });
-  drawCaption('Яке пиво любить Катя? Тапни банку', b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
-    : b.wrong>0 ? 'не те… вона любить темне, кокосове. Тапни ще' : 'тапни банку з її улюбленим — і подаруй 🍺');
+  // підказка — ВЕРХНЯ СМУЖКА (не drawCaption: та малює повноекранну чорну картку!)
+  const sub = b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
+    : b.wrong>0 ? 'не те… вона любить темне, кокосове. Тапни ще' : 'тапни банку з її улюбленим — і подаруй 🍺';
+  ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,16,W,32);
+  ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.textAlign='center'; ctx.fillText('Яке пиво любить Катя? Тапни банку', W/2, 30);
+  ctx.fillStyle = b.okT>0?'#8fd07a':(b.wrong>0?'#e0959f':'#e8e2d0'); ctx.font='8px monospace'; ctx.fillText(sub, W/2, 42);
+  ctx.textAlign='left';
 }
 function startBattle(){
   game.battle = {
