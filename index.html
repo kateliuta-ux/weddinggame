@@ -8676,9 +8676,12 @@ async function sendInvitationEmail(){
         service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.pubkey,
         template_params: {
           to_email: email, guest_name: name,
-          venue_info: blocks.join('\n'),
+          venue_info: blocks.join('\n') +
+            '\n🌍 Трансляція церемонії (для тих, хто не поруч): ' +
+            (STREAM_URL || 'посилання надішлемо ближче до дати'),
           dress_code: (typeof DRESS_CODE!=='undefined' && DRESS_CODE!=='—') ? DRESS_CODE : 'підкажемо ближче до дати',
           game_link: 'https://kateliuta-ux.github.io/weddinggame/',
+          stream_link: STREAM_URL || 'посилання надішлемо ближче до дати',
         },
       }),
     });
