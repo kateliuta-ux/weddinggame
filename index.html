@@ -4312,7 +4312,17 @@ function playChip(key){
   el.currentTime = 0; el.play().catch(()=>{});
   chipKey = key;
 }
-function stopChip(){ if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause(); chipKey = null; }
+function stopChip(){
+  // м'яка зупинка: швидкий фейд-аут → пауза (без заїкань і «зависання» треку)
+  const key = chipKey; chipKey = null;
+  if(!key || !bgmEls[key]) return;
+  const el = bgmEls[key];
+  try{ bgmFadeTo(0, 180); }catch(_){}
+  setTimeout(()=>{
+    // якщо за цей час трек не перезапустили — ставимо на паузу
+    if(chipKey !== key){ try{ el.pause(); }catch(_){} }
+  }, 200);
+}
 function stopMusic(){ if(chipKey && bgmEls[chipKey]) bgmEls[chipKey].pause(); }  // пауза поточного
 function startMusic(){}                                   // сумісність (весілля йде через chipForPhase)
 function setMute(m){
