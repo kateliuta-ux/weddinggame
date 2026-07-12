@@ -3055,18 +3055,43 @@ function updateProp(){
   }
 
   if(p.step==='rummage'){
+    if(game.pov==='dima'){
+      // ── пошук у рюкзаку: тягни речі, поки не знайдеш коробочку ──
+      if(!p.rum){
+        const stuff=['шкарпетка (чиста?)','павербанк 3%','жуйка з 2019','ключі від студії','медіатор','кабель від нічого'];
+        for(let i=stuff.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=stuff[i]; stuff[i]=stuff[j]; stuff[j]=t; }
+        const items=stuff.slice(0,5).map((n,i)=>({name:n, box:false, taken:false, flyT:0,
+          x: W/2-78+(i%3)*56, y: Math.round(H*0.30)+((i/3)|0)*52 }));
+        const bi=(2+Math.random()*3)|0;                     // коробочка не найпершим тапом
+        items.splice(bi,0,{name:'КОРОБОЧКА!', box:true, taken:false, flyT:0,
+          x: W/2-78+(bi%3)*56, y: Math.round(H*0.30)+((bi/3)|0)*52});
+        items.forEach((it,i)=>{ it.x=W/2-78+(i%3)*56; it.y=Math.round(H*0.30)+((i/3)|0)*52; });
+        p.rum={items, done:false};
+      }
+      const r=p.rum;
+      r.items.forEach(it=>{ if(it.flyT>0){ it.flyT++; } });
+      if(game.watch){
+        if((game.phaseT%50)===0){ const it=r.items.find(q=>!q.taken); if(it){ it.taken=true; it.flyT=1; if(it.box) r.done=true; } }
+      } else if(game._tapPos){
+        const tp=game._tapPos; game._tapPos=null;
+        for(const it of r.items){
+          if(!it.taken && Math.abs(tp.x-it.x)<26 && Math.abs(tp.y-it.y)<24){
+            it.taken=true; it.flyT=1; try{sfxScore(it.box?880:330);}catch(_){}
+            if(it.box) r.done=true;
+            break;
+          }
+        }
+      }
+      if(r.done && !r._t) r._t=0;
+      if(r.done){ r._t++; if(r._t>55){ p.step='box'; p.boxT=0; } }
+      return;
+    }
+    // ПОВ Каті: «роби здивоване обличчя» — швидкі тапи, як було
     if(game.watch) p.meter += 1.2;
     else {
       p.meter = Math.max(0, p.meter - 0.12);
-      if(input.actionEdge){
-        p.meter += 7; input.actionEdge = false;
-        for(let i=0;i<3;i++) p.particles.push({
-          x:196, y:126, vx:(Math.random()-0.5)*3, vy:-Math.random()*2.4, life:24,
-        });
-      }
+      if(input.actionEdge){ p.meter += 7; input.actionEdge = false; }
     }
-    p.particles.forEach(q=>{ q.x+=q.vx; q.y+=q.vy; q.vy+=0.12; q.life--; });
-    p.particles = p.particles.filter(q=>q.life>0);
     if(p.meter>=100){ p.step='box'; p.boxT=0; }
     return;
   }
@@ -3281,20 +3306,49 @@ function drawProp(){
   }
 
   if(p.step==='rummage'){
-    const label = game.pov==='dima' ? 'КОПОШИСЬ У РЮКЗАКУ!' : 'РОБИ ЗДИВОВАНЕ ОБЛИЧЧЯ!';
+    const label = game.pov==='dima' ? 'ЗНАЙДИ КОРОБОЧКУ В РЮКЗАКУ!' : 'РОБИ ЗДИВОВАНЕ ОБЛИЧЧЯ!';
     const sub = game.pov==='dima' ? 'вона ж нічого не підозрює (підозрює)' : 'ти ж нічого не знала (знала)';
-    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(50,8+HUD_Y,220,36);
+    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(40,8+HUD_Y,240,36);
     ctx.fillStyle = '#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
     ctx.fillText(label, W/2, 20+HUD_Y);
     ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
     ctx.fillText(sub, W/2, 30+HUD_Y);
-    ctx.fillStyle = '#333'; ctx.fillRect(80,34+HUD_Y,160,7);
-    ctx.fillStyle = game.pov==='dima' ? COL.sage : COL.rose;
-    ctx.fillRect(80,34+HUD_Y,160*Math.min(1,p.meter/100),7);
-    ctx.fillStyle = '#c9c4b4';
-    p.particles.forEach(q=> ctx.fillRect(q.x, q.y, 2, 2));      // шкарпетки і зарядки летять
-    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
-    drawHint(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
+    if(game.pov==='dima' && p.rum){
+      // рюкзак крупним планом
+      const bx=W/2-102, by=Math.round(H*0.22), bw=204, bh=150;
+      ctx.fillStyle='#141018'; ctx.fillRect(bx-4,by-4,bw+8,bh+8);
+      ctx.fillStyle='#3a4a6a'; ctx.fillRect(bx,by,bw,bh);                       // тканина рюкзака
+      ctx.fillStyle='#2e3c58';
+      for(let k=0;k<18;k++) ctx.fillRect(bx+(k*29)%bw, by+(k*41)%bh, 8, 2);      // шви
+      ctx.fillStyle='#1c2436'; ctx.beginPath(); ctx.ellipse(W/2, by+8, bw*0.46, 12, 0, 0, 7); ctx.fill();  // отвір
+      ctx.fillStyle='#d8b25a'; ctx.fillRect(bx+bw/2-3, by-12, 6, 8);            // застібка
+      // речі-горбики
+      p.rum.items.forEach(it=>{
+        if(it.taken && it.flyT>26) return;
+        const fy = it.taken ? it.y - it.flyT*2.4 : it.y;
+        const al = it.taken ? Math.max(0, 1-it.flyT/26) : 1;
+        ctx.globalAlpha = al;
+        if(!it.taken){
+          ctx.fillStyle = '#4a5c82'; ctx.beginPath(); ctx.ellipse(it.x, it.y, 22, 16, 0, 0, 7); ctx.fill();
+          ctx.fillStyle = '#5c7098'; ctx.beginPath(); ctx.ellipse(it.x-4, it.y-4, 10, 6, 0, 0, 7); ctx.fill();
+          ctx.fillStyle = '#f4e8c8'; ctx.font='bold 11px monospace'; ctx.textAlign='center'; ctx.fillText('?', it.x, it.y+4);
+        } else {
+          ctx.fillStyle = it.box ? '#f4cf5e' : '#c9c4b4';
+          ctx.font = (it.box?'bold 10px':'8px')+' monospace'; ctx.textAlign='center';
+          ctx.fillText(it.name, Math.max(52, Math.min(W-52, it.x)), fy);
+          if(it.box){ ctx.fillStyle='#2e3440'; ctx.fillRect(it.x-7, fy+6, 14, 9); ctx.fillStyle='#d8b25a'; ctx.fillRect(it.x-1, fy+4, 2, 12); }
+        }
+        ctx.globalAlpha = 1;
+      });
+      ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace';
+      drawHint(game.watch?'':'тапай горбики — щось точно не шкарпетка', W/2, by+bh+22);
+    } else {
+      ctx.fillStyle = '#333'; ctx.fillRect(80,34+HUD_Y,160,7);
+      ctx.fillStyle = COL.rose;
+      ctx.fillRect(80,34+HUD_Y,160*Math.min(1,p.meter/100),7);
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font='9px monospace';
+      drawHint(game.watch?'':(isTouch?'тапай А швидко':'тисни ПРОБІЛ швидко'), W/2, H-6);
+    }
     return;
   }
 
@@ -5379,7 +5433,7 @@ cv.addEventListener('pointerdown', e=>{
   }
   else if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
   else if(game.phase==='tinder'){ game._swipeDrag = canvasPos(e).x; game._swipeReleased = false; }
-  else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
+  else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers'||game.prop.step==='rummage') && !game.dialog){
     game._tapPos = canvasPos(e);
   }
   else if(game.phase==='band'){
