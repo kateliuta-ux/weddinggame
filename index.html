@@ -922,6 +922,10 @@ const GUEST_CAMEOS = {
   ],
 };
 function guestCameo(sceneKey){
+  // режим молодят: показати ВСІ персональні сцени гостей цієї точки сюжету
+  if(typeof coupleMode!=='undefined' && coupleMode){
+    return (GUEST_CAMEOS[sceneKey]||[]).flatMap(c=>c.lines);
+  }
   const raw = localStorage.getItem('wed-player-name') || '';
   const pn = raw.toLowerCase();
   for(const c of (GUEST_CAMEOS[sceneKey]||[])){ if(c.match.test(pn)) return c.lines; }
@@ -5921,7 +5925,7 @@ function finishGame(){
   if(!game.watch){
     localStorage.setItem('wed-done-'+game.pov, '1');
     if(localStorage.getItem('wed-done-katya') && localStorage.getItem('wed-done-dima')) achUnlock('both');
-    saveScore();                                          // рейтинг для супер-призу
+    if(!coupleMode) saveScore();                          // рейтинг — лише гості, не молодята
   }
   // персональне запрошення
   const title = document.getElementById('inv-title');
@@ -5945,8 +5949,9 @@ function finishGame(){
   }
   stopChip(); if(!musicMuted) playChip('planeta');   // фінальна музика не лупиться на екрані запрошення
   // автолист із запрошенням на пошту гостя (в кінці гри)
-  const rsvpNext = ()=>{ if(!rsvp.sent && !rsvpAutoShown){ rsvpAutoShown = true; setTimeout(openRsvp, 700); } };
+  const rsvpNext = ()=>{ if(!coupleMode && !rsvp.sent && !rsvpAutoShown){ rsvpAutoShown = true; setTimeout(openRsvp, 700); } };
   setTimeout(async ()=>{
+    if(coupleMode) return;                                // молодятам не шлемо лист і не питаємо пошту
     if(!localStorage.getItem('wed-email') && !localStorage.getItem('wed-invite-mailed')){
       const es=document.getElementById('email-screen');
       es.querySelector('.s-head').innerHTML='📮 Куди надіслати запрошення?<span>лист прилетить одразу — з місцем, часом і посиланням</span>';
@@ -6468,8 +6473,11 @@ function nameSubmit(){
   startGame(pendingPov || 'katya', false);
   pendingPov = null;
 }
-/* грати за молодят: гравець — сама Катя (наречена) або Діма (наречений) */
+/* грати за молодят: гравець — сама Катя (наречена) або Діма (наречений).
+   Режим молодят: видно ВСІ камео гостей, БЕЗ анкети і БЕЗ листа на пошту. */
+let coupleMode = null;                                 // 'katya' | 'dima' | null (лише ця сесія)
 function pickCouple(who){
+  coupleMode = who;
   playerName = who==='katya' ? 'Катя' : 'Дмитро'; myGuest = null;
   CENSORED = false;                                    // молодята — повна версія
   localStorage.setItem('wed-player-name', playerName);
