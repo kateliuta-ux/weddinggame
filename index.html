@@ -2205,13 +2205,56 @@ function updateBattle(){
     flashHyper('katya', {dur:60, tint:'#3a1420', label:'…від справжнього не ухилишся'}); }
 }
 function drawBattle(){
-  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
   const b = game.battle; if(!b) return;
-  // рамка бою з вишиванковим кантом
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+  // ── БОЙОВИЩЕ У СТИЛІ ГЕРОЇВ 3 ──
+  const skyG = ctx.createLinearGradient(0,0,0,H*0.4);
+  skyG.addColorStop(0,'#7ab0d8'); skyG.addColorStop(1,'#b8d4e0');
+  ctx.fillStyle = skyG; ctx.fillRect(0,0,W,H*0.4);                       // небо
+  ctx.fillStyle='#e8eef2';                                                // хмарки
+  ctx.fillRect(40,34,34,7); ctx.fillRect(52,28,22,7); ctx.fillRect(210,52,40,7); ctx.fillRect(224,46,20,7);
+  const grG = ctx.createLinearGradient(0,H*0.4,0,H);
+  grG.addColorStop(0,'#7aa04a'); grG.addColorStop(1,'#4a7030');
+  ctx.fillStyle = grG; ctx.fillRect(0,H*0.4,W,H*0.6);                     // трава
+  // гекс-сітка поля бою (як у Героях)
+  ctx.strokeStyle='rgba(255,255,240,.22)'; ctx.lineWidth=1;
+  const hexR=16, hexH=hexR*0.866;
+  for(let row=0;row<Math.ceil(H*0.6/(hexH*2))+1;row++){
+    for(let col=-1;col<Math.ceil(W/(hexR*3))+1;col++){
+      const cx=col*hexR*3+((row&1)?hexR*1.5:0), cy=H*0.42+row*hexH*2;
+      ctx.beginPath();
+      for(let k=0;k<6;k++){ const a=Math.PI/180*(60*k+30);
+        const px=cx+hexR*Math.cos(a), py=cy+hexH*Math.sin(a)*1.155;
+        k?ctx.lineTo(px,py):ctx.moveTo(px,py); }
+      ctx.closePath(); ctx.stroke();
+    }
+  }
+  // юніти: Катя (ліворуч) і Діма (праворуч) із лічильниками загону, як у Героях
+  const uy = Math.min(H-40, BOX.y+BOX.h+34);
+  const bob2=(game.t>>4)&1;
+  drawPerson(34, uy-bob2, 'katya', 0, 1, false);
+  drawPerson(W-34, uy, 'dima', 0, -1, false);
+  [[34,'#8a3f52','1'],[W-34,'#3a4a6a','1']].forEach(([ux,c,n])=>{
+    ctx.fillStyle='#2a1f14'; ctx.fillRect(ux-8, uy+4, 22, 11);
+    ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(ux-7.5, uy+4.5, 21, 10);
+    ctx.fillStyle='#f4e8c8'; ctx.font='bold 8px monospace'; ctx.textAlign='center'; ctx.fillText(n, ux+3, uy+13);
+  });
+  // дерев'яна рамка інтерфейсу (H3)
+  ctx.strokeStyle='#5a3a1e'; ctx.lineWidth=6; ctx.strokeRect(3,3,W-6,H-6);
+  ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(8,8,W-16,H-16);
+  // арена «заклять» (зона ухиляння) — золота рамка на полі
+  ctx.fillStyle='rgba(20,26,16,.55)'; ctx.fillRect(BOX.x,BOX.y,BOX.w,BOX.h);
+  ctx.strokeStyle = '#c8a050'; ctx.lineWidth = 2;
   ctx.strokeRect(BOX.x, BOX.y, BOX.w, BOX.h);
   drawOrnament(BOX.y-8, BOX.x+2, BOX.x+BOX.w-2);
   drawOrnament(BOX.y+BOX.h+4, BOX.x+2, BOX.x+BOX.w-2);
+  // лог бою, як у Героях
+  if(!b.over){
+    ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(12,H-26,W-24,15);
+    ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(12.5,H-25.5,W-25,14);
+    ctx.fillStyle='#f4e8c8'; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillText('Дмитро атакує Несерйозністю! Катя ухиляється серцем.', W/2, H-16);
+    ctx.textAlign='left';
+  }
   // шкала НЕСЕРЙОЗНОСТІ (ховаємо після кінця бою, щоб не перекривала фінальний текст)
   if(!b.over){
     ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.textAlign='left';
