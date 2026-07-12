@@ -2880,6 +2880,37 @@ function drawSvat(){
   ctx.fillStyle = '#c98a3e'; ctx.fillRect(157,FLOOR_Y-33,19,9);  // хліб у руках Діми
   ctx.fillStyle = '#e0a85a'; ctx.fillRect(160,FLOOR_Y-33,13,4);
 
+  if(s.step==='mash' && me==='katya'){
+    // ── КРУПНИЙ ПЛАН: колупання печі (комедійний інсет) ──
+    const px2=W/2-105, py2=Math.round(H*0.16), pw2=210, ph2=170;
+    ctx.fillStyle='#141018'; ctx.fillRect(px2-4,py2-4,pw2+8,ph2+8);
+    ctx.fillStyle='#d9a05e'; ctx.fillRect(px2,py2,pw2,ph2);                       // глина печі
+    ctx.fillStyle='#c98e4c';
+    for(let k=0;k<26;k++){ ctx.fillRect(px2+(k*37)%pw2, py2+(k*53)%ph2, 6, 3); }   // фактура
+    // розпис на печі (квіти)
+    [[40,30],[160,26],[102,20]].forEach(([fx,fy])=>{
+      ctx.fillStyle='#a8323c'; ctx.fillRect(px2+fx,py2+fy,6,6);
+      ctx.fillStyle='#3F7C77'; ctx.fillRect(px2+fx+2,py2+fy+8,2,8);
+    });
+    // виколупана ямка росте з прогресом
+    const dig=Math.min(1,s.meter/100);
+    ctx.fillStyle='#8a5e30'; ctx.beginPath(); ctx.ellipse(px2+pw2*0.42, py2+ph2*0.6, 14+dig*26, 10+dig*18, 0, 0, 7); ctx.fill();
+    ctx.fillStyle='#6a4520'; ctx.beginPath(); ctx.ellipse(px2+pw2*0.42, py2+ph2*0.6, 8+dig*18, 6+dig*12, 0, 0, 7); ctx.fill();
+    // великий палець Каті колупає (рухається від тапів)
+    const poke=(game.t>>2)&1;
+    const hx2=px2+pw2*0.42+26+dig*10, hy2=py2+ph2*0.6-8-poke*7;
+    ctx.fillStyle='#eebc96'; ctx.fillRect(hx2,hy2,34,16);                          // долоня
+    ctx.fillRect(hx2-14,hy2+3,18,9);                                               // палець-колупалка
+    ctx.fillStyle='#d49a72'; ctx.fillRect(hx2-14,hy2+9,18,3);
+    ctx.fillStyle='#c9788c'; ctx.fillRect(hx2+28,hy2-2,8,20);                      // рукав вишиванки
+    // крихти летять
+    for(let k=0;k<5;k++){ const ct2=(game.t*2+k*31)%40;
+      ctx.fillStyle='rgba(138,94,48,'+(1-ct2/40)+')';
+      ctx.fillRect(px2+pw2*0.42-6+k*5, py2+ph2*0.6+6+ct2*0.8, 3, 3); }
+    ctx.fillStyle='#f4e8c8'; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillText('(так, за традицією наречена СПРАВДІ колупала піч)', W/2, py2+ph2+14);
+    ctx.textAlign='left';
+  }
   if(s.step==='mash'){
     // шкала і підказка
     const label = me==='katya' ? 'КОЛУПАЙ ПІЧ!' : 'ТРИМАЙ ХЛІБ РІВНО!';
