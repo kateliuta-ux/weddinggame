@@ -7101,7 +7101,7 @@ document.getElementById('s-wave').addEventListener('click', ()=>{
   document.getElementById('s-wave').textContent='ЗВУК: '+SMP_WAVES[smpWaveIdx][1];
   ensureAudio(); playNote(440, audioCtx.currentTime, 0.25, SMP.wave, 0.07);   // прев'ю звуку
 });
-let recMedia=null, recChunks=[], recTimer=null, recBarTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null, myTrackLoop=false;
+let recMedia=null, recChunks=[], recTimer=null, recBarTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null, myTrackLoop=false, myTrackPattern='';
 let waveAnim=null, myTrackStartT=0;
 function waveCv(){ const c=document.getElementById('s-wavecv'); return [c, c.getContext('2d')]; }
 // жива хвиля мікрофона під час запису
@@ -7137,6 +7137,34 @@ function drawTrackWave(playFrac){
   if(playFrac!=null){ g.fillStyle='#fff'; g.fillRect(Math.floor(playFrac*c.width), 0, 2, c.height); }
 }
 // та сама «діджиталізація», що в фонових треків: 9кГц + біткраш + компресор
+/* чистий рендер патерна (БЕЗ біткрашу): семплер у записі звучить як у грі */
+async function renderPatternClean(grid, loops){
+  const stepD=0.24, dur=SMP.steps*stepD*loops, sr=22050;
+  const off=new OfflineAudioContext(1, Math.ceil(dur*sr), sr);
+  for(let L=0;L<loops;L++) for(let c=0;c<SMP.steps;c++){
+    const t=L*SMP.steps*stepD + c*stepD;
+    SMP.rows.forEach((row,r)=>{ const w=grid[r][c]; if(!w) return;
+      const o=off.createOscillator(), gn=off.createGain();
+      o.type = w===true?'square':w; o.frequency.value=row.f;
+      gn.gain.setValueAtTime(0.06, t);
+      gn.gain.exponentialRampToValueAtTime(0.001, t+stepD*0.92);
+      o.connect(gn); gn.connect(off.destination); o.start(t); o.stop(t+stepD);
+    });
+  }
+  return off.startRendering();
+}
+/* мікс: чистий патерн + ДІДЖИТАЛІЗОВАНИЙ голос; довжина = рівно патерн (луп без швів) */
+function mixVoicePattern(voiceDig, patBuf){
+  const sr=patBuf.sampleRate, len=patBuf.length;
+  const out=audioCtx.createBuffer(1, len, sr);
+  const o=out.getChannelData(0), p=patBuf.getChannelData(0);
+  for(let i=0;i<len;i++) o[i]=p[i];
+  const v=voiceDig.getChannelData(0), ratio=voiceDig.sampleRate/sr;
+  for(let i=0;i<len;i++){ const j=i*ratio, j0=j|0; if(j0+1>=v.length) break;
+    const s=v[j0]+(v[j0+1]-v[j0])*(j-j0);
+    o[i]=Math.max(-1, Math.min(1, o[i]+s)); }
+  return out;
+}
 async function digitalizeBuffer(buf){
   const sr = 9000, off = new OfflineAudioContext(1, Math.ceil(buf.duration*sr), sr);
   const src = off.createBufferSource(); src.buffer = buf;
@@ -7148,7 +7176,7 @@ async function digitalizeBuffer(buf){
   src.connect(crush); crush.connect(comp); comp.connect(off.destination); src.start();
   return off.startRendering();
 }
-async function saveVoiceTrack(author, blob){
+async function saveVoiceTrack(author, blob, pattern){
   if(TEST_MODE) return true;
   const b64 = await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result.split(',')[1]); fr.readAsDataURL(blob); });
   if(b64.length > 900000) return 'big';
@@ -7157,6 +7185,7 @@ async function saveVoiceTrack(author, blob){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({fields:{
         author:{stringValue:author}, audio:{stringValue:b64},
+        pattern:{stringValue:pattern||''},
         mime:{stringValue:blob.type||'audio/webm'}, at:{integerValue:String(Date.now())},
       }}),
     });
@@ -7172,6 +7201,7 @@ async function loadVoiceTracks(){
       author: d.fields?.author?.stringValue || 'невідомий співець',
       audio: d.fields?.audio?.stringValue || '',
       mime: d.fields?.mime?.stringValue || 'audio/webm',
+      pattern: d.fields?.pattern?.stringValue || '',
       at: +(d.fields?.at?.integerValue || 0),
     })).filter(t=>t.audio && t.author!=='__selftest').sort((a,b)=> b.at-a.at);
   }catch(e){ return []; }
@@ -7185,8 +7215,17 @@ async function playVoiceTrack(t, btn){
     const bin = atob(t.audio); const arr = new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
     const buf = await audioCtx.decodeAudioData(arr.buffer);
-    const dig = await digitalizeBuffer(buf);
-    plVoiceSrc = audioCtx.createBufferSource(); plVoiceSrc.buffer = dig;
+    const dig = await digitalizeBuffer(buf);                     // цифровий — тільки голос
+    let outBuf = dig;
+    if(t.pattern){                                               // новий формат: домішуємо ЧИСТИЙ семплер
+      const grid = SMP.rows.map(()=>Array(SMP.steps).fill(null));
+      t.pattern.split(/[;,]/).forEach(tok=>{ const [n,c,w]=tok.split(':');
+        const r=SMP.rows.findIndex(row=>row.n===n);
+        if(r>=0 && c>=0 && c<SMP.steps) grid[r][+c]=(SMP_WAVES[+w||0]||SMP_WAVES[0])[0]; });
+      const pat = await renderPatternClean(grid, 2);
+      outBuf = mixVoicePattern(dig, pat);
+    }
+    plVoiceSrc = audioCtx.createBufferSource(); plVoiceSrc.buffer = outBuf;
     bgmFadeTo(BGM_VOL, 120);
     plVoiceSrc.connect(bgmMaster()); plVoiceSrc.start();
     plVoiceSrc.onended = ()=>{ plVoiceSrc=null; btn.style.opacity=1; };
@@ -7198,7 +7237,7 @@ document.getElementById('s-mysave').addEventListener('click', async ()=>{
   if(!author){ author=(prompt('Як тебе підписати в плейлисті?')||'').trim(); if(!author) return;
     localStorage.setItem('wed-player-name', author); }
   sStat('зберігаю пісню…');
-  const ok = await saveVoiceTrack(author, myTrackBlob);
+  const ok = await saveVoiceTrack(author, myTrackBlob, myTrackPattern);
   sStat(ok==='big' ? 'запис задовгий для збереження — запиши коротший (до ~30с)' :
         ok ? '✓ пісня у весільному плейлисті! (автор: '+author+')' :
         'не вдалося зберегти — спробуй пізніше (трек лишився тут)');
@@ -7210,13 +7249,12 @@ async function smpRecord(){
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     ensureAudio();
-    // МІКС: голос із мікрофона + ноти семплера → один запис
+    // пишемо ТІЛЬКИ голос: семплер потім домішується чистим (без діджиталізації)
     const dest = audioCtx.createMediaStreamDestination();
     const micSrc = audioCtx.createMediaStreamSource(stream);
     micSrc.connect(dest);
     const liveAn = audioCtx.createAnalyser(); liveAn.fftSize=1024; micSrc.connect(liveAn);
     startLiveWave(liveAn);
-    getNoteBus().connect(dest);                                  // семплер чутно в записі
     recMedia = {_ctxTap:{dest, micSrc}};                          // тимчасово, замінимо нижче
     const hasPattern = SMP.grid.some(row=>row.some(v=>v));
     if(SMP.playing) samplerStop();                                 // патерн стартуємо ПІСЛЯ відліку
@@ -7226,7 +7264,6 @@ async function smpRecord(){
     recMedia.ondataavailable = e => { if(e.data.size) recChunks.push(e.data); };
     recMedia.onstop = async ()=>{
       stream.getTracks().forEach(t=>t.stop());                   // мікрофон гаситься одразу
-      try{ getNoteBus().disconnect(recMedia._tap.dest); }catch(_){}
       try{ recMedia._tap.micSrc.disconnect(); }catch(_){}
       if(SMP.playing) samplerStop();                              // сітка стихає разом із записом
       clearTimeout(recTimer); clearInterval(recBarTimer);
@@ -7238,7 +7275,12 @@ async function smpRecord(){
         myTrackBlob = new Blob(recChunks, {type: recMedia.mimeType || 'audio/webm'});
         const raw = await myTrackBlob.arrayBuffer();
         const buf = await audioCtx.decodeAudioData(raw.slice(0));
-        myTrackBuf = await digitalizeBuffer(buf);
+        const voiceDig = await digitalizeBuffer(buf);            // цифровий — ТІЛЬКИ голос
+        if(myTrackLoop){
+          myTrackPattern = smpSerialize();                       // патерн їде в плейлист окремо
+          const pat = await renderPatternClean(SMP.grid, 2);     // семплер — чистий
+          myTrackBuf = mixVoicePattern(voiceDig, pat);
+        } else { myTrackPattern=''; myTrackBuf = voiceDig; }
         cancelAnimationFrame(waveAnim); drawTrackWave(null);
         document.getElementById('s-myplay').classList.remove('hidden');
         document.getElementById('s-mysave').classList.remove('hidden');
