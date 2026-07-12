@@ -335,6 +335,7 @@
       <button class="btn s-btn" id="s-wave" style="background:#6a5cff">ЗВУК: МЕАНДР</button>
       <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
       <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
+      <button class="btn s-btn hidden" id="s-mysave" style="background:var(--rose)">💾 ЗБЕРЕГТИ ПІСНЮ</button>
       <button class="btn s-btn" id="s-clear">ЧИСТКА</button>
       <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
@@ -6652,7 +6653,73 @@ document.getElementById('s-wave').addEventListener('click', ()=>{
   document.getElementById('s-wave').textContent='ЗВУК: '+SMP_WAVES[smpWaveIdx][1];
   ensureAudio(); playNote(440, audioCtx.currentTime, 0.25, SMP.wave, 0.07);   // прев'ю звуку
 });
-let recMedia=null, recChunks=[], recTimer=null, myTrackBuf=null, myTrackSrc=null;
+let recMedia=null, recChunks=[], recTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null;
+// та сама «діджиталізація», що в фонових треків: 9кГц + біткраш + компресор
+async function digitalizeBuffer(buf){
+  const sr = 9000, off = new OfflineAudioContext(1, Math.ceil(buf.duration*sr), sr);
+  const src = off.createBufferSource(); src.buffer = buf;
+  const crush = off.createWaveShaper();
+  const steps = 22, curve = new Float32Array(256);
+  for(let i=0;i<256;i++){ const x=i/127.5-1; curve[i]=Math.round(x*steps)/steps; }
+  crush.curve = curve;
+  const comp = off.createDynamicsCompressor();
+  src.connect(crush); crush.connect(comp); comp.connect(off.destination); src.start();
+  return off.startRendering();
+}
+async function saveVoiceTrack(author, blob){
+  if(TEST_MODE) return true;
+  const b64 = await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result.split(',')[1]); fr.readAsDataURL(blob); });
+  if(b64.length > 900000) return 'big';
+  try{
+    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fields:{
+        author:{stringValue:author}, audio:{stringValue:b64},
+        mime:{stringValue:blob.type||'audio/webm'}, at:{integerValue:String(Date.now())},
+      }}),
+    });
+    return r.ok;
+  }catch(e){ return false; }
+}
+async function loadVoiceTracks(){
+  try{
+    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=40');
+    if(!r.ok) return [];
+    const j = await r.json();
+    return (j.documents||[]).map(d=>({
+      author: d.fields?.author?.stringValue || 'невідомий співець',
+      audio: d.fields?.audio?.stringValue || '',
+      mime: d.fields?.mime?.stringValue || 'audio/webm',
+      at: +(d.fields?.at?.integerValue || 0),
+    })).filter(t=>t.audio).sort((a,b)=> b.at-a.at);
+  }catch(e){ return []; }
+}
+let plVoiceSrc=null;
+async function playVoiceTrack(t, btn){
+  ensureAudio(); stopChip();
+  if(plVoiceSrc){ try{ plVoiceSrc.stop(); }catch(_){} plVoiceSrc=null; return; }
+  btn.style.opacity=.6;
+  try{
+    const bin = atob(t.audio); const arr = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    const buf = await audioCtx.decodeAudioData(arr.buffer);
+    const dig = await digitalizeBuffer(buf);
+    plVoiceSrc = audioCtx.createBufferSource(); plVoiceSrc.buffer = dig;
+    plVoiceSrc.connect(bgmMaster()); plVoiceSrc.start();
+    plVoiceSrc.onended = ()=>{ plVoiceSrc=null; btn.style.opacity=1; };
+  }catch(e){ btn.style.opacity=1; }
+}
+document.getElementById('s-mysave').addEventListener('click', async ()=>{
+  if(!myTrackBlob) return;
+  let author = localStorage.getItem('wed-player-name') || '';
+  if(!author){ author=(prompt('Як тебе підписати в плейлисті?')||'').trim(); if(!author) return;
+    localStorage.setItem('wed-player-name', author); }
+  sStat('зберігаю пісню…');
+  const ok = await saveVoiceTrack(author, myTrackBlob);
+  sStat(ok==='big' ? 'запис задовгий для збереження — запиши коротший (до ~30с)' :
+        ok ? '✓ пісня у весільному плейлисті! (автор: '+author+')' :
+        'не вдалося зберегти — спробуй пізніше (трек лишився тут)');
+});
 const sStat = t => { document.getElementById('s-status').textContent = t; };
 async function smpRecord(){
   const btn=document.getElementById('s-rec');
@@ -6668,20 +6735,13 @@ async function smpRecord(){
       sStat('обробляю запис…');
       try{
         ensureAudio();
-        const raw = await new Blob(recChunks).arrayBuffer();
-        const buf = await audioCtx.decodeAudioData(raw);
-        // діджиталізація: рендер на 9кГц + біткраш-квантування (як фонові треки)
-        const sr = 9000, off = new OfflineAudioContext(1, Math.ceil(buf.duration*sr), sr);
-        const src = off.createBufferSource(); src.buffer = buf;
-        const crush = off.createWaveShaper();
-        const steps = 22, curve = new Float32Array(256);
-        for(let i=0;i<256;i++){ const x=i/127.5-1; curve[i]=Math.round(x*steps)/steps; }
-        crush.curve = curve;
-        const comp = off.createDynamicsCompressor();
-        src.connect(crush); crush.connect(comp); comp.connect(off.destination); src.start();
-        myTrackBuf = await off.startRendering();
+        myTrackBlob = new Blob(recChunks, {type: recMedia.mimeType || 'audio/webm'});
+        const raw = await myTrackBlob.arrayBuffer();
+        const buf = await audioCtx.decodeAudioData(raw.slice(0));
+        myTrackBuf = await digitalizeBuffer(buf);
         document.getElementById('s-myplay').classList.remove('hidden');
-        sStat('готово! «▶ МІЙ ТРЕК» — послухати свій діджиталізований запис ('+Math.round(myTrackBuf.duration)+'с)');
+        document.getElementById('s-mysave').classList.remove('hidden');
+        sStat('готово! «▶ МІЙ ТРЕК» — послухати · «💾 ЗБЕРЕГТИ ПІСНЮ» — у весільний плейлист ('+Math.round(myTrackBuf.duration)+'с)');
       }catch(e){ sStat('не вдалось обробити запис — спробуй ще раз'); }
       recMedia=null;
     };
@@ -6789,9 +6849,19 @@ async function openPlaylist(fromSampler){
   const st = document.getElementById('pl-status');
   list.innerHTML = ''; st.textContent = 'завантажую…';
   const tracks = await loadTracks();
-  if(!tracks){ st.textContent = 'плейлист ще не відкрито — зазирни пізніше 🎶'; return; }
-  if(!tracks.length){ st.textContent = 'поки порожньо. Стань першим автором!'; return; }
-  st.textContent = tracks.length + ' мелод' + (tracks.length===1?'ія':(tracks.length<5?'ії':'ій')) + ' від гостей';
+  const voices = await loadVoiceTracks();
+  if(!tracks && !voices.length){ st.textContent = 'плейлист ще не відкрито — зазирни пізніше 🎶'; return; }
+  if((!tracks || !tracks.length) && !voices.length){ st.textContent = 'поки порожньо. Стань першим автором!'; return; }
+  const total = (tracks?tracks.length:0) + voices.length;
+  st.textContent = total + ' твор' + (total===1?'':'и'+(total<5?'':'ів')) + ' від гостей';
+  voices.forEach(t=>{
+    const row = document.createElement('button');
+    row.className='btn';
+    row.style.cssText='background:#3a2f42;display:flex;justify-content:space-between;gap:8px';
+    row.innerHTML='<span>▶ '+t.author.replace(/</g,'&lt;')+'</span><span style="opacity:.55">🎤 пісня</span>';
+    row.addEventListener('click', ()=> playVoiceTrack(t, row));
+    list.appendChild(row);
+  });
   tracks.forEach(t=>{
     const row = document.createElement('button');
     row.className = 'btn';
