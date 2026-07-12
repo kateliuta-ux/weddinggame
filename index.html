@@ -350,6 +350,8 @@
     <div id="s-recbar" class="hidden" style="width:min(88%,420px);height:10px;background:#2b2b38;border:2px solid #000">
       <div id="s-recfill" style="height:100%;width:0%;background:var(--rose)"></div>
     </div>
+    <canvas id="s-wavecv" width="420" height="46" class="hidden"
+      style="width:min(88%,420px);height:46px;background:#16121c;border:2px solid #000;image-rendering:pixelated"></canvas>
     <div id="s-status" style="color:#bcb7a8;font-size:12.5px;min-height:14px"></div>
   </div>
 
@@ -6891,6 +6893,40 @@ document.getElementById('s-wave').addEventListener('click', ()=>{
   ensureAudio(); playNote(440, audioCtx.currentTime, 0.25, SMP.wave, 0.07);   // прев'ю звуку
 });
 let recMedia=null, recChunks=[], recTimer=null, recBarTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null, myTrackLoop=false;
+let waveAnim=null, myTrackStartT=0;
+function waveCv(){ const c=document.getElementById('s-wavecv'); return [c, c.getContext('2d')]; }
+// жива хвиля мікрофона під час запису
+function startLiveWave(analyser){
+  const [c,g]=waveCv(); c.classList.remove('hidden');
+  const data=new Uint8Array(analyser.fftSize);
+  cancelAnimationFrame(waveAnim);
+  (function loop(){
+    analyser.getByteTimeDomainData(data);
+    g.fillStyle='#16121c'; g.fillRect(0,0,c.width,c.height);
+    g.fillStyle='#e0555f';
+    const step=Math.floor(data.length/c.width)||1;
+    for(let x=0;x<c.width;x++){
+      const v=(data[x*step]-128)/128, h=Math.max(2,Math.abs(v)*c.height*0.9);
+      g.fillRect(x, (c.height-h)/2, 1, h);
+    }
+    waveAnim=requestAnimationFrame(loop);
+  })();
+}
+// статична форма готового треку (+ бігунок відтворення)
+function drawTrackWave(playFrac){
+  const [c,g]=waveCv(); if(!myTrackBuf) return;
+  c.classList.remove('hidden');
+  const ch=myTrackBuf.getChannelData(0), n=ch.length, spp=Math.floor(n/c.width)||1;
+  g.fillStyle='#16121c'; g.fillRect(0,0,c.width,c.height);
+  for(let x=0;x<c.width;x++){
+    let mn=1,mx=-1;
+    for(let i=x*spp;i<(x+1)*spp && i<n;i+=8){ const v=ch[i]; if(v<mn)mn=v; if(v>mx)mx=v; }
+    const y1=(1-mx)/2*c.height, y2=(1-mn)/2*c.height;
+    g.fillStyle = (playFrac!=null && x/c.width<=playFrac) ? '#f4cf5e' : '#3F7C77';
+    g.fillRect(x, y1, 1, Math.max(2,y2-y1));
+  }
+  if(playFrac!=null){ g.fillStyle='#fff'; g.fillRect(Math.floor(playFrac*c.width), 0, 2, c.height); }
+}
 // та сама «діджиталізація», що в фонових треків: 9кГц + біткраш + компресор
 async function digitalizeBuffer(buf){
   const sr = 9000, off = new OfflineAudioContext(1, Math.ceil(buf.duration*sr), sr);
@@ -6969,6 +7005,8 @@ async function smpRecord(){
     const dest = audioCtx.createMediaStreamDestination();
     const micSrc = audioCtx.createMediaStreamSource(stream);
     micSrc.connect(dest);
+    const liveAn = audioCtx.createAnalyser(); liveAn.fftSize=1024; micSrc.connect(liveAn);
+    startLiveWave(liveAn);
     getNoteBus().connect(dest);                                  // семплер чутно в записі
     recMedia = {_ctxTap:{dest, micSrc}};                          // тимчасово, замінимо нижче
     const hasPattern = SMP.grid.some(row=>row.some(v=>v));
@@ -6993,6 +7031,7 @@ async function smpRecord(){
         const raw = await myTrackBlob.arrayBuffer();
         const buf = await audioCtx.decodeAudioData(raw.slice(0));
         myTrackBuf = await digitalizeBuffer(buf);
+        cancelAnimationFrame(waveAnim); drawTrackWave(null);
         document.getElementById('s-myplay').classList.remove('hidden');
         document.getElementById('s-mysave').classList.remove('hidden');
         sStat(myTrackLoop
@@ -7028,6 +7067,14 @@ document.getElementById('s-myplay').addEventListener('click', ()=>{
   myTrackSrc.loop = myTrackLoop;                                  // 2-коловий запис крутиться лупом
   bgmFadeTo(BGM_VOL, 120);                                        // stopChip міг лишити майстер на 0 — повертаємо звук
   myTrackSrc.connect(bgmMaster()); myTrackSrc.start();
+  myTrackStartT = audioCtx.currentTime;
+  cancelAnimationFrame(waveAnim);
+  (function ph(){
+    if(!myTrackSrc){ drawTrackWave(null); return; }
+    const fr=((audioCtx.currentTime-myTrackStartT)/myTrackBuf.duration)%1;
+    drawTrackWave(fr);
+    waveAnim=requestAnimationFrame(ph);
+  })();
   document.getElementById('s-myplay').textContent = myTrackLoop ? '⏹ СТОП (луп 🔁)' : '⏹ СТОП';
   myTrackSrc.onended = ()=>{ myTrackSrc=null; document.getElementById('s-myplay').textContent='▶ МІЙ ТРЕК'; };
 });
