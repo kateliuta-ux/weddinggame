@@ -462,6 +462,18 @@
     .pm-face{ width:76px; height:76px; image-rendering:pixelated; border:3px solid #fff; object-fit:cover; background:#20202a }
   </style>
 
+  <div id="email-screen" class="overlay hidden" style="background:rgba(12,12,20,.95);gap:12px;z-index:520">
+    <div class="s-head">📮 Лишити пошту?<span>надішлемо копію запрошення — і сповістимо, коли в грі зʼявиться нове</span></div>
+    <input id="email-input" type="email" maxlength="60" placeholder="твоя@пошта.com" autocomplete="email"
+      style="font-family:inherit;font-size:16px;padding:.6em;width:min(80%,320px);text-align:center;
+             background:#f8f8f3;border:3px solid #000;color:#1a1a24">
+    <div id="email-status" style="color:#bcb7a8;font-size:12px;min-height:14px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn katya" id="email-go">Лишити ✉</button>
+      <button class="btn small" id="email-skip" style="background:#55515f">Пізніше</button>
+    </div>
+    <div style="color:#8f8a7c;font-size:10px;max-width:82%;text-align:center">пошта нікому не видна — бачать лише Катя й Діма</div>
+  </div>
   <div id="name-screen" class="overlay hidden" style="background:rgba(12,12,20,.94);gap:12px">
     <div class="s-head">Як тебе звати?<span>почни вводити імʼя або прізвище — підкажемо зі списку гостей</span></div>
     <input id="name-input" type="text" maxlength="28" placeholder="напр. Оля або Приймак…" autocomplete="off"
@@ -8240,6 +8252,46 @@ function kickMusic(){
 }
 addEventListener('pointerdown', kickMusic, true);
 addEventListener('keydown', kickMusic, true);
+
+/* ── збір пошти при першому відкритті (копія запрошення + новини гри) ── */
+async function saveEmail(email){
+  if(TEST_MODE) return true;
+  try{
+    const r = await fetch(FS_BASE+'emails?key='+FB.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fields:{
+        email:{stringValue:email},
+        name:{stringValue:(localStorage.getItem('wed-player-name')||'')},
+        at:{integerValue:String(Date.now())},
+      }}),
+    });
+    return r.ok;
+  }catch(e){ return false; }
+}
+function maybeAskEmail(){
+  if(localStorage.getItem('wed-email-asked')) return;
+  setTimeout(()=>{
+    if(game.state!=='title') return;                       // не перебиваємо гру
+    document.getElementById('email-screen').classList.remove('hidden');
+  }, 2600);
+}
+document.getElementById('email-skip').addEventListener('click', ()=>{
+  localStorage.setItem('wed-email-asked','1');
+  document.getElementById('email-screen').classList.add('hidden');
+});
+document.getElementById('email-go').addEventListener('click', async ()=>{
+  const inp=document.getElementById('email-input'), st=document.getElementById('email-status');
+  const v=(inp.value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ st.textContent='перевір адресу 🙂'; return; }
+  st.textContent='зберігаю…';
+  const ok = await saveEmail(v);
+  if(ok){
+    localStorage.setItem('wed-email-asked','1');
+    st.textContent='✓ дякуємо! запрошення прилетить на '+v;
+    setTimeout(()=> document.getElementById('email-screen').classList.add('hidden'), 1400);
+  } else st.textContent='не вдалось зберегти — спробуй пізніше (або грай далі, це не обовʼязково)';
+});
+maybeAskEmail();
 
 /* ================= PWA: додати на робочий стіл ================= */
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
