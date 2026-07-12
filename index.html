@@ -6140,7 +6140,7 @@ let viberGender = 'f';                                       // 'f' жінка /
 let viberFrom = 'end';                                       // звідки відкрили (title/end)
 function viberVenue(){
   const s = GUEST ? SLOTS[GUEST.slot] : null;
-  return s ? (s.where + ' · ' + s.when) : '6 вересня 2026 · Київ';
+  return s ? (s.where + ' · ' + s.when) : '';
 }
 function inviteName(){ return ((GUEST&&GUEST.name)||localStorage.getItem('wed-player-name')||'').trim(); }
 function inviteHello(){
@@ -6152,7 +6152,9 @@ function viberRefresh(){
   const n=inviteName();
   document.getElementById('viber-hello').textContent =
     n && n.toLowerCase()!=='гість' ? (vset().hello+', '+n+'!') : vset().hello+'!';
-  document.getElementById('viber-venue').textContent = viberVenue();
+  const vv = viberVenue();
+  document.getElementById('viber-venue').textContent = vv;
+  document.getElementById('viber-venue').style.display = vv ? '' : 'none';
   document.getElementById('viber-invite').classList.toggle('male', viberGender==='m');
 }
 function openViber(fromTitle){
@@ -6228,7 +6230,8 @@ function buildViberCard(){
   // ── тексти ──
   g.textAlign='center';
   g.fillStyle = male?'#d8e4f0':'#c02a7a';
-  { const hn = inviteHello(); g.font = 'italic ' + (hn.length>18?24:hn.length>12?28:32) + 'px Georgia, serif'; g.fillText(hn, 360, 196); }
+  { const n=inviteName(); const hn = n && n.toLowerCase()!=='гість' ? (vset().hello+', '+n+'!') : vset().hello+'!';
+    g.font = 'italic ' + (hn.length>22?24:hn.length>15?28:32) + 'px Georgia, serif'; g.fillText(hn, 360, 196); }
   // каліграфічний заголовок із золотим градієнтом
   const grad = g.createLinearGradient(0,215,0,340);
   grad.addColorStop(0, male?'#f4e2a0':'#f9e9b0'); grad.addColorStop(.55, male?'#c8a050':'#d8a83c'); grad.addColorStop(1, male?'#6a4a14':'#8a5c14');
@@ -6241,8 +6244,8 @@ function buildViberCard(){
   g.fillText('Катерина  ♥  Дмитро', 360, 448);
   g.fillStyle = male?'#f4e2a0':'#a8681c'; g.font = 'bold 34px Georgia, serif';
   g.fillText('✧ 06.09.2026 ✧ Київ ✧', 360, 512);
-  g.fillStyle = male?'#d8e4f0':'#8a2a5a'; g.font = 'bold 26px Georgia, serif';
-  g.fillText(viberVenue(), 360, 560);
+  const vvn = viberVenue();
+  if(vvn){ g.fillStyle = male?'#d8e4f0':'#8a2a5a'; g.font = 'bold 26px Georgia, serif'; g.fillText(vvn, 360, 560); }
   g.fillStyle = male?'#c8d4e4':'#a0407a'; g.font = 'italic 27px Georgia, serif';
   ['Нехай ваша присутність','принесе нам щастя й любов!',"З любов'ю та повагою"].forEach((ln,i)=>
     g.fillText(ln, 360, 630+i*40));
