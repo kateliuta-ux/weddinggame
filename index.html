@@ -825,12 +825,19 @@ function chatScript(pov){
     {who:'dima', emo:'wow',    text:'А шо за тренування? Зальчик?'},
     {who:'katya',emo:'happy',  text:'Джиу-джитсу. Майже боксік)\nтільки ми душимо, а не бʼємо'},
     {who:'dima', emo:'happy',  text:'О, туди ж мій друг ходить —\nЯрослав Соколовський'},
-    {who:null,   emo:null,     text:'На концерт вона таки прийшла.\nА далі — два тижні переписок у телеграмі.'},
+    {who:null,   emo:null,     text:'На концерт вона таки прийшла.\nА далі — тижні переписок у телеграмі.'},
+    {who:'dima', emo:'normal', text:'Я не знаю, де ще пиво є)\nТи яке любиш, до речі?'},
+    {who:'katya',emo:'normal', text:'не люблю іпа, все інше люблю'},
+    {who:'katya',emo:'happy',  text:'з особливих — дуже люблю кокосове\nтемне, в Хвильовому наливають'},
+    {who:'dima', emo:'normal', text:'Андервуд коконат'},
+    {who:'katya',emo:'wow',    text:'на розливі в них теж андервуд хіба?'},
+    {who:'katya',emo:'happy',  text:'але справа в кокосі. люблю кокос'},
+    {who:'dima', emo:'wow',    text:'Тобто ти не любиш кокос як горіх?\nЧи як коканейро?'},
+    {who:'dima', emo:'wow',    text:'МЕНІ ВАЖЛИВО ЗНАТИ'},
+    {who:'katya',emo:'happy',  text:')))) ну не поняла прікола)\nа з горіхом все понятно'},
+    {who:null,   emo:null,     text:'(«Андервуд коконат» — сказав одразу.\nЗапамʼятайте цей момент.)'},
     {who:'katya',emo:'happy',  text:'в суботу пікнік — день народження\nМарічки. буду в центрі після'},
-    {who:'dima', emo:'happy',  text:'То може нарешті побачимось?\nЯ буду з пивом)'},
-    {who:'dima', emo:'wow',    text:'а яке ти любиш, до речі?'},
-    {who:'katya',emo:'happy',  text:'люблю кокосове темне,\nв Хвильовому наливають'},
-    {who:null,   emo:null,     text:'(він це запамʼятає.\nз наслідками.)'},
+    {who:'dima', emo:'happy',  text:'То може нарешті побачимось?\nЯ буду з тим самим пивом)'},
   ];
   const outro = pov==='katya' ? [
     {who:null, emo:null, text:'Так почалась найдовша переписка\nв історії цього чату.'},
@@ -6100,6 +6107,7 @@ cv.addEventListener('pointerdown', e=>{
   else if(game.phase==='svat' && game.svat){
     const pos = canvasPos(e);
     if(game.svat.step==='exam'){ game._tapPos = pos; }
+    else if(game.svat.step==='mash' && game.pov==='dima'){ game._tapPos = pos; }  // баланс хліба: лівий/правий бік екрана
     else if(Math.abs(pos.x-112) < 18 && pos.y > FLOOR_Y-50){  // тап по Кітані біля печі
       game.svat.purrT = 70;
       achUnlock('purr');
