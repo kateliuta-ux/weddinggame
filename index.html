@@ -8279,9 +8279,9 @@ addEventListener('keydown', kickMusic, true);
 /* ── АВТОЛИСТ ІЗ ЗАПРОШЕННЯМ у кінці гри (через EmailJS) ──
    Оживає, коли Катя вставить ключі зі свого акаунта emailjs.com (див. EMAILJS_SETUP.md) */
 const EMAILJS = {
-  service: '',        // TODO: Service ID з EmailJS
-  template: '',       // TODO: Template ID
-  pubkey: '',         // TODO: Public Key
+  service: 'service_hf5mf9r',
+  template: 'template_l2ygofq',
+  pubkey: '',         // TODO: повний Public Key від Каті (Account → General)
 };
 async function sendInvitationEmail(){
   if(!EMAILJS.service || !EMAILJS.template || !EMAILJS.pubkey) return 'noconfig';
