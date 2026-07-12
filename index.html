@@ -808,20 +808,19 @@ function chatScript(pov){
   // ── СПРАВЖНЯ перша переписка (Tinder → Telegram), 10–11 серпня 2022 ──
   const common = [
     {who:null,   emo:null,    text:'ПАРА З Dima Liutyi · 10.08.2022'},
-    {who:'dima', emo:'happy',  text:'Привіт!'},
     {who:'katya',emo:'wow',    text:'Привіт) Діма, а ми знайомились —\nя ж знімала Штормнадо з тобою'},
     {who:'dima', emo:'happy',  text:'Та я ж був в команді нахапченків,\nтреба було багато хапать, не памʼятаю)'},
     {who:'katya',emo:'normal', text:'Це інша зйомка, Діма'},
     {who:'dima', emo:'shy',    text:'Блін. «Штормклуб» прочитав.\nТоді все памʼятаю)'},
-    {who:'dima', emo:'normal', text:'Побачитись би вже не в кадрі)\nщо робиш на тижні?'},
-    {who:'katya',emo:'normal', text:'Можеш і зайти на концерт.\nЧи ні… в четвер тренування'},
+    {who:'dima', emo:'happy',  text:'Я, до речі, граю в гурті —\nв четвер концерт. Можеш і зайти)'},
+    {who:'katya',emo:'shy',    text:'Ой, хочу… чи ні —\nв четвер же тренування'},
     {who:'dima', emo:'wow',    text:'А шо за тренування? Зальчик?'},
     {who:'katya',emo:'happy',  text:'Джиу-джитсу. Майже боксік)\nтільки ми душимо, а не бʼємо'},
     {who:'dima', emo:'happy',  text:'О, туди ж мій друг ходить —\nЯрослав Соколовський'},
-    {who:null,   emo:null,     text:'Тіндер швидко став тісним —\nпереписка переїхала в телеграм.'},
-    {who:'dima', emo:'normal', text:'То давай після тренування?\nПосидимо на Пейзажці'},
-    {who:'katya',emo:'happy',  text:'давай) тільки попереджаю:\nя в пиві перебірлива'},
-    {who:'dima', emo:'wow',    text:'А яке любиш? щоб я знав)'},
+    {who:null,   emo:null,     text:'На концерт вона таки прийшла.\nА далі — два тижні переписок у телеграмі.'},
+    {who:'katya',emo:'happy',  text:'в суботу пікнік — день народження\nМарічки. буду в центрі після'},
+    {who:'dima', emo:'happy',  text:'То може нарешті побачимось?\nЯ буду з пивом)'},
+    {who:'dima', emo:'wow',    text:'а яке ти любиш, до речі?'},
     {who:'katya',emo:'happy',  text:'люблю кокосове темне,\nв Хвильовому наливають'},
     {who:null,   emo:null,     text:'(він це запамʼятає.\nз наслідками.)'},
   ];
@@ -949,6 +948,98 @@ function guestVenue(){
   for(const g of GUEST_VENUE){ if(g.match.test(pn)) return g.v; }
   return 'khv';                              // названий гість без Софі-мітки → вечірка у Хвильовому
 }
+function picnicScript(pov){
+  if(pov==='katya') return [
+    {who:null,    emo:null,   text:'Субота. Пікнік у парку —\nдень народження Марічки. Всі свої.'},
+    {who:null,    emo:null,   text:'«За Марічку!» — келишки дзенькають\nвдруге… і втретє.'},
+    {who:'katya', emo:'shy',  text:'Так. Мені пора. В мене…\nпобачення. НЕ ДИВІТЬСЯ ТАК!'},
+    {who:null,    emo:null,   text:'І Катя — трошки весела —\nпішла з пікніка просто на Пейзажку.'},
+  ];
+  return [
+    {who:null,    emo:null,   text:'Тим часом у Каті — пікнік:\nдень народження Марічки.'},
+    {who:'dima',  emo:'shy',  text:'(а я вже йду на Пейзажку.\nЗ пивом. З тим самим.)'},
+    {who:null,    emo:null,   text:'Вона прийде з пікніка трошки весела.\nНайкращий настрій для першого побачення.'},
+  ];
+}
+function startPicnic(){
+  game.picnic = {t:0, leave:false, kx:96, talked:false};
+  setPhase('picnic');
+}
+function updatePicnic(){
+  const pc = game.picnic; if(!pc) return;
+  pc.t++;
+  if(!pc.talked && pc.t===26){ pc.talked=true;
+    startDialog(picnicScript(game.pov), ()=>{ pc.leave=true; }); }
+  if(pc.leave){
+    pc.kx += 1.25;                                   // Катя йде з пікніка (трошки хитаючись)
+    if(pc.kx > W+24){
+      game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
+      game.npc = {x:410, dir:-1, phase:0};
+      game.camX = 0; game._dateDone = false;
+      initWalkScene('heart');
+      setPhase('cap3');
+    }
+  }
+}
+function drawPicnic(){
+  const pc = game.picnic; if(!pc) return;
+  // парк: небо, сонце, галявина
+  const sky = ctx.createLinearGradient(0,0,0,FLOOR_Y);
+  sky.addColorStop(0,'#8fc4e8'); sky.addColorStop(1,'#d8ecc8');
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle='rgba(255,240,190,.95)'; ctx.beginPath(); ctx.arc(W-52,44,15,0,7); ctx.fill();
+  ctx.fillStyle='rgba(255,240,190,.16)'; ctx.beginPath(); ctx.arc(W-52,44,27,0,7); ctx.fill();
+  ctx.fillStyle = '#7cae58'; ctx.fillRect(0,FLOOR_Y-8,W,8);
+  ctx.fillStyle = '#679a48'; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle = '#578a3c';                                       // травинки
+  for(let gx=4; gx<W; gx+=18){ ctx.fillRect(gx,FLOOR_Y-12,2,6); ctx.fillRect(gx+7,FLOOR_Y-15,2,8); }
+  drawChestnut(-8, -8, 1); drawChestnut(W+8, -8, -1);              // дерева-куліси
+  // ПЛЕД у клітинку + частування
+  const bx=W/2-66, by=FLOOR_Y+10, bw=132, bh=34;
+  ctx.fillStyle='#c94a56'; ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle='#e8dfd0';
+  for(let i=0;i<bw;i+=16) ctx.fillRect(bx+i,by,8,bh);
+  ctx.fillStyle='rgba(201,74,86,.55)';
+  for(let j=0;j<bh;j+=12) ctx.fillRect(bx,by+j,bw,6);
+  ctx.fillStyle='#8a5c34'; ctx.fillRect(bx+8,by+6,16,12);          // кошик
+  ctx.fillStyle='#6e4a28'; ctx.fillRect(bx+8,by+6,16,3);
+  ctx.fillStyle='#f4f0e4'; ctx.fillRect(bx+bw/2-8,by+8,16,8);      // ТОРТ
+  ctx.fillStyle='#e8a7b6'; ctx.fillRect(bx+bw/2-8,by+8,16,3);
+  ctx.fillStyle='#f4cf5e'; ctx.fillRect(bx+bw/2-1,by+3,2,5);       // свічка
+  ctx.fillStyle='#e07a3a'; ctx.fillRect(bx+bw/2-1,by+1,2,2);
+  ctx.fillStyle='#5a3d24'; ctx.fillRect(bx+bw-26,by+7,5,11); ctx.fillRect(bx+bw-18,by+9,5,9);  // пляшечки
+  // КУЛЬКИ на ниточках
+  [['#e05aa0',bx-12,-46],['#f4cf5e',bx+bw+10,-52],['#5a7ea6',bx+bw+22,-40]].forEach(([c,kx2,ky],i)=>{
+    const sway=Math.sin(game.t*0.04+i*2)*3;
+    ctx.strokeStyle='rgba(60,50,40,.6)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(kx2,by); ctx.quadraticCurveTo(kx2+sway,by+ky/2,kx2+sway,by+ky); ctx.stroke();
+    ctx.fillStyle=c; ctx.beginPath(); ctx.ellipse(kx2+sway,by+ky,7,9,0,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(kx2+sway-3,by+ky-5,2,3);
+  });
+  // гості пікніка (Марічка з фото, якщо селфі є)
+  const pals=[[bx-18,'#a8505f',0,['пінаєвськ','маріч']],[bx+bw+18,'#3F7C77',5,null],[bx+30,'#B58A2E',9,null],[bx+bw-30,'#5a7ea6',3,null]];
+  pals.forEach(([gx,col,off,pats],i)=>{
+    const fim = pats ? pickFace(pats) : guestFace(i);
+    drawGuest(gx, FLOOR_Y+22, col, true, game.t+off, fim, 1.4);
+    if(((game.t>>5)+i)%4===0) drawSongNote(gx, FLOOR_Y-38, off+i);
+  });
+  drawShout(bx-18, FLOOR_Y-34, ((game.t>>6)&1) ? 'З ДНЕМ НАРОДЖЕННЯ!' : 'за Марічку! 🥂');
+  // Катя: сидить зі всіма, а потім іде (трошки хитаючись)
+  const wob = pc.leave ? Math.sin(pc.kx*0.18)*2.4 : 0;
+  drawPerson(pc.leave ? pc.kx : 96, FLOOR_Y+2+wob*0.4, 'katya', pc.leave ? (pc.kx>>3) : 0, 1, false);
+  if(pc.leave){                                                     // сердечка за нею — на побачення ж!
+    if((game.t&7)===0) ctx.fillStyle='rgba(224,90,160,.8)';
+    ctx.fillStyle='rgba(224,90,160,.75)';
+    ctx.fillRect(pc.kx-14, FLOOR_Y-58-((game.t>>2)%12), 3, 3);
+  }
+  // верхня стрічка-титр (НЕ drawCaption — та малює повноекранну картку)
+  ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,14+HUD_Y,W,26);
+  ctx.fillStyle='#f4cf5e'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+  ctx.fillText('ДЕНЬ НАРОДЖЕННЯ МАРІЧКИ · пікнік', W/2, 25+HUD_Y);
+  ctx.fillStyle='#e8e2d0'; ctx.font='8px monospace';
+  ctx.fillText('субота перед першим побаченням', W/2, 35+HUD_Y);
+  ctx.textAlign='left';
+}
 function dateScript(pov){
   // обоє щойно з довгих стосунків — ішли ніби «просто на пиво» (без обіцянок)
   const first = pov==='katya' ? [
@@ -971,7 +1062,6 @@ function dateScript(pov){
     ...guestCameo('date'),          // персональне камео гостя (напр. Марічка)
     ...first,
     ...beer,
-    {who:null, emo:null, text:'(Запамʼятай і ти цей бар — «Хвильовий».\nВін ще зіграє свою роль.)'},
     {who:'dima', emo:'shy', text:'…а можна, я проведу тебе додому?'},
     {who:null, emo:null, text:'Світять над кручею ліхтарики дрібні,\nа вустонька зійшлися вперше — мов у сні.'},
     {who:null, emo:null, text:'Казали двоє: пиво, й більш нічого, ні, —\nа вже любов вилася по стерні.'},
@@ -1663,6 +1753,7 @@ const pctx = document.getElementById('portrait').getContext('2d');
 pctx.imageSmoothingEnabled = false;
 
 // офскрін-портрети для тіндер-картки та метчу
+const TINDER_K = mkImg('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');   // тіндер-фото Каті (рожеве, усміхнене — з перевірених)
 const offK = document.createElement('canvas'); offK.width=offK.height=48;
 const offD = document.createElement('canvas'); offD.width=offD.height=48;
 function refreshOffPortraits(){
@@ -1905,7 +1996,8 @@ function drawPhone(){
   ctx.fillStyle = '#eee'; ctx.fillRect(-2,-2,pw-8,116);
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,pw-12,112);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(offOf(other), 7, 6, 64, 64);
+  if(other==='katya' && headReady(TINDER_K)) ctx.drawImage(TINDER_K, 7, 6, 64, 64);
+  else ctx.drawImage(offOf(other), 7, 6, 64, 64);
   ctx.fillStyle = COL.ink; ctx.font='bold 8px monospace'; ctx.textAlign='center';
   ctx.fillText(other==='dima' ? 'Дмитро' : 'Катерина', (pw-12)/2, 84);
   ctx.font='9px monospace'; ctx.fillStyle = '#777';
@@ -2180,8 +2272,9 @@ function drawBeer(){
     if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-4,r.y-4,r.w+8,r.h+8); }
   });
   // підказка — ВЕРХНЯ СМУЖКА (не drawCaption: та малює повноекранну чорну картку!)
+  const MISS = ['хм, ні. вона б чемно промовчала і не пила','знову не те — згадай, що вона писала в чаті','таке Діма точно не приніс би. ще спроба!'];
   const sub = b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
-    : b.wrong>0 ? 'не те… вона любить темне, кокосове. Тапни ще' : 'тапни банку з її улюбленим — і подаруй 🍺';
+    : b.wrong>0 ? MISS[(b.wrong-1)%MISS.length] : 'тапни банку з її улюбленим — і подаруй 🍺';
   ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,16,W,32);
   ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
   ctx.fillText(game.pov==='dima' ? 'Пригадай, яке пиво любить Катя!' : 'Чи запамʼятав Діма твоє пиво?', W/2, 30);
@@ -5898,7 +5991,7 @@ function startGame(pov, watch){
   initWalkScene('idea');
   game.camX = 0; game.swipeX = 0; game._swipeDrag = null; game._setDone = false; game._dateDone = false;
   game.battle = null; game.tetris = null; game.run = null; game.svat = null; game.prop = null;
-  game.diia = null; game.shoot = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null; game.hyper = null;
+  game.picnic = null; game.diia = null; game.shoot = null; game.kitana = null; game.montage = null; game.band = null; game.secret = null; game.diiaSurname = null; game._tapPos = null; game._holdPtr = false; game._swipeDrag = null; game.hyper = null;
   dragTarget = null; eggParticles.length = 0; heartRain = false; stopMusic();
   elTitle.classList.add('hidden');
   elEnd.classList.add('hidden');
@@ -6512,7 +6605,7 @@ function skipScene(){
     prolog:'sitcom', sitcom:'cap1', cap1:'set',
     set: pov==='katya'?'capMont':'capBand',
     capMont:'cap2', montage:'cap2', capBand:'cap2', band:'cap2',
-    cap2:'cap3', tinder:'cap3', swipe:'cap3', match:'cap3', chat:'cap3',
+    cap2:'cap3', tinder:'cap3', swipe:'cap3', match:'cap3', chat:'cap3', picnic:'cap3',
     cap3:'cap4', date:'cap4', beer:'cap4', battle:'cap4',
     cap4:'capK', run:'capK',
     capK:'cap5', kitana:'cap5',
@@ -6682,13 +6775,9 @@ function update(){
       if(!cs) { setPhase('cap3'); break; }
       const ln = cs.lines[cs.idx];
       if(!ln){
-        // переписка дочитана → до першого побачення
-        game.player = {x:36, dir:1, walking:false, phase:0, dy:0, vy:0};
-        game.npc = {x:410, dir:-1, phase:0};
-        game.camX = 0; game._dateDone = false;
-        initWalkScene('heart');
+        // переписка дочитана → пікнік Марічки → перше побачення
         game.chatsim = null;
-        setPhase('cap3');
+        startPicnic();
         break;
       }
       if(cs.shown < ln.text.length){
@@ -6706,6 +6795,10 @@ function update(){
       }
       break;
     }
+
+    case 'picnic':
+      updatePicnic();
+      break;
 
     case 'cap3':
       if(game.phaseT > 170 || input.actionEdge) setPhase('date');
@@ -6957,6 +7050,10 @@ function render(){
     case 'chat':
       drawChatSim();
       break;
+    case 'picnic':
+      drawPicnic();
+      break;
+
     case 'cap3':
       drawCaption('ЗА КІЛЬКА ДНІВ', 'на вечорницях годилось частувати. у нас — кокосове темне', 'ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ');
       break;
