@@ -6589,19 +6589,19 @@ function render(){
     const tby = H-22;
     drawPerson(100, tby-bob, 'katya', 0, 1, false, VYSH_K);
     drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, VYSH_D);
-    { const hx=100, hy=tby-62-bob;                       // ВІНОК на маківці (над волоссям)
+    { const hx=100, hy=tby-79-bob;                       // ВІНОК на маківці (PSCALE=1.4 → голова сягає tby-74)
       ctx.fillStyle='#3f6b3a'; ctx.fillRect(hx-10,hy,20,3);                       // основа-зелень
       [['#a8323c',-9],['#f4cf5e',-4],['#e08aa0',1],['#a8323c',6]].forEach(([c,dx])=>{  // квіти
         ctx.fillStyle=c; ctx.fillRect(hx+dx,hy-3,4,4); });
       ctx.fillStyle='#fff'; ctx.fillRect(hx-2,hy-4,3,3);                          // біла квітка по центру
       // стрічки — ЛИШЕ З БОКІВ голови (за вушками), не по обличчю
       const wav=Math.sin(game.t*0.08)*2;
-      [['#a8323c',-14],['#f4cf5e',-11],['#3F7C77',10],['#e08aa0',13]].forEach(([c,dx],i)=>{
+      [['#a8323c',-15],['#f4cf5e',-12],['#3F7C77',11],['#e08aa0',14]].forEach(([c,dx],i)=>{
         ctx.fillStyle=c;
-        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 16);
-        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+17, 2, 9); });
+        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 22);
+        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+23, 2, 12); });
       ctx.fillStyle='#a8323c';                                                     // намисто (під підборіддям)
-      ctx.fillRect(hx-5,tby-32-bob,2,2); ctx.fillRect(hx-1,tby-31-bob,2,2); ctx.fillRect(hx+3,tby-32-bob,2,2);
+      ctx.fillRect(hx-6,tby-45-bob,2,2); ctx.fillRect(hx-2,tby-43-bob,3,3); ctx.fillRect(hx+3,tby-45-bob,2,2);
     }
     { const dx2=220, dy2=tby-(1-bob);                    // вишиті вставки + крайка Діми
       ctx.fillStyle='#a8323c';
