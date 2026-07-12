@@ -207,7 +207,41 @@
   @keyframes vtwinkle{0%{transform:scale(0) rotate(0);opacity:0}
     40%{transform:scale(1.3) rotate(90deg);opacity:1}100%{transform:scale(0) rotate(180deg);opacity:0}}
   /* квіткові кути картки */
-  #viber-invite.male #viber-card{background:linear-gradient(160deg,#1a2436,#2a3a52 55%,#141c2a);border-color:#c8a050}
+  /* ── КІЧ-МАКСИМУМ: боке, золота блискітка-рамка, каліграфія, декор ── */
+  #viber-card{
+    background:
+      radial-gradient(circle at 20% 25%, rgba(255,182,222,.55) 0 44px, transparent 46px),
+      radial-gradient(circle at 82% 18%, rgba(255,220,240,.5) 0 34px, transparent 36px),
+      radial-gradient(circle at 72% 74%, rgba(255,170,210,.45) 0 52px, transparent 54px),
+      radial-gradient(circle at 12% 78%, rgba(255,235,250,.55) 0 30px, transparent 32px),
+      radial-gradient(circle at 50% 45%, rgba(255,205,235,.35) 0 64px, transparent 66px),
+      linear-gradient(160deg,#ffd9ec,#ffb3d9 45%,#f9cfe4 75%,#ffe9f5) !important;
+    border:10px solid transparent !important;
+    border-image: repeating-conic-gradient(#d8a83c 0 9deg, #f9e9b0 9deg 18deg, #b8862a 18deg 27deg) 10 !important;
+    box-shadow: 0 0 0 3px #fff, 0 0 26px rgba(255,160,210,.8), inset 0 0 40px rgba(255,255,255,.5) !important;
+  }
+  .v-script{ font-family:'Snell Roundhand','Apple Chancery','Segoe Script','Comic Sans MS',cursive !important;
+    font-size:34px !important; line-height:1.15 !important; text-transform:none !important; letter-spacing:0 !important;
+    background:linear-gradient(180deg,#f9e9b0,#d8a83c 55%,#8a5c14);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    filter: drop-shadow(1px 1px 0 #fff) drop-shadow(2px 3px 2px rgba(120,60,0,.45)); }
+  .v-dove{ position:absolute; top:-6px; animation:vfloat 3.2s ease-in-out infinite; }
+  .v-dove-l{ left:-4px; } .v-dove-r{ right:-4px; animation-delay:1.6s; }
+  .v-rings{ display:block; margin:-4px auto -8px; filter:drop-shadow(0 2px 3px rgba(120,60,0,.4)); }
+  .v-glasses{ position:absolute; bottom:52px; right:2px; filter:drop-shadow(0 2px 2px rgba(120,60,0,.35)); }
+  .v-roses{ position:absolute; bottom:48px; left:0; filter:drop-shadow(0 2px 2px rgba(80,10,20,.4)); }
+  @keyframes vfloat{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+  #viber-invite.male .v-script{ background:linear-gradient(180deg,#f4e2a0,#c8a050 55%,#6a4a14);
+    -webkit-background-clip:text; background-clip:text; }
+  #viber-invite.male #viber-card{
+    background:
+      radial-gradient(circle at 24% 22%, rgba(120,160,220,.35) 0 44px, transparent 46px),
+      radial-gradient(circle at 78% 70%, rgba(90,130,190,.3) 0 52px, transparent 54px),
+      linear-gradient(160deg,#1a2436,#2a3a52 55%,#141c2a) !important;
+    border-image: repeating-conic-gradient(#c8a050 0 9deg, #f4e2a0 9deg 18deg, #8a6a2a 18deg 27deg) 10 !important;
+    box-shadow: 0 0 0 3px #0e1420, 0 0 26px rgba(200,160,80,.6), inset 0 0 40px rgba(60,80,120,.4) !important; }
+  #viber-invite.male .v-roses{ display:none; }
+  #viber-invite.male #viber-card{border-color:#c8a050}
   #viber-invite.male #viber-card::before,#viber-invite.male #viber-card::after{content:"⚜";color:#c8a050}
   #viber-invite.male .v-hello{color:#d8e4f0}
   #viber-invite.male .v-title{color:#c8a050;text-shadow:0 0 12px rgba(200,160,80,.6)}
@@ -289,7 +323,6 @@
       <button class="btn katya" id="btn-newgame">Нова гра</button>
       <button class="btn watch" data-pov="watch">Історія без ігор</button>
       <div class="btn-row">
-        <button class="btn small" id="btn-lazy">До запрошення</button>
         <button class="btn small" id="btn-sampler">Семплер</button>
       </div>
       <div class="btn-row">
@@ -342,7 +375,7 @@
       <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
       <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
       <button class="btn s-btn hidden" id="s-mysave" style="background:var(--rose)">💾 ЗБЕРЕГТИ ПІСНЮ</button>
-      <button class="btn s-btn" id="s-clear">ЧИСТКА</button>
+      <button class="btn s-btn" id="s-clear">ПОЧАТИ ЗАНОВО</button>
       <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
       <button class="btn s-btn" id="s-back">НАЗАД</button>
@@ -385,11 +418,31 @@
   <div id="viber-invite" class="hidden">
     <div id="viber-emojis"></div>
     <div id="viber-card">
-      <div class="v-top">❧&nbsp;⋆&nbsp;✿&nbsp;⋆&nbsp;❧</div>
+      <svg class="v-dove v-dove-l" viewBox="0 0 60 40" width="54" height="36"><path d="M8 22 Q18 8 34 12 Q30 4 40 2 Q38 10 46 10 Q58 10 56 18 Q54 26 40 26 L36 30 Q34 26 28 28 Q16 32 8 22Z" fill="#fff" stroke="#e8ddc8" stroke-width="1.5"/><circle cx="43" cy="8" r="1.4" fill="#8a7048"/></svg>
+      <svg class="v-dove v-dove-r" viewBox="0 0 60 40" width="54" height="36" style="transform:scaleX(-1)"><path d="M8 22 Q18 8 34 12 Q30 4 40 2 Q38 10 46 10 Q58 10 56 18 Q54 26 40 26 L36 30 Q34 26 28 28 Q16 32 8 22Z" fill="#fff" stroke="#e8ddc8" stroke-width="1.5"/><circle cx="43" cy="8" r="1.4" fill="#8a7048"/></svg>
+      <svg class="v-rings" viewBox="0 0 90 60" width="86" height="58">
+        <path d="M30 14 Q45 2 60 14 Q52 10 45 14 Q38 10 30 14Z" fill="#f6efe2" stroke="#d8c8a8" stroke-width="1.5"/>
+        <circle cx="34" cy="34" r="16" fill="none" stroke="#d8a83c" stroke-width="5"/>
+        <circle cx="34" cy="34" r="16" fill="none" stroke="#f4e2a0" stroke-width="2"/>
+        <circle cx="56" cy="36" r="14" fill="none" stroke="#c89428" stroke-width="5"/>
+        <circle cx="56" cy="36" r="14" fill="none" stroke="#f4e2a0" stroke-width="2"/>
+      </svg>
       <div class="v-hello" id="viber-hello">Дорога тьотю!</div>
-      <div class="v-title">ЗАПРОШУЄМО<br>НА ВЕСІЛЛЯ!!!</div>
+      <div class="v-title v-script">Запрошуємо<br>на весілля!</div>
       <div class="v-names">Катерина&nbsp;♥&nbsp;Дмитро</div>
       <div class="v-date">✧ 06.09.2026 ✧ Київ ✧</div>
+      <svg class="v-glasses" viewBox="0 0 80 90" width="64" height="72">
+        <path d="M18 8 Q18 34 30 38 L30 72 L20 80 L44 80 L34 72 L34 38 Q46 34 46 8 Z" fill="rgba(255,252,240,.85)" stroke="#d8c8a8" stroke-width="1.5"/>
+        <path d="M20 10 Q20 20 24 26 L40 26 Q44 20 44 10 Z" fill="#f4d98a"/>
+        <path d="M44 12 Q46 36 57 41 L59 73 L50 82 L72 80 L61 71 L59 40 Q69 34 67 10 Z" fill="rgba(255,252,240,.8)" stroke="#d8c8a8" stroke-width="1.5" transform="rotate(8 55 45)"/>
+        <circle cx="30" cy="14" r="1.5" fill="#fff"/><circle cx="36" cy="18" r="1.2" fill="#fff"/><circle cx="52" cy="20" r="1.3" fill="#fff"/>
+      </svg>
+      <svg class="v-roses" viewBox="0 0 100 60" width="88" height="53">
+        <g><circle cx="24" cy="30" r="13" fill="#c9303c"/><path d="M24 20 Q31 24 29 32 Q26 38 19 35 Q14 30 19 24 Q21 21 24 20Z" fill="#a8202c"/><circle cx="24" cy="30" r="4" fill="#8a1622"/></g>
+        <g><circle cx="52" cy="38" r="11" fill="#e05a68"/><path d="M52 30 Q58 33 56 40 Q53 45 47 42 Q43 38 47 33Z" fill="#c9404e"/><circle cx="52" cy="38" r="3.4" fill="#a82836"/></g>
+        <path d="M32 42 Q42 52 58 48" stroke="#3f6b3a" stroke-width="3" fill="none"/>
+        <path d="M38 46 Q36 54 28 55 Q33 47 38 46Z" fill="#4f7b46"/>
+      </svg>
       <div class="v-venue" id="viber-venue" style="font-family:Georgia,serif;font-size:14px;color:#7a2f8a">6 вересня 2026 · Київ</div>
       <div class="v-wish">Нехай ваша присутність<br>принесе нам щастя й любов!<br>З любов'ю та повагою</div>
       <div class="v-bottom">❧&nbsp;⋆&nbsp;✿&nbsp;⋆&nbsp;❧</div>
@@ -6256,7 +6309,7 @@ document.getElementById('watch-pov-back').addEventListener('click', ()=>{
   document.getElementById('watch-pov-menu').classList.add('hidden');
   document.querySelector('#title-screen .menu').classList.remove('hidden');
 });
-document.getElementById('btn-lazy').addEventListener('click', lazyToEnd);
+/* кнопку «До запрошення» прибрано з меню — є «Гарне запрошення» */
 function nameSubmit(){
   const v = document.getElementById('name-input').value.trim();
   const exact = RSVP_GUEST_LIST.find(g=> g.name.toLowerCase() === v.toLowerCase());
@@ -6852,7 +6905,7 @@ const SMP = {
         e.preventDefault();
         SMP.grid[r][c] = SMP.grid[r][c] ? false : (SMP.wave||'square');
         cell.classList.toggle('on', !!SMP.grid[r][c]);
-        const WCOL={square:'',triangle:'#B58A2E',sawtooth:'#A8505F',sine:'#4a7c9e'};
+        const WCOL={square:'#3F7C77',triangle:'#B58A2E',sawtooth:'#A8505F',sine:'#4a7c9e'};
         cell.style.background = SMP.grid[r][c] ? (WCOL[SMP.grid[r][c]]||'') : '';
         if(SMP.grid[r][c]){ ensureAudio(); playNote(row.f, audioCtx.currentTime, 0.22, SMP.grid[r][c], 0.06); }
       });
@@ -7009,8 +7062,7 @@ async function smpRecord(){
     getNoteBus().connect(dest);                                  // семплер чутно в записі
     recMedia = {_ctxTap:{dest, micSrc}};                          // тимчасово, замінимо нижче
     const hasPattern = SMP.grid.some(row=>row.some(v=>v));
-    if(hasPattern){ if(SMP.playing) samplerStop(); SMP.col = 0;
-      document.getElementById('s-play').click(); }                // трек стартує З ПОЧАТКУ — луп зійдеться
+    if(SMP.playing) samplerStop();                                 // патерн стартуємо ПІСЛЯ відліку
     recChunks=[];
     recMedia = new MediaRecorder(dest.stream);
     recMedia._tap = {dest, micSrc};
@@ -7039,6 +7091,16 @@ async function smpRecord(){
       }catch(e){ sStat('не вдалось обробити запис — спробуй ще раз'); }
       recMedia=null;
     };
+    // відлік 3-2-1 перед записом (з бипами)
+    btn.disabled = true;
+    for(let cd=3; cd>=1; cd--){
+      sStat('🎙 запис через… '+cd);
+      try{ playNote(440+cd*60, audioCtx.currentTime, 0.15, 'square', 0.06); }catch(_){}
+      await new Promise(r=>setTimeout(r, 650));
+    }
+    try{ playNote(880, audioCtx.currentTime, 0.2, 'square', 0.07); }catch(_){}
+    btn.disabled = false;
+    if(hasPattern){ SMP.col = 0; document.getElementById('s-play').click(); }   // патерн з нуля — синхронно із записом
     recMedia.start();
     btn.textContent='⏹ СТОП (пише…)';
     const hasP = SMP.grid.some(row=>row.some(v=>v));
@@ -7104,7 +7166,7 @@ function smpDeserialize(code){
       const wave = (SMP_WAVES[+w||0]||SMP_WAVES[0])[0];
       SMP.grid[r][+c] = wave;
       const cell = document.querySelector(`.s-cell[data-r="${r}"][data-c="${c}"]`);
-      const WCOL={square:'',triangle:'#B58A2E',sawtooth:'#A8505F',sine:'#4a7c9e'};
+      const WCOL={square:'#3F7C77',triangle:'#B58A2E',sawtooth:'#A8505F',sine:'#4a7c9e'};
       if(cell){ cell.classList.add('on'); cell.style.background = WCOL[wave]||''; }
     }
   });
