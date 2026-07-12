@@ -8021,8 +8021,17 @@ function placeholderAvatar(name){
   return c.toDataURL('image/png');
 }
 function buildPartyDeck(){
-  const guests = GUEST_FACES.map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
+  const meNameLow = (localStorage.getItem('wed-player-name')||'').trim().toLowerCase();
+  // 1) гості з фото (селфі) — завжди в колоді
+  const withPhoto = GUEST_FACES.map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
     return {kind:'guest', name:nm, tag:'гість весілля', src:(real&&real.startsWith('data:'))?real:placeholderAvatar(nm)}; });
+  // 2) решта гостей ЗІ СПИСКУ — з монограмами (їх теж можна лайкати вже зараз)
+  const haveLow = new Set(withPhoto.map(g=>g.name.toLowerCase().trim()));
+  const noPhoto = (RSVP_GUEST_LIST||[]).filter(g=> g.name && !haveLow.has(g.name.toLowerCase().trim())
+      && g.name.toLowerCase().trim()!==meNameLow)
+    .map(g=>({kind:'guest', name:g.name, tag:'гість весілля · ще без фото', src:placeholderAvatar(g.name)}));
+  for(let i=noPhoto.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=noPhoto[i]; noPhoto[i]=noPhoto[j]; noPhoto[j]=t; }
+  const guests = withPhoto.filter(g=>g.name.toLowerCase().trim()!==meNameLow).concat(noPhoto);
   for(let i=guests.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=guests[i]; guests[i]=guests[j]; guests[j]=t; }
   const deck = guests.slice(0, 14);
   // Катю й Діму НЕ свайпаємо — тіндер серед гостей весілля
@@ -8036,8 +8045,30 @@ function buildPartyDeck(){
   }
   return deck;
 }
+/* сповіщення: тебе лайкнули, поки тебе не було → червоний бейдж на кнопці Тіндер */
+async function checkMatchNotify(){
+  try{
+    const me=(localStorage.getItem('wed-player-name')||'').trim(); if(!me) return;
+    const names = await loadMyMatches(); if(!names || !names.length) return;
+    const seen = new Set(JSON.parse(localStorage.getItem('wed-matches-seen')||'[]'));
+    const fresh = names.filter(n=>!seen.has(n));
+    const btn = document.getElementById('btn-party'); if(!btn || !fresh.length) return;
+    let b = document.getElementById('party-badge');
+    if(!b){ b = document.createElement('span'); b.id='party-badge';
+      b.style.cssText='position:absolute;top:-7px;right:-7px;background:#e0355a;color:#fff;border-radius:50%;'+
+        'min-width:19px;height:19px;font-size:11px;line-height:19px;text-align:center;font-weight:bold;'+
+        'box-shadow:0 0 0 2px #1a1420;animation:vfloat 1.6s ease-in-out infinite';
+      btn.style.position='relative'; btn.appendChild(b); }
+    b.textContent = fresh.length>9 ? '9+' : ('♥'+fresh.length);
+  }catch(_){}
+}
+setTimeout(checkMatchNotify, 2200);
 function openParty(){
   partyDeck = buildPartyDeck(); partyIdx = 0; partyBusy = false; sessionMatches = [];
+  loadMyMatches().then(names=>{                                   // відкрив тіндер = побачив лайки
+    try{ localStorage.setItem('wed-matches-seen', JSON.stringify(names||[])); }catch(_){}
+    const b=document.getElementById('party-badge'); if(b) b.remove();
+  });
   // хто лайкнув тебе раніше — показуємо в шапці
   loadMyMatches().then(names=>{
     const h=document.querySelector('#party-screen .s-head span');
