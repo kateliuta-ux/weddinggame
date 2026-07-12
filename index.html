@@ -878,6 +878,8 @@ const GUEST_CAMEOS = {
       {who:null, text:'А ти, Олеже Бурий, — теж боярин славний:\nпід вінцем за друга станеш — звичай давній!'} ]},
     { match:/олег смір|сміря/, lines:[
       {who:null, text:'А ти, Олеже Сміря, — боярин Дімин вірний:\nплече в плече у день оцей безмірний!'} ]},
+    { match:/селега|ніка/, lines:[
+      {who:null, text:'А ти, Ніко Селего, — наш обряд ведеш:\nтрадиційно, щиро — кращої не знайдеш!'} ]},
     { match:/кімельфельд/, lines:[
       {who:null, text:'А ти, Анічко, з нами — у Хвильовому:\nде пиво пінне ллється по-святковому!'} ]},
     { match:/приймак/, lines:[
@@ -2575,9 +2577,10 @@ function drawVykup(){
     ctx.beginPath(); ctx.moveTo(bxm,bym); ctx.lineTo(bxm+8,bym-6); ctx.lineTo(bxm+8,bym+6); ctx.closePath(); ctx.fill();
     ctx.globalAlpha = 1;
     if(!v.done){                                                                // підпис, ЩО це за стрічка
-      ctx.fillStyle='rgba(26,18,10,.8)'; ctx.fillRect(bxm-72, bym-26, 144, 13);
-      ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('стрічка викупу: не пройдеш, поки не заплатиш!', 138, 7, false);
-      ctx.fillText('стрічка викупу: не пройдеш, поки не заплатиш!', bxm, bym-17);
+      ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(bxm-64, bym-30, 128, 17);
+      ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(bxm-63.5, bym-29.5, 127, 16);
+      ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; ctx.font='bold 9px monospace';
+      ctx.fillText('СТРІЧКА ВИКУПУ 🎀', bxm, bym-18);
     }
   }
   // деталі почту: ВІНКИ зі стрічками у дружок, БРИЛІ у бояр
@@ -3935,8 +3938,8 @@ function drawProp(){
       }
       // мультяшні ОЧІ ростуть поверх фото
       const er = 7 + m*17;
-      const eyeY = fcy - fh2*0.12, mouthY = fcy + fh2*0.26;
-      [[-0.19],[0.19]].forEach(([exf])=>{
+      const eyeY = fcy - fh2*0.05, mouthY = fcy + fh2*0.235;   // відкалібровано під кадр обличчя
+      [[-0.16],[0.16]].forEach(([exf])=>{
         const ex2 = fcx + exf*fw2;
         ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.arc(ex2, eyeY, er+2, 0, 7); ctx.fill();
         ctx.fillStyle='#fff';    ctx.beginPath(); ctx.arc(ex2, eyeY, er, 0, 7); ctx.fill();
@@ -3945,13 +3948,13 @@ function drawProp(){
       });
       // брови летять угору
       ctx.fillStyle='#5a3d24';
-      ctx.fillRect(fcx-0.19*fw2-er, eyeY-er-5-m*8, er*2, 3);
-      ctx.fillRect(fcx+0.19*fw2-er, eyeY-er-5-m*8, er*2, 3);
+      ctx.fillRect(fcx-0.16*fw2-er, eyeY-er-5-m*8, er*2, 3);
+      ctx.fillRect(fcx+0.16*fw2-er, eyeY-er-5-m*8, er*2, 3);
       // рот — «Оооооо!» росте поверх фото
-      const mr = 5 + m*19;
-      ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.ellipse(fcx, mouthY, mr*0.75+2, mr+2, 0, 0, 7); ctx.fill();
-      ctx.fillStyle='#7a2430'; ctx.beginPath(); ctx.ellipse(fcx, mouthY, mr*0.75, mr, 0, 0, 7); ctx.fill();
-      ctx.fillStyle='#a8323c'; ctx.beginPath(); ctx.ellipse(fcx, mouthY+mr*0.3, mr*0.5, mr*0.5, 0, 0, 7); ctx.fill();
+      const mr = 5 + m*19, mx = fcx + fw2*0.02;                // рот трошки правіше — під самі губи
+      ctx.fillStyle='#221c26'; ctx.beginPath(); ctx.ellipse(mx, mouthY, mr*0.75+2, mr+2, 0, 0, 7); ctx.fill();
+      ctx.fillStyle='#7a2430'; ctx.beginPath(); ctx.ellipse(mx, mouthY, mr*0.75, mr, 0, 0, 7); ctx.fill();
+      ctx.fillStyle='#a8323c'; ctx.beginPath(); ctx.ellipse(mx, mouthY+mr*0.3, mr*0.5, mr*0.5, 0, 0, 7); ctx.fill();
       if(m>0.25){ ctx.fillStyle='rgba(10,8,14,.7)'; const ow=(2+Math.round(m*5))*11+26;
         ctx.fillRect(fcx-ow/2, fcy-fh2/2-30, ow, 20);
         ctx.fillStyle='#f4cf5e'; ctx.font='bold 13px monospace'; ctx.textAlign='center';
@@ -4394,6 +4397,16 @@ function drawWedSofi(){
   drawAttendant(104, FLOOR_Y+4, GROOMS[0], 1.35); drawAttendant(126, FLOOR_Y+4, GROOMS[1], 1.35);
   // молодята на рушнику
   drawCouple(58, 90, FLOOR_Y+4);
+  // НІКА СЕЛЕГА веде обряд — максимально традиційно, але без священника
+  {
+    const nk = pickFace(['селега','ніка']);
+    drawGuest(74, FLOOR_Y+22, '#7a4a8a', false, game.t+3, nk, 1.5);   // стоїть перед молодятами
+    const NIKA = ['Станьте на рушник!','Хліб і сіль — молодятам!','Кланяйтесь родові!','(без священника — та за традицією!)'];
+    drawShout(74, FLOOR_Y-46, NIKA[(game.t>>7) % NIKA.length]);
+    ctx.fillStyle='rgba(42,52,68,.8)'; ctx.fillRect(38, FLOOR_Y+38, 74, 11);
+    ctx.fillStyle='#f4f0e4'; ctx.font='6px monospace'; ctx.textAlign='center';
+    ctx.fillText('Ніка веде обряд', 75, FLOOR_Y+46); ctx.textAlign='left';
+  }
   // ЗАСТІЛЛЯ: довгий стіл, скатертина з вишивкою, КОРОВАЙ у центрі
   const tx = 128, tw = 108, ty = FLOOR_Y-2;
   ctx.fillStyle = '#221c26'; ctx.fillRect(tx-2, ty-26, tw+4, 30);
@@ -4434,6 +4447,7 @@ function drawWedSofi(){
   ctx.fillText('06 · 09 · 2026', W/2, 26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(42,52,68,.8)';
   ctx.fillText('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂', W/2, 38);
+  ctx.fillText('обряд веде Ніка Селега — по-нашому, традиційно', W/2, 48);
 }
 /* ---- ФІНАЛ Б: дворик бару «Хвильовий», вечір, молодята на сцені ---- */
 function drawWedKhv(){
@@ -4891,6 +4905,7 @@ function sfxBlip(who){
    (довгі). Тихий фон + кнопка вимкнення. Ліниве завантаження по одному треку. */
 // діджиталізовані (лоу-фай, без розбірливих слів) — оригінали лишаються в audio/ про запас
 const BGM_TRACKS = {
+  shtolnya: 'audio/shtolnya.m4a',           // «Штольня» — фінал у Хвильовому (справжня, як просила Катя)
   planeta:  'audio/ssb_planeta_dig.m4a',    // «Моя планета» — версія з вокалом (digitalized)
   khata:    'audio/ssb_khata_dig.m4a',      // «Над моєю хатою»
   stezhyna: 'audio/ssb_stezhyna_dig.m4a',   // «Стежина»
@@ -4921,7 +4936,7 @@ const CHIP_MAP = {
   wed:'stezhyna',
 };
 function chipForPhase(phase){
-  if(phase==='wed' && game.wedLoc==='khv') return 'pozniaky';   // Хвильовий — жвавіша «центрова» (замість спільної стежини)
+  if(phase==='wed' && game.wedLoc==='khv') return 'shtolnya';   // Хвильовий — «Штольня» (справжній файл)
   return CHIP_MAP[phase] || null;
 }
 // плавний перехід між треками: коротке приглушення замість різкого обриву
@@ -5252,7 +5267,7 @@ function novelData(){
       {who:'katya', emo:'wow',  text:'Стоп. Це ж хлопець зі зйомок 2021-го…'},
     ]},
     {bg:2, cap:['ПЕЙЗАЖКА','перше побачення'], lines:[
-      N('Раз похвалилась: «люблю темне, кокосове,\nз Хвильового» — й забула ту розмову.'),
+      N('Раз написала: «кокосове темне —\nмоє улюблене» — й забула, певне.'),
       N('А він те слово в чаті підхопив,\nу серденько сховав, як зерня золотив.'),
       {who:'dima', emo:'shy', text:'І ще. Тримай.'},
       {who:'katya', emo:'wow', text:'Андервуд коконат?! Ти ЗАПАМʼЯТАВ?'},
@@ -7319,12 +7334,10 @@ function update(){
         // фінал за слотом гостя: A → тераса «Бути Софі», B → дворик «Хвильового».
         // Пріоритет: персональний код (slot) → мапа гість→локація за іменем → обидва по черзі
         const vByName = guestVenue();
-        if(typeof coupleMode!=='undefined' && coupleMode){
-          game.wedLoc = 'sofi'; game.wedBoth = true;          // молодята бачать ОБИДВІ зали: Софі → Хвильовий
-        } else {
-          game.wedLoc = GUEST ? (GUEST.slot==='B' ? 'khv' : 'sofi') : (vByName || 'sofi');
-          game.wedBoth = !GUEST && !vByName;
-        }
+        game.wedLoc = 'sofi';                               // церемонію в Софі бачать УСІ
+        if(typeof coupleMode!=='undefined' && coupleMode){ game.wedBoth = true; }
+        else if(GUEST){ game.wedBoth = GUEST.slot==='B'; }    // вечірні гості — далі у Хвильовий
+        else { game.wedBoth = vByName !== 'sofi'; }           // Софі-список лишається в Софі, решта — обидві
         if(game.watch) setPhase('wed'); else startVykup();                         // музика — «Горіла сосна» (через chipForPhase)
       }
       break;
@@ -7336,11 +7349,11 @@ function update(){
     case 'wed':
       // фінальні сцени НЕ перегортаються самі — тільки твій тап (мін. 80 тіків, щоб не проклацати)
       if(game.watch){
-        if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); }
+        if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); playChip('shtolnya'); }
         if(game.phaseT === (game.wedBoth ? 460 : 230)) setPhase('credits');
       } else if(input.actionEdge && game.phaseT > 80){
         input.actionEdge = false;
-        if(game.wedBoth && game.wedLoc !== 'khv'){ game.wedLoc = 'khv'; game.phaseT = 81; shake(2,8); }
+        if(game.wedBoth && game.wedLoc !== 'khv'){ game.wedLoc = 'khv'; game.phaseT = 81; shake(2,8); playChip('shtolnya'); }
         else setPhase('credits');
       }
       break;
