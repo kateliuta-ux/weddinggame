@@ -2672,8 +2672,8 @@ function updateSvat(){
 }
 /* іспит старостів — питання зі справжньої переписки */
 const SVAT_EXAM = [
-  {q:'ІСПИТ СТАРОСТІВ!\nЯке було перше повідомлення Діми?',
-   opts:['«Йоу! Як трєня?)»','«Привіт, я Діма»','«Віриш у кохання з першого свайпу?»'], ok:0,
+  {q:'ІСПИТ СТАРОСТІВ!\nЯке було перше повідомлення Діми в тіндері?',
+   opts:['«Привіт!»','«Віриш у кохання з першого свайпу?»','«Я в твітері не дуже шарю»'], ok:0,
    no:'«Куниця б памʼятала!» — хитають головами старости.'},
   {q:'Як Діма найчастіше кличе Катю в чаті?',
    opts:['«пані режисерко»','«Катерино Батьківно»','«киць»'], ok:2,
@@ -3312,7 +3312,7 @@ function drawDiia(){
   g.addColorStop(0,'#2a2438'); g.addColorStop(1,'#1c1826');
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
   // телефон (ширший, щоб текст влазив; у ландшафті нижчий)
-  const pw=120, ph=PORTRAIT_MODE?176:150, px=(W-pw)>>1, py=(H-ph)>>1;
+  const pw=PORTRAIT_MODE?120:170, ph=PORTRAIT_MODE?176:158, px=(W-pw)>>1, py=(H-ph)>>1;
   ctx.fillStyle = COL.ink; ctx.fillRect(px-4,py-4,pw+8,ph+8);
   ctx.fillStyle = '#f6f5f2'; ctx.fillRect(px,py,pw,ph);
   ctx.fillStyle = '#1a1a24'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center';
@@ -3320,7 +3320,7 @@ function drawDiia(){
   ctx.fillStyle = '#B58A2E'; ctx.fillRect(px+pw/2-10, py+23, 20, 2);
 
   if(d.step==='surname'){
-    ctx.fillStyle = '#1a1a24'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    ctx.fillStyle = '#1a1a24'; ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace'; ctx.textAlign='center';
     ctx.fillText('Яке прізвище?', px+pw/2, py+40);
     d.optRects = [];
     SURNAMES.forEach((s,i)=>{
@@ -3330,10 +3330,10 @@ function drawDiia(){
       ctx.fillStyle = on ? '#1E4E8A' : '#eef0f2';
       ctx.fillRect(ox, oy, ow, oh);
       ctx.fillStyle = on ? '#fff' : '#1a1a24';
-      fitText(s.label, ow-8, 9, true);            // довгі прізвища не вилазять
+      fitText(s.label, ow-8, PORTRAIT_MODE?9:11, true);            // довгі прізвища не вилазять
       ctx.fillText(s.label, px+pw/2, oy+11);
       ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888';
-      fitText(s.note, ow-8, 6, false);
+      fitText(s.note, ow-8, PORTRAIT_MODE?6:8, false);
       ctx.fillText(s.note, px+pw/2, oy+20);
     });
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='9px monospace';
@@ -3341,23 +3341,24 @@ function drawDiia(){
   } else if(d.step==='submit'){
     ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24'; ctx.textAlign='center';
     ctx.fillText('💍', px+pw/2, py+50);
-    ctx.font='bold 8px monospace';
+    ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace';
     ctx.fillText('Шлюб онлайн', px+pw/2, py+66);
-    ctx.font='7px monospace'; ctx.fillStyle='#999';
+    ctx.font=(PORTRAIT_MODE?7:9)+'px monospace'; ctx.fillStyle='#999';
     ctx.fillText('прізвище:', px+pw/2, py+78);
     ctx.fillStyle='#777';
-    fitText(game.diiaSurname||'', pw-12, 9, true); // довге подвійне — меншим кеглем
+    fitText(game.diiaSurname||'', pw-12, PORTRAIT_MODE?9:11, true); // довге подвійне — меншим кеглем
     ctx.fillText(game.diiaSurname||'', px+pw/2, py+90);
     // кнопка з прогресом утримання
     ctx.fillStyle = '#dcd9d0'; ctx.fillRect(px+10, py+110, pw-20, 22);
     ctx.fillStyle = '#1E4E8A'; ctx.fillRect(px+10, py+110, (pw-20)*d.hold/100, 22);
-    ctx.fillStyle = d.hold>45 ? '#fff' : '#1a1a24'; ctx.font='bold 8px monospace';
+    ctx.fillStyle = d.hold>45 ? '#fff' : '#1a1a24'; ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace';
     ctx.fillText('ПОДАТИ ЗАЯВУ', px+pw/2, py+124);
     ctx.fillStyle = '#777'; ctx.font='9px monospace';
     const st = d.hold>5 ? DIIA_STATUSES[Math.min(3, Math.floor(d.hold/28))] : '';
     ctx.fillText(st, px+pw/2, py+146);
     ctx.fillStyle = 'rgba(255,255,255,.55)';
-    drawHint(game.watch?'':(isTouch?'утримуй палець на екрані':'утримуй ПРОБІЛ'), W/2, H-30);
+    if(PORTRAIT_MODE) drawHint(game.watch?'':(isTouch?'утримуй палець на екрані':'утримуй ПРОБІЛ'), W/2, H-30);
+    else { drawHint(game.watch?'':'утримуй', px/2, H/2-6); drawHint(game.watch?'':'ПРОБІЛ', px/2, H/2+8); }
   } else {
     ctx.fillStyle = '#3F7C77'; ctx.font='26px sans-serif';
     ctx.fillText('✓', px+pw/2, py+64);
@@ -3521,6 +3522,12 @@ function drawWedHearts(){
 }
 function drawWed(){
   if(game.wedLoc === 'khv') drawWedKhv(); else drawWedSofi();
+  if(!game.watch && game.phaseT > 80){
+    ctx.fillStyle='rgba(10,8,14,.55)'; ctx.fillRect(W/2-70,H-24,140,14);
+    ctx.fillStyle='#f4e8c8'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(game.wedBoth && game.wedLoc!=='khv' ? 'тап — і на вечірку в «Хвильовий»' : 'тап — до титрів', W/2, H-14);
+    ctx.textAlign='left';
+  }
 }
 /* ---- ФІНАЛ А: тераса «Бути Софі», територія Софії Київської, день ---- */
 function drawWedSofi(){
@@ -5171,6 +5178,7 @@ function updateHudAndControls(){
 function setPhase(p){
   game.phase = p; game.phaseT = 0;
   if(p==='set') game.shoot = null;   // свіжий старт мінігри-оператора
+  if(p!=='kitana' && typeof stopMic==='function') stopMic();   // мікрофон живе лише в сцені Кітани
   // поліфонічна музика за фазою; глушимо лише на Кітані (там мікрофон)
   if(p==='kitana'){ stopChip(); }
   else { const want = chipForPhase(p); if(want) playChip(want); }
@@ -5738,6 +5746,7 @@ function pauseToMenu(){
   game.paused = false;
   document.getElementById('pause-menu').classList.add('hidden');
   try{ stopMusic(); }catch(_){}
+  try{ stopMic(); }catch(_){}
   game.state = 'title';
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('controls').classList.add('hidden');
@@ -5960,8 +5969,15 @@ function update(){
       break;
 
     case 'wed':
-      if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); }
-      if(game.phaseT === (game.wedBoth ? 460 : 230)) setPhase('credits');
+      // фінальні сцени НЕ перегортаються самі — тільки твій тап (мін. 80 тіків, щоб не проклацати)
+      if(game.watch){
+        if(game.wedBoth && game.phaseT === 230){ game.wedLoc = 'khv'; shake(2,8); }
+        if(game.phaseT === (game.wedBoth ? 460 : 230)) setPhase('credits');
+      } else if(input.actionEdge && game.phaseT > 80){
+        input.actionEdge = false;
+        if(game.wedBoth && game.wedLoc !== 'khv'){ game.wedLoc = 'khv'; game.phaseT = 81; shake(2,8); }
+        else setPhase('credits');
+      }
       break;
 
     case 'credits':
@@ -6899,7 +6915,7 @@ function drawEggParticles(){
 /* ================= Кітана: осінь 2023, двір Дана (керування нявканням) ================= */
 /* мікрофон: без шумозаглушення (воно «зʼїдає» нявкання), частотний аналіз,
    автокалібрування фонового шуму */
-let micAnalyser = null, micData = null, micReq = false, micFloor = 0.03;
+let micAnalyser = null, micData = null, micReq = false, micFloor = 0.03, micStreamRef = null;
 function setupMic(){
   if(micReq) return; micReq = true;
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
@@ -6907,6 +6923,7 @@ function setupMic(){
     echoCancellation:false, noiseSuppression:false, autoGainControl:true,
   }}).then(stream=>{
     ensureAudio();
+    micStreamRef = stream;
     const src = audioCtx.createMediaStreamSource(stream);
     micAnalyser = audioCtx.createAnalyser();
     micAnalyser.fftSize = 512;
@@ -6914,6 +6931,11 @@ function setupMic(){
     micData = new Uint8Array(micAnalyser.frequencyBinCount);
     src.connect(micAnalyser);
   }).catch(()=>{ micAnalyser = null; });
+}
+// вимкнути мікрофон, щойно він не потрібен (індикатор у браузері гасне)
+function stopMic(){
+  if(micStreamRef){ try{ micStreamRef.getTracks().forEach(t=>t.stop()); }catch(_){} micStreamRef = null; }
+  micAnalyser = null; micData = null; micReq = false;
 }
 function micLevel(){
   if(!micAnalyser) return 0;
@@ -7285,6 +7307,18 @@ function rsvpShow(){
       }
       const go = document.createElement('button'); go.className='btn katya'; go.textContent='Це я ▶';
       go.addEventListener('click', submitTyped); elRsvpOpts.appendChild(go);
+      // молодята теж грають: швидкі опції «Я Катя» / «Я Діма»
+      const cr = document.createElement('div'); cr.style.cssText='display:flex;gap:8px;justify-content:center;margin-top:4px';
+      [['👰 Я Катя','Катя'],['🤵 Я Діма','Дмитро']].forEach(([lbl,nm])=>{
+        const cb = document.createElement('button'); cb.className='btn small'; cb.style.background='#55515f'; cb.textContent=lbl;
+        cb.addEventListener('click', ()=>{
+          localStorage.setItem('wed-player-name', nm);
+          rsvp.pending = null; rsvp.plusOne = null; rsvp.pickedGuest = {id:'couple-'+(nm==='Катя'?'k':'d'), name:nm, couple:true};
+          elRsvpInput.classList.add('hidden'); elRsvpInput.oninput=null; rsvpShow();
+        });
+        cr.appendChild(cb);
+      });
+      elRsvpOpts.appendChild(cr);
     };
     elRsvpInput.oninput = renderSug;
     elRsvpInput.onkeydown = e => { if(e.key==='Enter') submitTyped(); };
