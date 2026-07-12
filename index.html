@@ -3053,34 +3053,29 @@ function updateProp(){
 
   if(p.step==='rummage'){
     if(game.pov==='dima'){
-      // ── пошук у рюкзаку: тягни речі, поки не знайдеш коробочку ──
+      // ── РЕАЛЬНЕ копирсання: речі навалені КУПОЮ поверх коробочки — відкидай їх пальцем ──
       if(!p.rum){
-        const stuff=['шкарпетка (чиста?)','павербанк 3%','жуйка з 2019','ключі від студії','медіатор','кабель від нічого'];
-        for(let i=stuff.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=stuff[i]; stuff[i]=stuff[j]; stuff[j]=t; }
-        const items=stuff.slice(0,5).map((n,i)=>({name:n, box:false, taken:false, flyT:0,
-          x: W/2-78+(i%3)*56, y: Math.round(H*0.30)+((i/3)|0)*52 }));
-        const bi=(2+Math.random()*3)|0;                     // коробочка не найпершим тапом
-        items.splice(bi,0,{name:'КОРОБОЧКА!', box:true, taken:false, flyT:0,
-          x: W/2-78+(bi%3)*56, y: Math.round(H*0.30)+((bi/3)|0)*52});
-        items.forEach((it,i)=>{ it.x=W/2-78+(i%3)*56; it.y=Math.round(H*0.30)+((i/3)|0)*52; });
-        p.rum={items, done:false};
+        const kinds=['sock','power','gum','keys','pick','cable','shirt','sock2'];
+        const cxm=W/2, cym=Math.round(H*0.33);
+        const items=kinds.map((k,i)=>({kind:k, x:cxm+(Math.random()*120-60), y:cym+(Math.random()*80-40),
+          vx:0, vy:0, held:false, out:false, z:i}));
+        p.rum={items, box:{x:cxm+(Math.random()*70-35), y:cym+(Math.random()*40-10)}, drag:null, found:false, _t:0};
       }
       const r=p.rum;
-      r.items.forEach(it=>{ if(it.flyT>0){ it.flyT++; } });
+      // фізика відкинутих речей
+      r.items.forEach(it=>{
+        if(it.held && r.dragPos){ it.x=r.dragPos.x; it.y=r.dragPos.y; }
+        else if(!it.out){ it.x+=it.vx; it.y+=it.vy; it.vx*=0.9; it.vy*=0.9; }
+        if(!it.out && (it.x<-30||it.x>W+30||it.y<40||Math.abs(it.vx)+Math.abs(it.vy)>14)) it.out=true;
+      });
+      // коробочку видно, коли жодна річ її не накриває
+      const covered = r.items.some(it=> !it.out && Math.abs(it.x-r.box.x)<34 && Math.abs(it.y-r.box.y)<26);
+      r.visible = !covered;
       if(game.watch){
-        if((game.phaseT%50)===0){ const it=r.items.find(q=>!q.taken); if(it){ it.taken=true; it.flyT=1; if(it.box) r.done=true; } }
-      } else if(game._tapPos){
-        const tp=game._tapPos; game._tapPos=null;
-        for(const it of r.items){
-          if(!it.taken && Math.abs(tp.x-it.x)<26 && Math.abs(tp.y-it.y)<24){
-            it.taken=true; it.flyT=1; try{sfxScore(it.box?880:330);}catch(_){}
-            if(it.box) r.done=true;
-            break;
-          }
-        }
+        if((game.phaseT%45)===0){ const it=r.items.find(q=>!q.out); if(it){ it.vx=(Math.random()<0.5?-1:1)*9; it.vy=-6; } }
+        if(r.visible && !r.found){ r.found=true; }
       }
-      if(r.done && !r._t) r._t=0;
-      if(r.done){ r._t++; if(r._t>55){ p.step='box'; p.boxT=0; } }
+      if(r.found){ r._t++; if(r._t>55){ p.step='box'; p.boxT=0; } }
       return;
     }
     // ПОВ Каті: «роби здивоване обличчя» — швидкі тапи, як було
@@ -3311,34 +3306,45 @@ function drawProp(){
     ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
     ctx.fillText(sub, W/2, 30+HUD_Y);
     if(game.pov==='dima' && p.rum){
+      const r=p.rum;
       // рюкзак крупним планом
-      const bx=W/2-102, by=Math.round(H*0.22), bw=204, bh=150;
+      const bx=W/2-112, by=Math.round(H*0.18), bw=224, bh=190;
       ctx.fillStyle='#141018'; ctx.fillRect(bx-4,by-4,bw+8,bh+8);
-      ctx.fillStyle='#3a4a6a'; ctx.fillRect(bx,by,bw,bh);                       // тканина рюкзака
+      ctx.fillStyle='#3a4a6a'; ctx.fillRect(bx,by,bw,bh);
       ctx.fillStyle='#2e3c58';
-      for(let k=0;k<18;k++) ctx.fillRect(bx+(k*29)%bw, by+(k*41)%bh, 8, 2);      // шви
-      ctx.fillStyle='#1c2436'; ctx.beginPath(); ctx.ellipse(W/2, by+8, bw*0.46, 12, 0, 0, 7); ctx.fill();  // отвір
-      ctx.fillStyle='#d8b25a'; ctx.fillRect(bx+bw/2-3, by-12, 6, 8);            // застібка
-      // речі-горбики
-      p.rum.items.forEach(it=>{
-        if(it.taken && it.flyT>26) return;
-        const fy = it.taken ? it.y - it.flyT*2.4 : it.y;
-        const al = it.taken ? Math.max(0, 1-it.flyT/26) : 1;
-        ctx.globalAlpha = al;
-        if(!it.taken){
-          ctx.fillStyle = '#4a5c82'; ctx.beginPath(); ctx.ellipse(it.x, it.y, 22, 16, 0, 0, 7); ctx.fill();
-          ctx.fillStyle = '#5c7098'; ctx.beginPath(); ctx.ellipse(it.x-4, it.y-4, 10, 6, 0, 0, 7); ctx.fill();
-          ctx.fillStyle = '#f4e8c8'; ctx.font='bold 11px monospace'; ctx.textAlign='center'; ctx.fillText('?', it.x, it.y+4);
-        } else {
-          ctx.fillStyle = it.box ? '#f4cf5e' : '#c9c4b4';
-          ctx.font = (it.box?'bold 10px':'8px')+' monospace'; ctx.textAlign='center';
-          ctx.fillText(it.name, Math.max(52, Math.min(W-52, it.x)), fy);
-          if(it.box){ ctx.fillStyle='#2e3440'; ctx.fillRect(it.x-7, fy+6, 14, 9); ctx.fillStyle='#d8b25a'; ctx.fillRect(it.x-1, fy+4, 2, 12); }
-        }
-        ctx.globalAlpha = 1;
-      });
-      ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace';
-      drawHint(game.watch?'':'тапай горбики — щось точно не шкарпетка', W/2, by+bh+22);
+      for(let k=0;k<20;k++) ctx.fillRect(bx+(k*31)%bw, by+(k*43)%bh, 8, 2);
+      ctx.fillStyle='#1c2436'; ctx.beginPath(); ctx.ellipse(W/2, by+10, bw*0.46, 13, 0, 0, 7); ctx.fill();
+      ctx.fillStyle='#d8b25a'; ctx.fillRect(bx+bw/2-3, by-12, 6, 8);
+      // КОРОБОЧКА на дні (світиться, коли відкрита)
+      const bxx=r.box.x, byy=r.box.y;
+      if(r.visible){ ctx.fillStyle='rgba(255,240,190,'+(0.25+0.2*Math.sin(game.t*0.12))+')';
+        ctx.beginPath(); ctx.arc(bxx,byy,26,0,7); ctx.fill(); }
+      ctx.fillStyle='#2e3440'; ctx.fillRect(bxx-10,byy-7,20,14);
+      ctx.fillStyle='#d8b25a'; ctx.fillRect(bxx-2,byy-9,4,18); ctx.fillRect(bxx-10,byy-2,20,4);
+      // купа впізнаваних речей поверх
+      const drawItem=(it)=>{
+        ctx.save(); ctx.translate(it.x,it.y);
+        if(it.kind==='sock'||it.kind==='sock2'){ ctx.fillStyle=it.kind==='sock'?'#e8e2d0':'#b8c4d8';
+          ctx.fillRect(-14,-6,20,10); ctx.fillRect(-2,4,10,8); ctx.fillStyle='#a8323c'; ctx.fillRect(-14,-6,4,10); }
+        else if(it.kind==='power'){ ctx.fillStyle='#26242c'; ctx.fillRect(-16,-7,32,14);
+          ctx.fillStyle='#f4cf5e'; ctx.fillRect(-3,-4,3,4); ctx.fillRect(-5,0,3,4); }
+        else if(it.kind==='gum'){ ctx.fillStyle='#5aa86a'; ctx.fillRect(-11,-6,22,12);
+          ctx.fillStyle='#e8f2e2'; ctx.fillRect(-8,-3,16,5); }
+        else if(it.kind==='keys'){ ctx.strokeStyle='#d8b25a'; ctx.lineWidth=3;
+          ctx.beginPath(); ctx.arc(-5,-3,6,0,7); ctx.stroke();
+          ctx.fillStyle='#d8b25a'; ctx.fillRect(0,-2,14,4); ctx.fillRect(9,2,3,5); ctx.fillRect(4,2,3,4); }
+        else if(it.kind==='pick'){ ctx.fillStyle='#c9584a';
+          ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(8,-8); ctx.lineTo(0,9); ctx.closePath(); ctx.fill(); }
+        else if(it.kind==='cable'){ ctx.strokeStyle='#8a8494'; ctx.lineWidth=4;
+          ctx.beginPath(); ctx.moveTo(-16,4); ctx.quadraticCurveTo(-6,-10,2,0); ctx.quadraticCurveTo(10,10,16,-4); ctx.stroke(); }
+        else if(it.kind==='shirt'){ ctx.fillStyle='#4a5c7a'; ctx.fillRect(-15,-9,30,18);
+          ctx.fillStyle='#374660'; ctx.fillRect(-15,-9,30,5); }
+        ctx.restore();
+      };
+      r.items.forEach(it=>{ if(!it.out) drawItem(it); });
+      ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace'; ctx.textAlign='center';
+      drawHint(game.watch?'':(r.visible&&!r.found?'ОСЬ ВОНА — тапни коробочку!':'хапай речі пальцем і відкидай — вона десь на дні'), W/2, by+bh+22);
+      ctx.textAlign='left';
     } else {
       ctx.fillStyle = '#333'; ctx.fillRect(80,34+HUD_Y,160,7);
       ctx.fillStyle = COL.rose;
@@ -5427,7 +5433,17 @@ cv.addEventListener('pointerdown', e=>{
   }
   else if(game.phase==='battle' && game.battle && !game.battle.over){ dragTarget = canvasPos(e); }
   else if(game.phase==='tinder'){ game._swipeDrag = canvasPos(e).x; game._swipeReleased = false; }
-  else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers'||game.prop.step==='rummage') && !game.dialog){
+  else if(game.phase==='prop' && game.prop && game.prop.step==='rummage' && game.prop.rum && !game.dialog){
+    const r=game.prop.rum, tp=canvasPos(e);
+    // спершу коробочка (якщо відкрита)
+    if(r.visible && !r.found && Math.abs(tp.x-r.box.x)<26 && Math.abs(tp.y-r.box.y)<22){ r.found=true; try{sfxScore(880);}catch(_){} }
+    else {
+      // хапаємо верхню річ під пальцем
+      const under=r.items.filter(it=>!it.out && Math.abs(tp.x-it.x)<26 && Math.abs(tp.y-it.y)<20);
+      if(under.length){ const it=under[under.length-1]; it.held=true; r.dragPos=tp; r.grabAt=tp; }
+    }
+  }
+  else if(game.phase==='prop' && game.prop && (game.prop.step==='chess'||game.prop.step==='fingers') && !game.dialog){
     game._tapPos = canvasPos(e);
   }
   else if(game.phase==='band'){
@@ -5457,12 +5473,22 @@ cv.addEventListener('pointerdown', e=>{
 });
 cv.addEventListener('pointermove', e=>{
   if(dragTarget) dragTarget = canvasPos(e);
+  if(game.phase==='prop' && game.prop && game.prop.rum){
+    const r=game.prop.rum, held=r.items.find(it=>it.held);
+    if(held){ const np=canvasPos(e);
+      held.vx=(np.x-(r.dragPos?r.dragPos.x:np.x))*1.4; held.vy=(np.y-(r.dragPos?r.dragPos.y:np.y))*1.4;
+      r.dragPos=np; }
+  }
   if(game._swipeDrag != null && game.phase==='tinder'){
     game.swipeX = canvasPos(e).x - game._swipeDrag;      // картка їде за пальцем
   }
 });
 addEventListener('pointerup', ()=>{
   dragTarget = null; game._holdPtr = false;
+  if(game.phase==='prop' && game.prop && game.prop.rum){
+    const r=game.prop.rum, held=r.items.find(it=>it.held);
+    if(held){ held.held=false; r.dragPos=null; }
+  }
   if(game._swipeDrag != null){
     game._swipeDrag = null;
     if(game.swipeX > 55) setPhase('swipe');              // дотягнув вправо — метч
