@@ -4733,7 +4733,6 @@ function novelBg(i){
     for(let k=0;k<28;k++){ const hx=(k*47)%W, hy=(H-((T*0.4+k*53)%H)); ctx.fillStyle=k%2?'rgba(230,120,150,.6)':'rgba(200,170,90,.5)'; ctx.fillRect(hx,hy,4,4); ctx.fillRect(hx+5,hy,4,4); ctx.fillRect(hx,hy+3,9,4); ctx.fillRect(hx+2,hy+7,5,3); }
     // (картку тут більше не малюємо — вона ОДНА, анімована, у drawNovelFx)
     ctx.fillStyle='rgba(255,120,200,.10)'; ctx.beginPath(); ctx.arc(W/2,Math.round(H*0.26)+60,84,0,7); ctx.fill();
-    ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.moveTo(W/2,cy-9); ctx.quadraticCurveTo(W/2+5,cy-2,W/2,cy+5); ctx.quadraticCurveTo(W/2-5,cy-2,W/2,cy-9); ctx.fill();
   } else if(i===2){                             // ── ПЕЙЗАЖКА, захід сонця ──
     const g=ctx.createLinearGradient(0,0,0,fl); g.addColorStop(0,'#211c4a'); g.addColorStop(.55,'#5a3a68'); g.addColorStop(1,'#e0885a'); ctx.fillStyle=g; ctx.fillRect(0,0,W,fl);
     ctx.fillStyle='rgba(246,236,200,.16)'; ctx.beginPath(); ctx.arc(W-56,54,22,0,7); ctx.fill(); ctx.fillStyle='#f6ecc8'; ctx.beginPath(); ctx.arc(W-56,54,11,0,7); ctx.fill();
