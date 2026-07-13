@@ -1447,88 +1447,113 @@ function drawCollect(camX){
 
 /* ================= персонаж (кежуал) ================= */
 function drawPerson(x, y, who, phase, dir, walking, skin){
-  /* Детальні спрайти: контур-силует, тіні/відблиски, складки одягу,
-     взуття з підошвою, 4-фазна хода, обличчя з білками очей. */
+  /* «Геройська» промальовка (у дусі юнітів Heroes III): плавні силуети рядками,
+     5 тонів на матеріал, складки, рим-світло, мʼяка тінь під ногами.
+     Метрики збережені: маківка ~ -53, стопи ~ 0 — аксесуари сцен лишаються на місцях. */
   const c = skin ? Object.assign({}, CHARS[who], skin) : CHARS[who];
-  const SK='#eebc96', SKS='#d49a72', o='#221c26';
-  const hairSh = c.style==='bob' ? '#a8854e' : '#33241a';
-  const hairHi = c.style==='bob' ? '#e8cf9a' : (c.hi || null);
-  const R = [];                                    // [x,y,w,h,col,деталь(без контуру)]
+  const SK='#eebc96', SKS='#d49a72', SKH='#f8d4b4', o='#221c26';
+  const R = [];
   const add = (x,y,w,h,col,fine)=>R.push([x,y,w,h,col,fine]);
+  // відтінки від базових кольорів одягу (щоб зберегти САМЕ їхній одяг)
+  const shade=(hex,f)=>{ try{ const n=parseInt(hex.slice(1),16);
+    const r=Math.max(0,Math.min(255,Math.round(((n>>16)&255)*f))),
+          g=Math.max(0,Math.min(255,Math.round(((n>>8)&255)*f))),
+          b=Math.max(0,Math.min(255,Math.round((n&255)*f)));
+    return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }catch(_){ return hex; } };
+  const topH = c.topH || shade(c.top,1.28);
+  const topDD = shade(c.topD||c.top, 0.72);              // найглибша тінь
+  const skirt = c.skirt;
 
   const ph = walking ? (phase%4) : -1;
-  const bob = (ph===1||ph===3) ? 1 : 0;            // тіло трохи вище на «проході»
-  const stride = ph===0 ? 1 : ph===2 ? -1 : 0;     // розмах кроку
-  const fx = 1 + stride*3, bx = -6 - stride*2;     // передня/задня нога
-  const liftF = (ph===3) ? 2 : 0, liftB = (ph===1) ? 2 : 0;   // підтягування стопи
+  const bob = (ph===1||ph===3) ? 1 : 0;
+  const stride = ph===0 ? 1 : ph===2 ? -1 : 0;
+  const fx = 1 + stride*3, bx = -6 - stride*2;
+  const liftF = (ph===3) ? 2 : 0, liftB = (ph===1) ? 2 : 0;
 
-  const topH = c.topH || c.top;
-  const skirt = c.skirt;
   // ── НОГИ ──
   if(skirt){
-    // тонкі щиколотки + підбори (елегантна постава, сукня довша)
-    add(bx+2, -7+bob, 3, 7-bob-liftB, '#54444e');        // задня щиколотка
-    add(bx+1, -3-liftB, 4, 3, '#3a3038'); add(bx+4, -1-liftB, 2, 1, '#2a2632');   // туфля + підбор
-    add(fx+1, -7+bob, 3, 7-bob-liftF, '#6a5560');        // передня щиколотка
-    add(fx+1, -7+bob, 1, 6, '#7e6875', true);            // світло
-    add(fx, -3-liftF, 4, 3, '#463a44'); add(fx+3, -1-liftF, 2, 1, '#2a2632');     // туфля + підбор
+    add(bx+2, -8+bob, 3, 8-bob-liftB, '#54444e');
+    add(bx+2, -8+bob, 1, 7, '#463a44', true);
+    add(bx+1, -3-liftB, 4, 3, '#3a3038'); add(bx+4, -1-liftB, 2, 1, '#2a2632');
+    add(fx+1, -8+bob, 3, 8-bob-liftF, '#6a5560');
+    add(fx+1, -8+bob, 1, 7, '#7e6875', true);
+    add(fx, -3-liftF, 4, 3, '#463a44'); add(fx+3, -1-liftF, 2, 1, '#2a2632');
+    add(fx, -3-liftF, 3, 1, '#5a4c56', true);
   } else {
-    // джинси з коліном + кеди
-    add(bx, -14+bob, 5, 14-bob-liftB, COL.jeansD);
-    add(bx+3, -13+bob, 1, 10-bob, '#3a4468', true);
+    // джинси: стегно ширше, коліно, литка вужча (справжня нога, не стовпчик)
+    add(bx, -16+bob, 5, 6-bob, COL.jeansD);                       // стегно (зад)
+    add(bx, -10+bob, 4, 10-bob-liftB, COL.jeansD);                // литка
+    add(bx+2, -15+bob, 1, 12, '#3a4468', true);
     add(bx-1, -4-liftB, 7, 4, '#2a2632');
     add(bx-1, -1-liftB, 7, 1, '#9a96a4', true);
-    add(fx, -14+bob, 5, 14-bob-liftF, COL.jeans);
-    add(fx, -14+bob, 1, 13-bob, '#5a689c', true);
-    add(fx+1, -9+bob, 3, 1, '#3a4468', true);
+    add(fx, -16+bob, 5, 6-bob, COL.jeans);                        // стегно (перед)
+    add(fx, -10+bob, 4, 10-bob-liftF, COL.jeans);
+    add(fx, -16+bob, 1, 15-bob, '#5a689c', true);                 // світлий шов
+    add(fx+1, -10+bob, 3, 1, '#3a4468', true);                    // згин коліна
     add(fx-1, -4-liftF, 7, 4, '#3a3646');
     add(fx-1, -4-liftF, 7, 1, '#5a5666', true);
     add(fx+1, -3-liftF, 4, 1, '#c9c4b4', true);
     add(fx-1, -1-liftF, 7, 1, '#b8b4c2', true);
   }
 
-  // ── КОРПУС: плечі ширші, талія вужча (не квадрат) + 3-тонове затінення ──
-  add(-8, -35+bob, 16, 12, c.top);                       // верх (плечі)
-  add(-7, -24+bob, 14, 10, c.top);                       // низ (талія — вужче)
-  add(-8, -35+bob, 4, 12, c.topD);                       // тінь плечей
-  add(-7, -24+bob, 3, 10, c.topD);                       // тінь талії
-  add(4, -34+bob, 3, 11, topH, true);                    // світлий бік (верх)
-  add(3, -23+bob, 3, 8, topH, true);                     // світлий бік (низ)
-  add(-3, -35+bob, 2, 12, topH, true);                   // лацкан
-  add(1, -35+bob, 2, 12, topH, true);                    // другий край вирізу
-  add(1, -34+bob, 5, 1, '#ffffff2e', true);              // відблиск плеча
-  add(0, -35+bob, 3, 3, SK);                             // виріз/шия
+  // ── КОРПУС: силует рядками (плечі → груди → талія), 5 тонів ──
+  // профіль пів-ширини на кожен рядок від -35 (плечі) до -18 (талія)
+  const prof = skirt
+    ? [8,8,8,7.5,7,7,6.5,6,6,5.5,5,5,5,4.5,4.5,4.5,5]        // жіночий: плавна талія
+    : [8,8,8,8,7.5,7.5,7,7,7,6.5,6.5,6,6,6,6,6,6];            // чоловічий: пряміший
+  for(let r=0;r<17;r++){
+    const hw = prof[r], ry = -35+bob+r;
+    add(-hw, ry, hw*2, 1, c.top);
+    add(-hw, ry, 2.5, 1, c.topD, true);                        // тінь зліва
+    add(-hw, ry, 1, 1, topDD, true);                           // глибока тінь-край
+    add(hw-2, ry, 1.4, 1, topH, true);                         // світло справа
+  }
+  add(-2, -35+bob, 4, 3, SK); add(-2, -33+bob, 4, 1, SKS, true);   // шия
+  add(-3, -32+bob, 6, 1, topDD, true);                             // комір-виріз
+  add(-0.5, -31+bob, 1, 10, topDD, true);                          // планка/виріз
+  add(2.5, -34+bob, 2, 1, '#ffffff30', true);                      // відблиск плеча
+
   if(skirt){
-    // елегантна видовжена сукня-колона з легким кльошем і драпуванням
-    const sk = c.skirtCol || c.topD;
-    add(-5, -18+bob, 10, 3, sk);                         // талія (вузька)
-    add(-6, -15+bob, 12, 3, sk);
-    add(-6, -12+bob, 13, 3, sk);
-    add(-7, -9+bob, 14, 3, sk);
-    add(-7, -6+bob, 15, 3, sk);                          // подол (низько, елегантно)
-    add(-7, -6+bob, 15, 1, topH, true);                 // блік подолу
-    add(-3, -17+bob, 1, 14, '#00000022', true);         // вертикальні складки-драпування
-    add(1, -16+bob, 1, 12, '#00000022', true);
-    add(4, -14+bob, 1, 9, '#00000022', true);
-    add(-5, -16+bob, 1, 11, topH, true);                // світла складка (об'єм)
-    add(-7, -3+bob, 15, 1, '#0000002e', true);          // тінь під подолом
+    // сукня: від талії плавний кльош до подолу, хвилястий край, драпування
+    const skc = c.skirtCol || c.topD;
+    const skH = shade(skc,1.22), skD = shade(skc,0.78), skDD = shade(skc,0.6);
+    const sprof=[5,5.5,6,6.5,7,7.5,8,8.5];                     // піврозмах кльошу
+    for(let r=0;r<8;r++){
+      const hw=sprof[r], ry=-18+bob+r*1.8;
+      add(-hw, ry, hw*2, 2, skc);
+      add(-hw, ry, 2, 2, skD, true);
+      add(-hw, ry, 1, 2, skDD, true);
+      add(hw-1.6, ry, 1.2, 2, skH, true);
+    }
+    add(-8.5, -4+bob, 17, 1.6, skc);                           // подол
+    for(let k=0;k<6;k++) add(-8+k*2.8, -2.6+bob, 1.6, 0.8, skD, true);   // хвилястий край
+    add(-8.5, -4+bob, 17, 0.6, skH, true);                     // блік подолу
+    add(-2.6, -16+bob, 0.8, 12, skDD, true);                   // драпування
+    add(1.4, -15+bob, 0.8, 10, skDD, true);
+    add(4, -13+bob, 0.8, 8, skDD, true);
+    add(-5.2, -15+bob, 0.8, 10, skH, true);
   } else {
-    add(-8, -14+bob, 16, 2, c.topD, true);              // низ/кант
-    add(-8, -17+bob, 16, 3, '#2e2833');                 // пояс
-    add(-1, -17+bob, 3, 3, '#c9a24a', true);            // пряжка
-    add(-1, -30+bob, 1, 9, c.topD, true);               // складка
+    add(-6, -19+bob, 12, 2, '#2e2833');                        // пояс
+    add(-0.5, -19+bob, 2.4, 2, '#c9a24a', true);               // пряжка
+    add(-6, -22+bob, 12, 1, c.topD, true);                     // кант низу
+    add(-1, -30+bob, 0.8, 9, topDD, true);                     // складка
+    add(3, -28+bob, 0.8, 7, c.topD, true);
   }
 
-  // ── РУКИ: 3 тони, лікоть, долоня ──
+  // ── РУКИ: плавне звуження, лікоть, кисть ──
   const sw = -stride*3;
-  add(-11, -34+bob, 4, 10, c.topD);                      // задня рука
-  add(-11, -25+bob+sw, 4, 6, c.topD);
-  add(-11, -20+bob+sw, 4, 4, SK); add(-11, -20+bob+sw, 4, 1, SKS, true);
-  add(7, -34+bob, 4, 10, c.top);                         // передня рука
-  add(7, -34+bob, 1, 9, topH, true);                     // рим-світло рукава
-  add(7, -25+bob-sw, 4, 6, c.top);
-  add(7, -25+bob-sw, 4, 1, c.topD, true);                // згин ліктя
-  add(7, -20+bob-sw, 4, 4, SK); add(7, -20+bob-sw, 4, 1, SKS, true);  // долоня + тінь
+  add(-10.5, -34+bob, 3.6, 9, c.topD);                         // задня рука (плече)
+  add(-10.5, -34+bob, 1.2, 9, topDD, true);
+  add(-10.2, -25+bob+sw, 3.2, 6, c.topD);                      // передпліччя
+  add(-10, -20+bob+sw, 3, 3.6, SK); add(-10, -20+bob+sw, 3, 1, SKS, true);
+  add(6.8, -34+bob, 3.8, 9, c.top);                            // передня рука
+  add(6.8, -34+bob, 1, 8, topH, true);                         // рим-світло
+  add(9.6, -33+bob, 1, 8, c.topD, true);
+  add(7, -25+bob-sw, 3.4, 6, c.top);
+  add(7, -25+bob-sw, 3.4, 1, c.topD, true);                    // згин ліктя
+  add(7.2, -20+bob-sw, 3, 3.6, SK);
+  add(7.2, -20+bob-sw, 3, 1, SKS, true);
+  add(7.2, -17.4+bob-sw, 1.4, 1, SKH, true);                   // великий палець
 
   // ГОЛОВА: фото (South Park) або піксельний фолбек
   const headImg = headOf(who);
@@ -1554,18 +1579,20 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
     add(0, -38+bob, 3, 1, '#b3555f', true);
   }
 
-  // МАЛЮВАННЯ: контурний прохід (силует +1px), потім кольори
+  // МАЛЮВАННЯ: мʼяка тінь → контурний прохід (силует +0.7px) → кольори
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   if(dir<0) ctx.scale(-1,1);
   ctx.scale(PSCALE, PSCALE);                       // персонажі більші й деталізованіші
+  ctx.fillStyle = 'rgba(20,14,24,.26)';            // геройська тінь під юнітом
+  ctx.beginPath(); ctx.ellipse(0, 0.6, 10, 2.3, 0, 0, 7); ctx.fill();
   ctx.fillStyle = o;
   for(const [rx,ry,w,h,,fine] of R){
-    if(!fine) ctx.fillRect(Math.round(rx)-1, Math.round(ry)-1, w+2, h+2);
+    if(!fine) ctx.fillRect(rx-0.7, ry-0.7, w+1.4, h+1.4);
   }
   for(const [rx,ry,w,h,col] of R){
     ctx.fillStyle = col;
-    ctx.fillRect(Math.round(rx), Math.round(ry), w, h);
+    ctx.fillRect(rx, ry, w, h);
   }
   // фото-голова поверх тіла (справжня вирізка, прозоре тло — без маски)
   if(photoHead){
