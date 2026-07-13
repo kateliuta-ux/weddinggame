@@ -391,6 +391,7 @@
       <button class="btn s-btn" id="s-wave" style="background:#6a5cff">ЗВУК: МЕАНДР</button>
       <button class="btn s-btn" id="s-tempo" style="background:#3a5c8a">ТЕМП: СПОКІЙНИЙ</button>
       <button class="btn s-btn" id="s-samp" style="background:#c9584a">🎙 СВІЙ ЗВУК</button>
+      <button class="btn s-btn" id="s-lib" style="background:#7a5c3e">🎁 ЗВУКИ ГОСТЕЙ</button>
       <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
       <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
       <button class="btn s-btn hidden" id="s-mysave" style="background:var(--rose)">💾 ЗБЕРЕГТИ ПІСНЮ</button>
@@ -1750,8 +1751,10 @@ function drawKitana(x, y, dir){
   if(dir>=0) ctx.scale(-1,1);
   if(headReady(KITANA_CAT)){
     ctx.imageSmoothingEnabled = true;
-    const hh = 26, hw = Math.round(hh*KITANA_CAT.width/KITANA_CAT.height);
-    ctx.drawImage(KITANA_CAT, -Math.round(hw/2), -hh, hw, hh);   // лапки на y=0
+    const hh = 32, hw = Math.round(hh*KITANA_CAT.width/KITANA_CAT.height);
+    ctx.fillStyle='rgba(20,16,20,.25)';                          // тінь — «садить» кицю на землю
+    ctx.beginPath(); ctx.ellipse(0, 1, Math.round(hw*0.45), 3, 0, 0, 7); ctx.fill();
+    ctx.drawImage(KITANA_CAT, -Math.round(hw/2), -hh, hw, hh);   // лапки на y=0 (більша — читається)
   } else {
     const grey='#7d7888', dark='#615c6e', peach='#c9967a';
     px(-7,-8,12,8,grey); px(-7,-4,12,4,dark); px(-5,-8,4,3,peach); px(0,-5,3,3,peach);
@@ -5111,13 +5114,13 @@ function drawRun(){
   drawPerson(W*0.25, FLOOR_Y+2, 'dima', 0, 1, false);
   drawPerson(W*0.75, FLOOR_Y+2, 'katya', 0, -1, false, {top:'#c8f032', topD:'#9fbf1f'});
   // у Лондоні Катя жила в родині брата (Костя, Віка, малеча) — і Віка Кукрицька була поруч
-  { const fx = W*0.75+28, fb = (game.t>>5)&1;
-    drawGuest(fx-14, FLOOR_Y+2-(1-fb), '#c98a52', false, game.t+90, pickFace(['кукрицьк']), 0.8, 'f'); // Віка Кукрицька
-    drawGuest(fx,    FLOOR_Y+2-fb,     '#3a4a6a', false, game.t,    null, 0.8, 'm');   // Костя
-    drawGuest(fx+15, FLOOR_Y+2-(1-fb), '#a8505f', false, game.t+40, null, 0.8, 'f');   // Віка (дружина)
-    drawGuest(fx+28, FLOOR_Y+2-fb,     '#B58A2E', false, game.t+70, null, 0.55, 'm');  // Давід
-    drawGuest(fx+38, FLOOR_Y+2-(1-fb), '#3F7C77', false, game.t+15, null, 0.5,  'm');  // Георгій
-    drawGuest(fx+47, FLOOR_Y+2-fb,     '#c98a9c', false, game.t+55, null, 0.45, 'f');  // Ліка
+  { const fx = W*0.75+24, fb = (game.t>>5)&1;
+    drawGuest(fx-16, FLOOR_Y+2-(1-fb), '#c98a52', false, game.t+90, pickFace(['кукрицьк']), 1.1, 'f'); // Віка Кукрицька
+    drawGuest(fx+2,  FLOOR_Y+2-fb,     '#3a4a6a', false, game.t,    null, 1.1, 'm');   // Костя
+    drawGuest(fx+20, FLOOR_Y+2-(1-fb), '#a8505f', false, game.t+40, null, 1.1, 'f');   // Віка (дружина)
+    drawGuest(fx+32, FLOOR_Y+2-fb,     '#B58A2E', false, game.t+70, null, 0.8, 'm');   // Давід
+    drawGuest(fx+42, FLOOR_Y+2-(1-fb), '#3F7C77', false, game.t+15, null, 0.72, 'm');  // Георгій
+    drawGuest(fx+51, FLOOR_Y+2-fb,     '#c98a9c', false, game.t+55, null, 0.65, 'f');  // Ліка
     const lw=96, lx=Math.min(fx+16, W-4-lw/2);
     ctx.fillStyle='rgba(12,9,16,.6)'; ctx.fillRect(lx-lw/2, FLOOR_Y-84, lw, 10);
     ctx.fillStyle='#f4f0e4'; ctx.textAlign='center';
@@ -5146,8 +5149,11 @@ function drawRun(){
     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='9px monospace';
     drawHint(game.watch?'':(isTouch?'тапай — відповідай на все!':'ПРОБІЛ — відповідай на все!'), W/2, H-8);
   } else {
-    ctx.fillStyle=COL.gold; ctx.font='bold 13px monospace';
-    ctx.fillText('РЕКОРД ЧАТУ ВСТАНОВЛЕНО!', W/2, H/2+70);
+    const rt = T('РЕКОРД ЧАТУ ВСТАНОВЛЕНО!');
+    ctx.fillStyle='rgba(0,0,0,.62)'; ctx.fillRect(W/2-104, H/2-52, 208, 24);
+    ctx.strokeStyle=COL.gold; ctx.lineWidth=1; ctx.strokeRect(W/2-103.5, H/2-51.5, 207, 23);
+    ctx.fillStyle=COL.gold; fitText(rt, 196, 13, true);
+    ctx.fillText(rt, W/2, H/2-36);
   }
   ctx.textAlign='left';
 }
@@ -5427,7 +5433,14 @@ function sampleFromB64(b64){
     return buf;
   }catch(_){ return null; }
 }
+/* активний семпл: свій запис АБО обраний звук іншого гостя (🎁 ЗВУКИ ГОСТЕЙ) */
+let activeGuestSample = null;                  // {name, b64, buf} або null (= свій)
+function currentSampleB64(){ return activeGuestSample ? activeGuestSample.b64 : userSampleB64; }
 function getUserSample(){
+  if(activeGuestSample){
+    if(!activeGuestSample.buf) activeGuestSample.buf = sampleFromB64(activeGuestSample.b64);
+    return activeGuestSample.buf;
+  }
   if(!userSampleBuf && userSampleB64){ userSampleBuf = sampleFromB64(userSampleB64); }
   return userSampleBuf;
 }
@@ -8471,7 +8484,7 @@ const SMP_WAVES=[['square','МЕАНДР'],['triangle','ТРИКУТНИК'],['s
 let smpWaveIdx=0; SMP.wave='square';
 document.getElementById('s-wave').addEventListener('click', ()=>{
   smpWaveIdx=(smpWaveIdx+1)%SMP_WAVES.length;
-  if(SMP_WAVES[smpWaveIdx][0]==='smp' && !getUserSample()) smpWaveIdx=0;   // «твій звук» — лише коли записаний
+  if(SMP_WAVES[smpWaveIdx][0]==='smp' && !getUserSample()) smpWaveIdx=0;   // семпл — лише коли є (свій або гостя)
   SMP.wave=SMP_WAVES[smpWaveIdx][0];
   document.getElementById('s-wave').textContent='ЗВУК: '+SMP_WAVES[smpWaveIdx][1];
   ensureAudio(); playNote(523.25, audioCtx.currentTime, 0.25, SMP.wave, 0.07);   // прев'ю звуку
@@ -8579,7 +8592,9 @@ document.getElementById('s-samp').addEventListener('click', async ()=>{
     const buf=audioCtx.createBuffer(1, n16, 16000), ch=buf.getChannelData(0);
     for(let i=0;i<n16;i++){ const j=(i*ratio)|0; ch[i]=Math.max(-1, Math.min(1, cut[j]*k)); }
     userSampleBuf = buf; userSampleB64 = sampleToB64(buf);
+    activeGuestSample = null;                                 // щойно записаний свій — активний
     try{ localStorage.setItem('wed-sample', userSampleB64); }catch(_){}
+    saveGuestSample(userSampleB64);                           // лишається наступним гравцям (1 гість = 1 семпл)
     smpWaveIdx = SMP_WAVES.findIndex(w=>w[0]==='smp'); SMP.wave='smp';
     document.getElementById('s-wave').textContent='ЗВУК: ТВІЙ ЗВУК';
     drawBufWave(buf);                                         // показати форму готового звуку
@@ -8593,6 +8608,59 @@ document.getElementById('s-samp').addEventListener('click', async ()=>{
     st.textContent='не вдалося записати ('+((e&&e.message)||'?')+') — спробуй ще раз';
   }
   smpSampRec = false;
+});
+/* ── БІБЛІОТЕКА ЗВУКІВ ГОСТЕЙ: кожен записаний звук лишається наступним гравцям ──
+   Один гість = один семпл (documentId за іменем: перший запис лишається). */
+async function saveGuestSample(b64){
+  if(TEST_MODE || !b64) return;
+  const nm = (localStorage.getItem('wed-player-name')||'').trim();
+  if(!nm) return;
+  const id = 'smp-' + slugify(nm);
+  try{
+    await fetch(FS_BASE+'sampler-samples?documentId='+encodeURIComponent(id)+'&key='+FB.apiKey, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fields:{
+        name:{stringValue:nm}, sample:{stringValue:b64},
+        at:{integerValue:String(Date.now())},
+      }}),
+    });
+  }catch(_){}
+}
+async function loadGuestSamples(){
+  try{
+    const r = await fetch(FS_BASE+'sampler-samples?key='+FB.apiKey+'&pageSize=50');
+    if(!r.ok) return [];
+    const j = await r.json();
+    return (j.documents||[]).map(d=>({
+      name: d.fields?.name?.stringValue || 'гість',
+      b64: d.fields?.sample?.stringValue || '',
+      at: +(d.fields?.at?.integerValue || 0),
+    })).filter(s=>s.b64).sort((a,b)=> b.at-a.at);
+  }catch(_){ return []; }
+}
+let guestSamples = null, guestSampleIdx = -1;
+document.getElementById('s-lib').addEventListener('click', async ()=>{
+  const st = document.getElementById('s-status');
+  if(!guestSamples){ st.textContent='шукаю звуки гостей…'; guestSamples = await loadGuestSamples(); }
+  const me = slugify(localStorage.getItem('wed-player-name')||'');
+  const list = guestSamples.filter(s=> slugify(s.name)!==me);   // свій і так є окремо
+  if(!list.length){
+    st.textContent = 'звуків від інших гостей поки нема — запиши свій (🎙), і він лишиться їм у подарунок 🎁';
+    return;
+  }
+  const total = list.length + (userSampleB64 ? 1 : 0);          // по колу: гості → (твій) → гості…
+  guestSampleIdx = (guestSampleIdx+1) % total;
+  if(userSampleB64 && guestSampleIdx===list.length){
+    activeGuestSample = null;
+    document.getElementById('s-wave').textContent='ЗВУК: ТВІЙ ЗВУК';
+    st.textContent='звук: твій запис';
+  } else {
+    activeGuestSample = list[guestSampleIdx % list.length];
+    document.getElementById('s-wave').textContent='ЗВУК: 🎁 '+activeGuestSample.name.split(/\s+/)[0].toUpperCase().slice(0,10);
+    st.textContent='звук гостя: '+activeGuestSample.name+' — малюй ним ноти 🎶';
+  }
+  smpWaveIdx = SMP_WAVES.findIndex(w=>w[0]==='smp'); SMP.wave='smp';
+  ensureAudio(); playNote(523.25, audioCtx.currentTime, 0.5, 'smp', 0.07);
 });
 let recMedia=null, recChunks=[], recTimer=null, recBarTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null, myTrackLoop=false, myTrackPattern='';
 let waveAnim=null, myTrackStartT=0;
@@ -8744,7 +8812,7 @@ document.getElementById('s-mysave').addEventListener('click', async ()=>{
   if(!author){ author=(prompt('Як тебе підписати в плейлисті?')||'').trim(); if(!author) return;
     localStorage.setItem('wed-player-name', author); }
   sStat('зберігаю пісню…');
-  const ok = await saveVoiceTrack(author, myTrackBlob, myTrackPattern, patUsesSmp(myTrackPattern) ? userSampleB64 : null);
+  const ok = await saveVoiceTrack(author, myTrackBlob, myTrackPattern, patUsesSmp(myTrackPattern) ? currentSampleB64() : null);
   sStat(ok==='big' ? 'запис задовгий для збереження — запиши коротший (до ~30с)' :
         ok ? '✓ пісня у весільному плейлисті! (автор: '+author+')' :
         'не вдалося зберегти — спробуй пізніше (трек лишився тут)');
@@ -8954,7 +9022,7 @@ document.getElementById('s-save').addEventListener('click', async ()=>{
     localStorage.setItem('wed-player-name', author);
   }
   st.textContent = 'зберігаю…';
-  const ok = await saveTrack(author, pattern, patUsesSmp(pattern) ? userSampleB64 : null);
+  const ok = await saveTrack(author, pattern, patUsesSmp(pattern) ? currentSampleB64() : null);
   st.textContent = ok
     ? '✓ збережено! твоя мелодія — у весільному плейлисті (автор: '+author+')'
     : 'поки не вдалося зберегти — плейлист відкриється незабаром. Мелодія лишилась тут.';
@@ -9847,14 +9915,29 @@ function drawKitanaScene(){
   ctx.beginPath(); ctx.ellipse(52, H-73, 12-gallop*0.6, 3, 0,0,7); ctx.fill();
   ctx.save(); ctx.translate(52, H-73 - gallop);
   if(running) ctx.rotate(-0.05 - Math.min(0.1, k.speed*0.025));   // нахил уперед на бігу
-  if(headReady(KITANA_CAT)){
-    ctx.imageSmoothingEnabled = true;
-    ctx.scale(-1,1);                                    // фото дивиться вліво → фліп, біжить вправо
-    const hh = running ? 27 : 25, hw = Math.round(hh*KITANA_CAT.width/KITANA_CAT.height);
-    const sq = running ? 1 + Math.sin(k.dist*0.25)*0.07 : 1;   // squash & stretch
-    ctx.drawImage(KITANA_CAT, -Math.round(hw/2), -Math.round(hh*sq), hw, Math.round(hh*sq));
-  } else {
-    ctx.fillStyle = '#7d7888'; ctx.fillRect(-8,-14,16,14);
+  // піксельне тіло в галопі + СПРАВЖНЯ морда Кітани (велика, впізнавана) — як у людей у грі
+  {
+    const ph = running ? ((k.dist*0.22|0)&1) : 0;                 // фаза лап
+    const grey='#6a6476', dark='#514c5e', belly='#8f89a0';
+    const tw = running ? Math.sin(k.dist*0.22)*5 : Math.sin(k.t*0.05)*3;   // хвіст махає
+    ctx.strokeStyle=dark; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(-18,-14); ctx.quadraticCurveTo(-27,-18+tw, -30,-26+tw); ctx.stroke();
+    ctx.fillStyle=dark; ctx.fillRect(-20,-18,34,14);              // тулуб (контур)
+    ctx.fillStyle=grey; ctx.fillRect(-19,-17,32,12);
+    ctx.fillStyle=belly; ctx.fillRect(-17,-8,28,3);               // животик
+    ctx.fillStyle=dark;                                           // лапи: галоп двома парами
+    if(running){
+      if(ph){ ctx.fillRect(-20,-6,5,8); ctx.fillRect(9,-8,5,10); }
+      else  { ctx.fillRect(-14,-6,5,8); ctx.fillRect(-22,-4,5,6); ctx.fillRect(4,-6,5,8); ctx.fillRect(13,-4,5,6); }
+    } else { ctx.fillRect(-16,-6,5,7); ctx.fillRect(7,-6,5,7); }
+    if(headReady(HEAD_KIT)){                                      // морда — справжнє фото, ВЕЛИКА
+      ctx.imageSmoothingEnabled = true;
+      const hh2 = 30, hw2 = Math.round(hh2*HEAD_KIT.width/HEAD_KIT.height);
+      const tilt = running ? Math.sin(k.dist*0.22)*0.06 : 0;      // погойдування на бігу
+      ctx.save(); ctx.translate(15, -18); ctx.rotate(tilt);
+      ctx.drawImage(HEAD_KIT, -Math.round(hw2*0.44), -hh2+4, hw2, hh2);
+      ctx.restore();
+    } else { ctx.fillStyle=grey; ctx.fillRect(8,-28,14,12); }
   }
   ctx.restore();
   // курява з-під лап на бігу
