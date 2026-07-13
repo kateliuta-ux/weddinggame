@@ -1453,6 +1453,8 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
      Метрики збережені: маківка ~ -53, стопи ~ 0 — аксесуари сцен лишаються на місцях. */
   const c = skin ? Object.assign({}, CHARS[who], skin) : CHARS[who];
   const SK='#eebc96', SKS='#d49a72', SKH='#f8d4b4', o='#221c26';
+  const hairSh = c.style==='bob' ? '#a8854e' : '#33241a';
+  const hairHi = c.style==='bob' ? '#e8cf9a' : (c.hi || null);
   const R = [];
   const add = (x,y,w,h,col,fine)=>R.push([x,y,w,h,col,fine]);
   // відтінки від базових кольорів одягу (щоб зберегти САМЕ їхній одяг)
