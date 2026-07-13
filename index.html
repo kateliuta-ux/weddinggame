@@ -189,7 +189,7 @@
   #end-screen .big{font-family:"Snell Roundhand","Savoye LET","Segoe Script","Brush Script MT",cursive;
     color:#b0596f;font-style:italic;font-size:clamp(26px,7cqw,48px);letter-spacing:1px;
     text-shadow:1px 2px 0 rgba(255,255,255,.8)}
-  #end-screen .date{color:#b58a2e;font-family:Georgia,serif;font-size:clamp(13px,3cqw,22px);letter-spacing:2px}
+  #end-screen .date{color:#a8233c;font-weight:bold;font-family:Georgia,serif;font-size:clamp(14px,3.3cqw,24px);letter-spacing:2px;text-shadow:0 1px 0 rgba(255,255,255,.6)}
   #end-screen p{color:#5a4a52;font-family:Georgia,serif;font-size:clamp(10px,2.1cqw,15px);max-width:82%;line-height:1.6}
   #end-screen .btn{background:#fff8f1!important;color:#8a5766!important;text-transform:none;border-radius:9px;font-weight:bold;
     box-shadow:0 3px 0 rgba(150,110,120,.3), 0 0 0 2px #ecd3c4}
@@ -600,7 +600,7 @@ const ctx = cv.getContext('2d');
 const PORTRAIT_MODE = matchMedia('(orientation:portrait)').matches;
 // на мобільному (портрет) верхні банери-умови рівня опускаємо нижче від краю екрана / чубчика
 const HUD_Y = PORTRAIT_MODE ? 44 : 0;
-const TITLE_Y = HUD_Y + (PORTRAIT_MODE ? 30 : 12);   // плашки-пояснення рівнів — нижче від краю
+const TITLE_Y = HUD_Y + (PORTRAIT_MODE ? 58 : 12);   // плашки-пояснення рівнів — ближче до центру
 const W = 320, H = PORTRAIT_MODE ? 568 : 180;
 const LEVEL_W = 560;
 const FLOOR_Y = PORTRAIT_MODE ? 420 : 152;
@@ -852,7 +852,7 @@ const GUEST_CAMEOS = {
   date: [],
   london: [
     { match:/кукрицьк|вікус/, lines:[
-      {who:null, text:'А в Лондоні, Вікусю, — під одним ми дахом\nжили у спонсорів — і не було нам страху!'} ]},
+      {who:null, text:'А в Лондоні, Вікусю, — під одним ми дахом:\nу вас із Костею й дітьми жилось без страху!'} ]},
   ],
   kitana: [
     { match:/\bдан\b|данил|даня/, lines:[
@@ -1116,6 +1116,7 @@ function tetrisIntroScript(pov){
   return pov==='katya' ? [
     {who:'katya', emo:'normal',text:'Місяць у Лондоні — заради візи.'},
     {who:null,    emo:null,   text:'Ой у Лондоні тумани та дощі,\nа серце в Києві — хоч плач, хоч не проси.'},
+    {who:null,    emo:null,   text:'Той місяць — у родині брата, в Кості:\nз Вікою й дітьми — як удома, в гості.'},
   ] : [
     {who:'dima', emo:'shy',  text:'Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.'},
     {who:null,   emo:null,   text:'В чужім краю валіза й ліхтарі,\nа дума в серці: швидше повернись.'},
@@ -2636,9 +2637,10 @@ function drawVykup(){
   ctx.strokeStyle='#5a3a1e'; ctx.lineWidth=6; ctx.strokeRect(3,3,W-6,H-6);
   ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(8,8,W-16,H-16);
   ctx.textAlign='center';
-  ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(14,16,W-28,34);
-  ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(14.5,16.5,W-29,33);
-  ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText('· ВИКУП НАРЕЧЕНОЇ ·', W/2, 30);
+  const vhy = PORTRAIT_MODE ? 44 : 16;
+  ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(14,vhy,W-28,34);
+  ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(14.5,vhy+0.5,W-29,33);
+  ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText('· ВИКУП НАРЕЧЕНОЇ ·', W/2, vhy+14);
   if(v.intro){                                                   // ── ПРАВИЛА ГРИ (картка на старті) ──
     ctx.fillStyle='rgba(26,18,10,.92)'; ctx.fillRect(24, H*0.30, W-48, 148);
     ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(25, H*0.30+1, W-50, 146);
@@ -2657,7 +2659,7 @@ function drawVykup(){
   }
   ctx.fillStyle='#f4e8c8';
   ctx.fillStyle='rgba(244,232,200,.7)'; ctx.font='8px monospace';
-  if(!v.done) ctx.fillText('раунд '+(v.round+1)+' з '+VYKUP_ROUNDS.length, W/2, 44);
+  if(!v.done) ctx.fillText('раунд '+(v.round+1)+' з '+VYKUP_ROUNDS.length, W/2, vhy+28);
   { // ПИТАННЯ — окрема велика плашка нижче (не біля краю, крупним кеглем)
     const qy = PORTRAIT_MODE ? 96 : 58;
     ctx.fillStyle='rgba(26,18,10,.88)'; ctx.fillRect(16, qy, W-32, 44);
@@ -4431,16 +4433,37 @@ function drawWedSofi(){
   drawAttendant(10, FLOOR_Y+4, BRIDES[0], 1.35); drawAttendant(32, FLOOR_Y+4, BRIDES[1], 1.35);
   drawAttendant(104, FLOOR_Y+4, GROOMS[0], 1.35); drawAttendant(126, FLOOR_Y+4, GROOMS[1], 1.35);
   // молодята на рушнику
-  drawCouple(58, 90, FLOOR_Y+4);
-  // НІКА СЕЛЕГА веде обряд — максимально традиційно, але без священника
+  // ── обряд «ВЕРБОВА ДОЩЕЧКА»: дружки співають — наречену ведуть до нареченого ──
+  const vd = Math.min(1, game.phaseT/240);
+  if(game.phaseT < 250){
+    // дощечка з вербовим гіллям, покладена до нареченого
+    ctx.fillStyle='#8a6a3e'; ctx.fillRect(64, FLOOR_Y+2, 176, 5);
+    ctx.fillStyle='#a5824e'; ctx.fillRect(64, FLOOR_Y+2, 176, 2);
+    ctx.fillStyle='#6e5430'; for(let px2=70; px2<236; px2+=22) ctx.fillRect(px2, FLOOR_Y+4, 2, 3);
+    for(let k=0;k<7;k++){                                            // вербові котики-гілочки
+      const wx = 74+k*24;
+      ctx.strokeStyle='#7a8a4e'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(wx, FLOOR_Y+2); ctx.quadraticCurveTo(wx+3, FLOOR_Y-4, wx+6, FLOOR_Y-7); ctx.stroke();
+      ctx.fillStyle='#d8d2be'; ctx.fillRect(wx+2,FLOOR_Y-3,2,3); ctx.fillRect(wx+5,FLOOR_Y-7,2,3);
+    }
+    // Діма чекає, Катя-наречена йде дощечкою до нього
+    drawPerson(58, FLOOR_Y+2, 'dima', 0, 1, false, DIMA_FEB26);
+    const kx2 = Math.round(228 - vd*152);                            // 228 → 76
+    const walking = vd < 0.98;
+    drawPerson(kx2, FLOOR_Y-(walking?1:0), 'katya', (game.t>>3), -1, walking,
+      {top:'#f8f5ea', topD:'#ddd8c4', skirtCol:'#f8f5ea'});
+    ctx.fillStyle='rgba(248,245,234,.7)'; ctx.fillRect(kx2+7, FLOOR_Y-70, 7, 38);   // фата
+    if(((game.t>>4)&3)===0) drawSongNote(kx2+18, FLOOR_Y-64, game.t);
+    drawHint('обряд «Вербова дощечка»: дружки співають — наречену ведуть до нареченого', W/2, Math.round(H*0.32));
+  } else {
+    drawCouple(58, 90, FLOOR_Y+4);
+  }
+  // НІКА СЕЛЕГА веде обряд (без підпису — просто веде)
   {
     const nk = pickFace(['селега','ніка']);
-    drawGuest(74, FLOOR_Y+22, '#7a4a8a', false, game.t+3, nk, 1.5);   // стоїть перед молодятами
-    const NIKA = ['Станьте на рушник!','Хліб і сіль — молодятам!','Кланяйтесь родові!','(без священника — та за традицією!)'];
-    drawShout(74, FLOOR_Y-46, NIKA[(game.t>>7) % NIKA.length]);
-    ctx.fillStyle='rgba(42,52,68,.8)'; ctx.fillRect(38, FLOOR_Y+38, 74, 11);
-    ctx.fillStyle='#f4f0e4'; ctx.font='6px monospace'; ctx.textAlign='center';
-    ctx.fillText('Ніка веде обряд', 75, FLOOR_Y+46); ctx.textAlign='left';
+    drawGuest(112, FLOOR_Y+22, '#7a4a8a', false, game.t+3, nk, 1.5);
+    const NIKA = ['Вербовая дощечка, дощечка! 🎶','Станьте на рушник!','Хліб і сіль — молодятам!','Кланяйтесь родові!'];
+    drawShout(112, FLOOR_Y-46, NIKA[(game.t>>7) % NIKA.length]);
   }
   // ЗАСТІЛЛЯ: довгий стіл, скатертина з вишивкою, КОРОВАЙ у центрі
   const tx = 128, tw = 108, ty = FLOOR_Y-2;
@@ -4479,9 +4502,9 @@ function drawWedSofi(){
   ctx.fillStyle = COL.rose; ctx.fillRect(tx+61, FLOOR_Y+7, 4, 3);
   // ── ЛОНДОН НА ЗВʼЯЗКУ: Віка з Давідом, Георгієм і Лікою в зумі ──
   {
-    const zx = 12, zy = FLOOR_Y-96, zw = 62, zh = 44;
-    ctx.fillStyle='#221c26'; ctx.fillRect(zx+zw/2-3, zy+zh, 6, 22);           // стійка-тринога
-    ctx.fillRect(zx+zw/2-12, zy+zh+20, 24, 3);
+    const zx = 8, zy = FLOOR_Y-168, zw = 58, zh = 42;
+    ctx.fillStyle='#221c26'; ctx.fillRect(zx+zw/2-3, zy+zh, 6, FLOOR_Y-(zy+zh)+16);   // висока стійка
+    ctx.fillRect(zx+zw/2-12, FLOOR_Y+14, 24, 3);
     ctx.fillStyle='#141018'; ctx.fillRect(zx-3, zy-3, zw+6, zh+6);            // ноутбук/планшет
     ctx.fillStyle='#1c2a3a'; ctx.fillRect(zx, zy, zw, zh);                    // екран
     const tiles=[['#c99a52','Віка'],['#5a3d24','Давід'],['#c99a52','Георгій'],['#e8c49c','Ліка']];
@@ -4495,16 +4518,15 @@ function drawWedSofi(){
       ctx.strokeStyle='#141018'; ctx.lineWidth=1; ctx.strokeRect(cx2+0.5, cy2+0.5, tw2-1, th2-1);
     });
     ctx.fillStyle='#3fae5a'; ctx.beginPath(); ctx.arc(zx+4, zy+4, 2, 0, 7); ctx.fill();   // зелений «онлайн»
-    ctx.fillStyle='rgba(12,9,16,.72)'; ctx.fillRect(zx-6, zy+zh+24, zw+12, 10);
+    ctx.fillStyle='rgba(12,9,16,.72)'; ctx.fillRect(zx-4, zy-14, zw+8, 10);
     ctx.fillStyle='#f4f0e4'; ctx.font='6px monospace'; ctx.textAlign='center';
-    ctx.fillText('Лондон на звʼязку 🇬🇧', zx+zw/2, zy+zh+31); ctx.textAlign='left';
+    ctx.fillText('Лондон на звʼязку 🇬🇧', zx+zw/2, zy-7); ctx.textAlign='left';
   }
   drawWedHearts();
   ctx.fillStyle = '#2a3444'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-  ctx.fillText('06 · 09 · 2026', W/2, 26);
+  ctx.fillText('06 · 09 · 2026', W/2, PORTRAIT_MODE?54:26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(42,52,68,.8)';
-  ctx.fillText('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂', W/2, 38);
-  ctx.fillText('обряд веде Ніка Селега — по-нашому, традиційно', W/2, 48);
+  ctx.fillText('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂', W/2, PORTRAIT_MODE?66:38);
 }
 /* ---- ФІНАЛ Б: дворик бару «Хвильовий», вечір, молодята на сцені ---- */
 function drawWedKhv(){
@@ -4595,9 +4617,9 @@ function drawWedKhv(){
   ctx.fillStyle = COL.rose; ctx.fillRect(sx+103, syTop-7, 4, 3);
   drawWedHearts();
   ctx.fillStyle = '#f4e8c8'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-  ctx.fillText('06 · 09 · 2026', W/2, 26);
+  ctx.fillText('06 · 09 · 2026', W/2, PORTRAIT_MODE?54:26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(244,232,200,.8)';
-  ctx.fillText('дворик «Хвильового» · усі співають «Штольню» 🎶', W/2, 38);
+  ctx.fillText('дворик «Хвильового» · усі співають «Штольню» 🎶', W/2, PORTRAIT_MODE?66:38);
 }
 /* Молодята сидячи: ноги звисають з краю сцени, погойдуються по черзі */
 function drawSeatedCouple(kx, dx, edgeY){
@@ -5116,7 +5138,7 @@ function pixBands(x, y, w, h, stops){
 /* підказка-правило з темною підкладкою — читабельна на будь-якому фоні */
 function drawHint(txt, x, y, size){
   if(!txt) return;
-  if(PORTRAIT_MODE && y > H-46) y = H-64;     // над зоною великого пальця
+  if(PORTRAIT_MODE && y > H-46) y = H-88;     // над пальцем і ближче до центру
   ctx.save();
   ctx.font = (size||9)+'px monospace'; ctx.textAlign = 'center';
   const w = Math.ceil(ctx.measureText(txt).width);
@@ -5334,6 +5356,7 @@ function novelData(){
     ]},
     {bg:3, cap:['ЖОВТЕНЬ 2022','Київ ↔ Лондон'], lines:[
       N('А там — і Лондон, місяць розлуки:\nвона за морем — він рахує дні й муки.'),
+      N('Той місяць — у родині брата, в Кості:\nз Вікою й дітьми — як удома, в гості.'),
       {who:'dima', emo:'shy', text:'Вона за 2500 км. Я був закоханий\nі — чесно — скучав.'},
       N('Одинадцять тисяч листів — за місяць лік,\nвернулась раніш, бо серцю невтерпік.'),
     ]},
@@ -5978,6 +6001,7 @@ function novelDataEn(){
     ]},
     {bg:3, cap:['OCTOBER 2022','Kyiv ↔ London'], lines:[
       N("Then London came — a month so far away:\nshe crossed the sea, he counted every day."),
+      N("She stayed with brother Kostia and his crew:\nwith Vika and the kids the month flew through."),
       {who:'dima', emo:'shy', text:"She was 2500 km away.\nI was in love and — honestly — I missed her."},
       N("Eleven thousand letters — quite a lot!\nShe came back early: hearts don't do remote."),
     ]},
@@ -6130,8 +6154,8 @@ function drawNovel(){
     ctx.fillText(LANG==='en' ? '· INVITATION ·' : '· ЗАПРОШЕННЯ ·', W/2, by2+18);
     let ly = by2+34;
     blocks.forEach(s=>{
-      ctx.fillStyle='#96c4b2'; ctx.font='bold 9px monospace'; ctx.fillText(s.where, W/2, ly);
-      ctx.fillStyle='#d8e8dc'; ctx.font='8px monospace'; ctx.fillText(s.what+' · '+s.when.replace('6 вересня 2026 · ',''), W/2, ly+12);
+      ctx.fillStyle='#bff0d8'; ctx.font='bold 10px monospace'; ctx.fillText(s.where, W/2, ly);
+      ctx.fillStyle='#ffe9a0'; ctx.font='bold 9px monospace'; ctx.fillText(s.what+' · '+s.when.replace('6 вересня 2026 · ',''), W/2, ly+12);
       ly += 30;
     });
     if(DRESS_CODE!=='—'){ ctx.fillStyle='#c9d9c4'; ctx.font='8px monospace'; ctx.fillText('дрес-код: '+DRESS_CODE, W/2, ly); }
@@ -6150,7 +6174,7 @@ function drawNovel(){
   // капшн зверху
   ctx.textAlign='center';
   ctx.fillStyle='rgba(10,8,14,.55)'; ctx.fillRect(0,10,W,32);
-  ctx.fillStyle='rgba(232,138,160,.9)'; ctx.font='bold 8px monospace'; ctx.fillText('· '+(NPART(chap.bg)||'')+' ·', W/2, 16);
+  ctx.fillStyle='rgba(232,138,160,.9)'; ctx.font='bold 8px monospace'; ctx.fillText('· '+(NPART(chap.bg)||'')+' ·', W/2, PORTRAIT_MODE?38:16);
   ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText(chap.cap[0], W/2, 26);
   ctx.fillStyle='#d8d4c4'; ctx.font='9px monospace'; ctx.fillText(chap.cap[1], W/2, 38);
   // кнопка «пропустити розділ» — зʼявляється лише для вже баченого
