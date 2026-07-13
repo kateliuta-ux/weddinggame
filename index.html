@@ -469,6 +469,7 @@
 
   <div id="selfie-screen" class="overlay hidden" style="background:#14121c;gap:10px">
     <div class="s-head">GAME BOY КАМЕРА <span>стань пікселем на весіллі: обличчя рівно в овал, очі та рот — на лінії</span></div>
+    <div id="selfie-for" class="hidden" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:92%"></div>
     <div id="selfie-wrap" style="position:relative;width:min(78vw,300px);aspect-ratio:1;background:#000;overflow:hidden;border:3px solid #f4f0e4">
       <video id="selfie-video" autoplay playsinline muted
         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video>
@@ -1422,15 +1423,26 @@ function drawCollect(camX){
     if(it.taken) return;
     const sx = Math.round(it.x - camX), sy = Math.round(it.y + Math.sin(t*0.06+i)*2);
     if(sx<-12||sx>W+12) return;
+    const pulse = 0.6 + 0.4*Math.sin(t*0.12+i*1.7);
     if(c.kind==='idea'){
-      ctx.fillStyle = 'rgba(255,232,140,.25)'; ctx.fillRect(sx-5,sy-6,12,14);   // сяйво
-      ctx.fillStyle = '#f4d46a'; ctx.fillRect(sx-3,sy-4,8,7);                    // колба
-      ctx.fillStyle = '#fff8d8'; ctx.fillRect(sx-1,sy-2,3,3);
-      ctx.fillStyle = '#bcb7a8'; ctx.fillRect(sx-1,sy+3,4,3);                    // цоколь
+      ctx.fillStyle = 'rgba(255,232,140,'+(0.16+0.14*pulse)+')';                 // пульс-сяйво
+      ctx.beginPath(); ctx.arc(sx+1, sy, 13, 0, 7); ctx.fill();
+      ctx.fillStyle = '#221c26'; ctx.fillRect(sx-5,sy-7,12,11);                  // контур
+      ctx.fillStyle = '#f4d46a'; ctx.fillRect(sx-4,sy-6,10,9);                   // колба (більша)
+      ctx.fillStyle = '#fff8d8'; ctx.fillRect(sx-2,sy-4,4,4);
+      ctx.fillStyle = '#221c26'; ctx.fillRect(sx-3,sy+4,8,1);
+      ctx.fillStyle = '#bcb7a8'; ctx.fillRect(sx-2,sy+5,6,4);                    // цоколь
+      ctx.fillStyle = '#8a8577'; ctx.fillRect(sx-2,sy+7,6,1);
     } else {
-      ctx.fillStyle = COL.rose;
-      ctx.fillRect(sx-4,sy-3,3,3); ctx.fillRect(sx+1,sy-3,3,3);
-      ctx.fillRect(sx-4,sy-1,8,3); ctx.fillRect(sx-2,sy+2,4,2); ctx.fillRect(sx-1,sy+4,2,1);
+      ctx.fillStyle = 'rgba(232,110,140,'+(0.16+0.16*pulse)+')';                 // пульс-сяйво
+      ctx.beginPath(); ctx.arc(sx, sy+1, 13, 0, 7); ctx.fill();
+      ctx.fillStyle = '#221c26';                                                 // контур серця
+      ctx.fillRect(sx-6,sy-5,5,5); ctx.fillRect(sx+1,sy-5,5,5);
+      ctx.fillRect(sx-6,sy-2,12,5); ctx.fillRect(sx-4,sy+3,8,3); ctx.fillRect(sx-2,sy+6,4,2);
+      ctx.fillStyle = '#e0557a';                                                 // серце (більше і яскравіше)
+      ctx.fillRect(sx-5,sy-4,4,4); ctx.fillRect(sx+1,sy-4,4,4);
+      ctx.fillRect(sx-5,sy-1,10,4); ctx.fillRect(sx-3,sy+3,6,2); ctx.fillRect(sx-2,sy+5,4,1);
+      ctx.fillStyle = '#ff9ab8'; ctx.fillRect(sx-4,sy-3,2,2);                    // блік
     }
   });
   // лічильник
@@ -4517,14 +4529,15 @@ function drawWedSofi(){
   ctx.fillStyle = COL.rose; ctx.fillRect(tx+61, FLOOR_Y+7, 4, 3);
   // ── ЛОНДОН НА ЗВʼЯЗКУ: Віка з Давідом, Георгієм і Лікою в зумі ──
   {
-    const zx = 8, zy = FLOOR_Y-168, zw = 58, zh = 42;
+    const zx = 6, zy = FLOOR_Y-168, zw = 72, zh = 44;
     ctx.fillStyle='#221c26'; ctx.fillRect(zx+zw/2-3, zy+zh, 6, FLOOR_Y-(zy+zh)+16);   // висока стійка
     ctx.fillRect(zx+zw/2-12, FLOOR_Y+14, 24, 3);
     ctx.fillStyle='#141018'; ctx.fillRect(zx-3, zy-3, zw+6, zh+6);            // ноутбук/планшет
     ctx.fillStyle='#1c2a3a'; ctx.fillRect(zx, zy, zw, zh);                    // екран
-    const tiles=[['#c99a52','Віка'],['#5a3d24','Давід'],['#c99a52','Георгій'],['#e8c49c','Ліка']];
+    const tiles=[['#c99a52','Віка'],['#5a3d24','Давід'],['#c99a52','Георгій'],
+                 ['#e8c49c','Ліка'],['#8a5c34','кума'],['#3a2a1a','кума']];   // + дві куми (доньки сусідів, за кордоном)
     tiles.forEach(([hair],ti)=>{
-      const cx2 = zx+3+(ti%2)*(zw/2), cy2 = zy+3+Math.floor(ti/2)*(zh/2), tw2=zw/2-5, th2=zh/2-5;
+      const cx2 = zx+3+(ti%3)*(zw/3), cy2 = zy+3+Math.floor(ti/3)*(zh/2), tw2=zw/3-4, th2=zh/2-5;
       ctx.fillStyle='#2a3a50'; ctx.fillRect(cx2, cy2, tw2, th2);              // віконечко
       ctx.fillStyle='#eebc96'; ctx.fillRect(cx2+tw2/2-4, cy2+4, 8, 8);        // личко
       ctx.fillStyle=hair;      ctx.fillRect(cx2+tw2/2-4, cy2+4, 8, 3);        // волосся
@@ -4533,9 +4546,9 @@ function drawWedSofi(){
       ctx.strokeStyle='#141018'; ctx.lineWidth=1; ctx.strokeRect(cx2+0.5, cy2+0.5, tw2-1, th2-1);
     });
     ctx.fillStyle='#3fae5a'; ctx.beginPath(); ctx.arc(zx+4, zy+4, 2, 0, 7); ctx.fill();   // зелений «онлайн»
-    ctx.fillStyle='rgba(12,9,16,.72)'; ctx.fillRect(zx-4, zy-14, zw+8, 10);
-    ctx.fillStyle='#f4f0e4'; ctx.font='6px monospace'; ctx.textAlign='center';
-    ctx.fillText('Лондон на звʼязку 🇬🇧', zx+zw/2, zy-7); ctx.textAlign='left';
+    ctx.fillStyle='rgba(12,9,16,.72)'; ctx.fillRect(zx-5, zy-14, zw+10, 10);
+    ctx.fillStyle='#f4f0e4'; ctx.textAlign='center'; fitText('за кордоном — на звʼязку 🌍', zw+4, 6, false);
+    ctx.fillText('за кордоном — на звʼязку 🌍', zx+zw/2, zy-7); ctx.textAlign='left';
   }
   // ── обряд «ВЕРБОВА ДОЩЕЧКА» (передній план): наречену ведуть до нареченого ──
   if(game.phaseT < 250){
@@ -7591,17 +7604,24 @@ function render(){
     const tby = H-22;
     drawPerson(100, tby-bob, 'katya', 0, 1, false, VYSH_K);
     drawPerson(220, tby-(1-bob), 'dima', 0, -1, false, VYSH_D);
-    { const hx=100, hy=tby-75-bob;                       // ВІНОК: сидить НА волоссі (маківка tby-74, легкий нахлест)
-      ctx.fillStyle='#3f6b3a'; ctx.fillRect(hx-10,hy,20,3);                       // основа-зелень
-      [['#a8323c',-9],['#f4cf5e',-4],['#e08aa0',1],['#a8323c',6]].forEach(([c,dx])=>{  // квіти
-        ctx.fillStyle=c; ctx.fillRect(hx+dx,hy-3,4,4); });
-      ctx.fillStyle='#fff'; ctx.fillRect(hx-2,hy-4,3,3);                          // біла квітка по центру
-      // стрічки — ЛИШЕ З БОКІВ голови (за вушками), не по обличчю
+    { const hx=100, hy=tby-71-bob;                       // ВІНОК: обіймає маківку (нахлест на волосся)
+      // стрічки — впритул до скронь, спадають за плечі (малюємо ПЕРЕД обідком)
       const wav=Math.sin(game.t*0.08)*2;
-      [['#a8323c',-15],['#f4cf5e',-12],['#3F7C77',11],['#e08aa0',14]].forEach(([c,dx],i)=>{
+      [['#a8323c',-12],['#f4cf5e',-9.6],['#3F7C77',7.6],['#e08aa0',10]].forEach(([c,dx],i)=>{
         ctx.fillStyle=c;
-        ctx.fillRect(hx+dx+((i<2)?-1:0), hy+3, 2, 22);
-        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+23, 2, 12); });
+        ctx.fillRect(hx+dx, hy+2, 2.4, 19);
+        ctx.fillRect(hx+dx+((i<2)?wav:-wav), hy+20, 2.4, 12); });
+      // обідок-ДУГА з зелені: краї нижче, середина вище — сидить по формі голови
+      ctx.fillStyle='#3f6b3a';
+      ctx.fillRect(hx-11, hy+2, 5, 3);
+      ctx.fillRect(hx-7,  hy,   14, 3);
+      ctx.fillRect(hx+6,  hy+2, 5, 3);
+      ctx.fillStyle='#2e5230'; ctx.fillRect(hx-11, hy+4, 5, 1); ctx.fillRect(hx+6, hy+4, 5, 1);   // тінь обідка
+      // квіти по дузі (з відблиском)
+      [['#a8323c',-10.5,1.4],['#f4cf5e',-6,-0.6],['#fff',-1.6,-1.6],['#e08aa0',2.8,-0.6],['#a8323c',7,1.4]].forEach(([c,dx,dy])=>{
+        ctx.fillStyle=c; ctx.fillRect(hx+dx, hy-2+dy, 4, 4);
+        ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(hx+dx, hy-2+dy, 1.6, 1.6); });
+      ctx.fillStyle='#f4cf5e'; ctx.fillRect(hx-8.4,hy+0.6,1.6,1.6); ctx.fillRect(hx+4.6,hy+0.6,1.6,1.6);  // дрібні квіточки між
       ctx.fillStyle='#a8323c';                                                     // намисто (під підборіддям)
       ctx.fillRect(hx-6,tby-45-bob,2,2); ctx.fillRect(hx-2,tby-43-bob,3,3); ctx.fillRect(hx+3,tby-45-bob,2,2);
     }
@@ -8243,10 +8263,39 @@ document.getElementById('btn-sampler').addEventListener('click', ()=>{
      match /selfies/{doc} { allow create, read: if true; allow update, delete: if false; }
      (read дозволено — гра показує обличчя гостей у фіналі весілля) */
 let selfieStream = null, selfieShot = null;
+let selfieFor = null;                                  // за кого фото (діти лондонців / Яра)
+function selfieKidsFor(name){
+  const n=(name||'').toLowerCase();
+  if(/кост/.test(n) || (/віка|вікторія/.test(n) && !/кукриц/.test(n))) return ['Давід','Георгій','Ліка'];
+  if(/луїз|шаблія/.test(n)) return ['Яра'];
+  return null;
+}
 async function openSelfie(){
   document.getElementById('end-screen').classList.add('hidden');
   elTitle.classList.add('hidden');
   document.getElementById('selfie-screen').classList.remove('hidden');
+  // батьки можуть додати фото ЗА дітей
+  selfieFor = null;
+  {
+    const kids = selfieKidsFor(localStorage.getItem('wed-player-name'));
+    const row = document.getElementById('selfie-for');
+    row.innerHTML = '';
+    if(kids){
+      row.classList.remove('hidden');
+      ['Я'].concat(kids).forEach(nm=>{
+        const b=document.createElement('button');
+        b.className='btn small';
+        b.textContent = nm==='Я' ? '🙋 Я' : '👧 '+nm;
+        b.style.background = nm==='Я' ? 'var(--rose)' : '#2b2b38';
+        b.addEventListener('click', ()=>{
+          selfieFor = nm==='Я' ? null : nm;
+          [...row.children].forEach(x=>x.style.background='#2b2b38');
+          b.style.background='var(--rose)';
+        });
+        row.appendChild(b);
+      });
+    } else row.classList.add('hidden');
+  }
   const st = document.getElementById('selfie-status');
   const snapBtn = document.getElementById('selfie-snap');
   // камера відкривається ЗАВЖДИ (обмеження «одне фото на гостя» — на сервері).
@@ -8362,6 +8411,7 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
     if(!name) return;
     localStorage.setItem('wed-player-name', name);
   }
+  if(selfieFor) name = selfieFor;                     // фото ЗА дитину — підпис її іменем
   st.textContent = 'надсилаю…';
   if(TEST_MODE){                            // тест: показуємо, не зберігаючи
     if(selfieShot){ const pim=new Image(); pim.src=selfieShot; GUEST_FACES.push({img:pim, name}); }
@@ -8371,7 +8421,7 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
   }
   // одне фото на гостя: стабільний documentId (за персональним кодом або імʼям).
   // Друга спроба → 409 ALREADY_EXISTS (правило allow update:false), і ми це ловимо.
-  const docId = (GUEST && GUEST.id) ? GUEST.id : ('name-' + slugify(name));
+  const docId = (GUEST && GUEST.id && !selfieFor) ? GUEST.id : ('name-' + slugify(name));
   try{
     const r = await fetch(FS_BASE+'selfies?documentId='+encodeURIComponent(docId)+'&key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -8424,14 +8474,17 @@ function placeholderAvatar(name){
   x.font='12px monospace'; x.fillStyle='rgba(255,255,255,.62)'; x.fillText('додай своє —',120,240); x.fillText('і будеш тут по-справжньому',120,258);
   return c.toDataURL('image/png');
 }
+const TINDER_KIDS = /давід|георгій|ліка\b|яра\b|яруся/;   // діти — поза тіндером
 function buildPartyDeck(){
   const meNameLow = (localStorage.getItem('wed-player-name')||'').trim().toLowerCase();
   // 1) гості з фото (селфі) — завжди в колоді
-  const withPhoto = GUEST_FACES.map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
+  const withPhoto = GUEST_FACES.filter(f=>!TINDER_KIDS.test((f.name||'').toLowerCase()))
+    .map(f => { const nm=(f.name||'гість весілля'); const real=(f.img&&f.img.src)||'';
     return {kind:'guest', name:nm, tag:'гість весілля', src:(real&&real.startsWith('data:'))?real:placeholderAvatar(nm)}; });
   // 2) решта гостей ЗІ СПИСКУ — з монограмами (їх теж можна лайкати вже зараз)
   const haveLow = new Set(withPhoto.map(g=>g.name.toLowerCase().trim()));
   const noPhoto = (RSVP_GUEST_LIST||[]).filter(g=> g.name && !haveLow.has(g.name.toLowerCase().trim())
+      && !TINDER_KIDS.test(g.name.toLowerCase())
       && g.name.toLowerCase().trim()!==meNameLow)
     .map(g=>({kind:'guest', name:g.name, tag:'гість весілля · ще без фото', src:placeholderAvatar(g.name)}));
   for(let i=noPhoto.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=noPhoto[i]; noPhoto[i]=noPhoto[j]; noPhoto[j]=t; }
