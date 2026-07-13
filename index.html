@@ -8481,32 +8481,85 @@ document.getElementById('s-tempo').addEventListener('click', ()=>{
   const i = SMP_TEMPOS.findIndex(t=>t[0]===SMP.stepMs);
   smpSetTempo(SMP_TEMPOS[(i+1)%SMP_TEMPOS.length][0]);
 });
-/* запис ВЛАСНОГО ЗВУКУ-інструмента (1.5с): няв, «бум», свист — що завгодно */
+/* запис ВЛАСНОГО ЗВУКУ-інструмента (1.5с): няв, «бум», свист — що завгодно.
+   Пишемо PCM напряму з WebAudio (без MediaRecorder — той підводить на iOS),
+   з живою хвилею мікрофона і прогрес-баром. */
+let smpSampRec = false;
+function drawBufWave(buf){                       // статична форма записаного семпла
+  const [c,g]=waveCv(); c.classList.remove('hidden');
+  const ch=buf.getChannelData(0), n=ch.length, spp=Math.max(1, Math.floor(n/c.width));
+  g.fillStyle='#16121c'; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle='#c9584a';
+  for(let x=0;x<c.width;x++){
+    let mn=1,mx=-1;
+    for(let i=x*spp;i<(x+1)*spp && i<n;i+=4){ const v=ch[i]; if(v<mn)mn=v; if(v>mx)mx=v; }
+    const y1=(1-mx)/2*c.height, y2=(1-mn)/2*c.height;
+    g.fillRect(x, y1, 1, Math.max(2,y2-y1));
+  }
+}
 document.getElementById('s-samp').addEventListener('click', async ()=>{
   const st = document.getElementById('s-status');
+  const btn = document.getElementById('s-samp');
+  if(smpSampRec) return;                                      // вже пишемо
+  if(typeof recMedia!=='undefined' && recMedia){ st.textContent='спершу закінчи запис голосу 🙂'; return; }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ st.textContent='мікрофон недоступний на цьому пристрої'; return; }
+  let stream = null;
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false}}); }
+  catch(e){ st.textContent='не вдалося: дозволь доступ до мікрофона 🎙'; return; }
+  smpSampRec = true;
+  const bar=document.getElementById('s-recbar'), fill=document.getElementById('s-recfill');
+  const oldTxt = btn.textContent;
+  let src=null, sp=null, an=null, mute0=null;
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    const mr = new MediaRecorder(stream); const chunks=[];
-    mr.ondataavailable = e=> chunks.push(e.data);
-    st.textContent = '🎙 кажи, співай або нявкай — півтори секунди!';
-    mr.start();
-    setTimeout(()=>{ try{ mr.stop(); }catch(_){} }, 1600);
-    await new Promise(res=>{ mr.onstop=res; });
+    ensureAudio(); if(audioCtx.state==='suspended'){ try{ await audioCtx.resume(); }catch(_){} }
+    src = audioCtx.createMediaStreamSource(stream);
+    an = audioCtx.createAnalyser(); an.fftSize=1024; src.connect(an);
+    startLiveWave(an);                                        // ЖИВА ХВИЛЯ мікрофона
+    bar.classList.remove('hidden'); fill.style.width='0%';
+    btn.textContent='🔴 ЗАПИС…';
+    st.textContent='🎙 кажи, співай або нявкай — 1.5 секунди!';
+    // збір PCM: ScriptProcessor (працює скрізь, зокрема iOS)
+    sp = audioCtx.createScriptProcessor(2048, 1, 1);
+    mute0 = audioCtx.createGain(); mute0.gain.value = 0;      // щоб мікрофон не дудів у динаміки
+    src.connect(sp); sp.connect(mute0); mute0.connect(audioCtx.destination);
+    const chunks=[]; let got=0; const need=Math.ceil(audioCtx.sampleRate*1.5);
+    sp.onaudioprocess = e=>{
+      const d=e.inputBuffer.getChannelData(0);
+      chunks.push(new Float32Array(d)); got+=d.length;
+      fill.style.width = Math.min(100, got/need*100)+'%';     // прогрес запису
+    };
+    await new Promise(res=> setTimeout(res, 1700));
+    try{ sp.disconnect(); src.disconnect(); mute0.disconnect(); }catch(_){}
     stream.getTracks().forEach(t=>t.stop());
-    const ab = await new Blob(chunks).arrayBuffer();
-    ensureAudio();
-    const dec = await audioCtx.decodeAudioData(ab);
-    const off = new OfflineAudioContext(1, Math.ceil(Math.min(dec.duration,1.5)*16000), 16000);
-    const src = off.createBufferSource(); src.buffer=dec; src.connect(off.destination); src.start();
-    userSampleBuf = await off.startRendering();
-    userSampleB64 = sampleToB64(userSampleBuf);
+    cancelAnimationFrame(waveAnim);
+    // склеїти семпли
+    const all=new Float32Array(Math.min(got, need));
+    { let o=0; for(const c2 of chunks){ for(let i=0;i<c2.length && o<all.length;i++,o++) all[o]=c2[i]; } }
+    let peak=0; for(let i=0;i<all.length;i++){ const a=Math.abs(all[i]); if(a>peak) peak=a; }
+    if(!all.length || peak<0.01){
+      bar.classList.add('hidden'); btn.textContent=oldTxt;
+      st.textContent='тиша 🤔 нічого не почули — ближче до мікрофона і ще раз';
+      smpSampRec=false; return;
+    }
+    // нормалізація + ресемпл у 16кГц
+    const k=0.9/peak, ratio=audioCtx.sampleRate/16000, n16=Math.floor(all.length/ratio);
+    const buf=audioCtx.createBuffer(1, n16, 16000), ch=buf.getChannelData(0);
+    for(let i=0;i<n16;i++){ const j=(i*ratio)|0; ch[i]=Math.max(-1, Math.min(1, all[j]*k)); }
+    userSampleBuf = buf; userSampleB64 = sampleToB64(buf);
     try{ localStorage.setItem('wed-sample', userSampleB64); }catch(_){}
     smpWaveIdx = SMP_WAVES.findIndex(w=>w[0]==='smp'); SMP.wave='smp';
     document.getElementById('s-wave').textContent='ЗВУК: ТВІЙ ЗВУК';
-    st.textContent = '✓ твій звук готовий! Малюй ним ноти — у збереженому треку його почують інші 🎶';
-    playNote(523.25, audioCtx.currentTime, 0.5, 'smp', 0.07);
-  }catch(e){ st.textContent='не вдалося записати — дозволь доступ до мікрофона'; }
+    drawBufWave(buf);                                         // показати форму готового звуку
+    bar.classList.add('hidden'); btn.textContent='🎙 ПЕРЕЗАПИСАТИ ЗВУК';
+    st.textContent='✓ твій звук готовий (ось його хвиля) — малюй ним ноти! У збереженому треку його почують інші 🎶';
+    playNote(523.25, audioCtx.currentTime+0.05, 0.5, 'smp', 0.07);
+  }catch(e){
+    try{ stream.getTracks().forEach(t=>t.stop()); }catch(_){}
+    try{ cancelAnimationFrame(waveAnim); }catch(_){}
+    bar.classList.add('hidden'); btn.textContent=oldTxt;
+    st.textContent='не вдалося записати ('+((e&&e.message)||'?')+') — спробуй ще раз';
+  }
+  smpSampRec = false;
 });
 let recMedia=null, recChunks=[], recTimer=null, recBarTimer=null, myTrackBuf=null, myTrackSrc=null, myTrackBlob=null, myTrackLoop=false, myTrackPattern='';
 let waveAnim=null, myTrackStartT=0;
