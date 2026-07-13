@@ -1541,19 +1541,19 @@ function drawPerson(x, y, who, phase, dir, walking, skin){
   }
 
   // ── РУКИ: плавне звуження, лікоть, кисть ──
-  const sw = -stride*3;
+  const sw = -stride*1.6;                                      // мах руки (без відриву в лікті)
   add(-10.5, -34+bob, 3.6, 9, c.topD);                         // задня рука (плече)
   add(-10.5, -34+bob, 1.2, 9, topDD, true);
-  add(-10.2, -25+bob+sw, 3.2, 6, c.topD);                      // передпліччя
-  add(-10, -20+bob+sw, 3, 3.6, SK); add(-10, -20+bob+sw, 3, 1, SKS, true);
+  add(-10.2, -26+bob+sw, 3.2, 7, c.topD);                      // передпліччя (з перекриттям ліктя)
+  add(-10, -19.6+bob+sw, 3, 3.6, SK); add(-10, -19.6+bob+sw, 3, 1, SKS, true);
   add(6.8, -34+bob, 3.8, 9, c.top);                            // передня рука
   add(6.8, -34+bob, 1, 8, topH, true);                         // рим-світло
   add(9.6, -33+bob, 1, 8, c.topD, true);
-  add(7, -25+bob-sw, 3.4, 6, c.top);
-  add(7, -25+bob-sw, 3.4, 1, c.topD, true);                    // згин ліктя
-  add(7.2, -20+bob-sw, 3, 3.6, SK);
-  add(7.2, -20+bob-sw, 3, 1, SKS, true);
-  add(7.2, -17.4+bob-sw, 1.4, 1, SKH, true);                   // великий палець
+  add(7, -26+bob-sw, 3.4, 7, c.top);
+  add(7, -26+bob-sw, 3.4, 1, c.topD, true);                    // згин ліктя
+  add(7.2, -19.6+bob-sw, 3, 3.6, SK);
+  add(7.2, -19.6+bob-sw, 3, 1, SKS, true);
+  add(7.2, -17+bob-sw, 1.4, 1, SKH, true);                     // великий палець
 
   // ГОЛОВА: фото (South Park) або піксельний фолбек
   const headImg = headOf(who);
