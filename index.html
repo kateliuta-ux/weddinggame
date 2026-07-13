@@ -5745,7 +5745,7 @@ function drawGBBust(who, cx, bottomY, drawH, talking){
   const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
   ctx.drawImage(img, Math.round(cx-w/2), Math.round(bottomY-drawH), Math.round(w), Math.round(drawH));
   if(open && who==='katya'){
-    const mx = cx + drawH*0.035, my = bottomY - drawH*0.365, mr = drawH*0.045;
+    const mx = cx + drawH*0.015, my = bottomY - drawH*0.175, mr = drawH*0.04;
     ctx.fillStyle='#162226';
     ctx.beginPath(); ctx.ellipse(mx, my, mr*0.9, mr*1.25, 0, 0, 7); ctx.fill();
     ctx.fillStyle='#386664';
