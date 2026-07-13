@@ -288,6 +288,9 @@
 <div id="test-badge" class="hidden" style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:500;
   background:#c02a7a;color:#fff;font:bold 11px monospace;padding:3px 10px;border-radius:10px;letter-spacing:1px;
   box-shadow:0 2px 8px rgba(0,0,0,.4)">🧪 ТЕСТ-РЕЖИМ · нічого не зберігається</div>
+<div id="lang-btn" title="мова / language" style="position:fixed;top:6px;right:52px;z-index:450;cursor:pointer;
+  background:rgba(16,12,22,.85);color:#f4f0e4;font-size:13px;font-weight:bold;padding:6px 9px;border-radius:12px;
+  border:1px solid rgba(181,138,46,.55);letter-spacing:1px">EN</div>
 <div id="mute-btn" title="музика вкл/викл" style="position:fixed;top:6px;right:8px;z-index:450;cursor:pointer;
   font-size:18px;line-height:1;padding:3px 5px;border-radius:8px;background:rgba(20,18,26,.6);user-select:none">🔊</div>
 <div id="stage">
@@ -333,7 +336,7 @@
     <div class="menu" id="main-menu">
       <button class="btn katya" id="btn-newgame">Нова гра</button>
       <button class="btn watch" data-pov="watch">Історія без ігор</button>
-      <button class="btn small" id="btn-story-en" style="background:#2a4a6a">🇬🇧 Our story in English</button>
+
       <div class="btn-row">
         <button class="btn small" id="btn-sampler">Семплер</button>
       </div>
@@ -6643,7 +6646,7 @@ function updateHudAndControls(){
     let ic=''; try{ ic = offOf(game.pov).toDataURL(); }catch(_){}
     elHud.innerHTML = (ic ? '<img src="'+ic+'" alt="">' : '') +
       '<span><b>' + CHARS[game.pov].name + '</b>' +
-      (game.watch ? ' · перегляд 🍿' : ' · 🏆 ' + computeScore()) + '</span>';
+      (game.watch ? (LANG==='en'?' · watching 🍿':' · перегляд 🍿') : ' · 🏆 ' + computeScore()) + '</span>';
   }
   const walkPhase = game.state==='play' && (game.phase==='set' || game.phase==='date');
   const padPhase = walkPhase;
@@ -6708,22 +6711,29 @@ function finishGame(){
   // персональне запрошення
   const title = document.getElementById('inv-title');
   const body = document.getElementById('inv-body');
-  const surn = game.diiaSurname ? `<br><span style="opacity:.7">прізвище після весілля: ${game.diiaSurname}</span>` : '';
+  const surn = game.diiaSurname ? `<br><span style="opacity:.7">${LANG==='en'?'surname after the wedding':'прізвище після весілля'}: ${T(game.diiaSurname)}</span>` : '';
   // коротко на екрані: тепла формула + місце/час; решта деталей — у збереженому запрошенні
   const zaprosyny =
-    '<i style="opacity:.92">Просили тато й мама, і ми просимо:<br>приходь до нас на свято 🍞</i><br><br>';
-  const more = '<br><span style="opacity:.6;font-size:.9em">дрес-код, квіти й решта — у «Зберегти запрошення» 💾</span>' +
-    '<br><span style="opacity:.75;font-size:.9em">🌍 не в Україні? — це запрошення все одно для тебе: буде трансляція церемонії</span>';
+    '<i style="opacity:.92">' + (LANG==='en'
+      ? 'Our parents asked, and so do we:<br>come celebrate with us 🍞'
+      : 'Просили тато й мама, і ми просимо:<br>приходь до нас на свято 🍞') + '</i><br><br>';
+  const more = LANG==='en'
+    ? '<br><span style="opacity:.6;font-size:.9em">dress code, flowers & the rest — in "Save the invitation" 💾</span>' +
+      '<br><span style="opacity:.75;font-size:.9em">🌍 abroad? — this invitation is still for you: the ceremony will be streamed</span>'
+    : '<br><span style="opacity:.6;font-size:.9em">дрес-код, квіти й решта — у «Зберегти запрошення» 💾</span>' +
+      '<br><span style="opacity:.75;font-size:.9em">🌍 не в Україні? — це запрошення все одно для тебе: буде трансляція церемонії</span>';
   if(GUEST){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
     body.innerHTML = zaprosyny +
       `<b>${T(s.what)}</b><br>${T(s.when)}<br>${T(s.where)}${surn}` + more;
   } else {
-    title.textContent = playerName ? (playerName.toUpperCase() + ', ТЕБЕ КЛИЧУТЬ') : 'ЗАПРОСИНИ';
+    title.textContent = playerName
+      ? (playerName.toUpperCase() + (LANG==='en'?', YOU ARE INVITED':', ТЕБЕ КЛИЧУТЬ'))
+      : (LANG==='en'?'THE INVITATION':'ЗАПРОСИНИ');
     body.innerHTML = zaprosyny +
-      '6 вересня 2026 · Київ<br>' +
-      '<span style="opacity:.8">місце й час підтвердимо особисто ближче до дати</span>' + surn + more;
+      (LANG==='en'?'September 6, 2026 · Kyiv<br>':'6 вересня 2026 · Київ<br>') +
+      '<span style="opacity:.8">' + (LANG==='en'?'venue & time to be confirmed personally closer to the date':'місце й час підтвердимо особисто ближче до дати') + '</span>' + surn + more;
   }
   stopChip(); if(!musicMuted) playChip('planeta');   // фінальна музика не лупиться на екрані запрошення
   // автолист із запрошенням на пошту гостя (в кінці гри)
@@ -7239,6 +7249,47 @@ function applyLang(){
   Object.keys(map).forEach(id=>{
     const el=document.getElementById(id); if(el) el.textContent = map[id][LANG==='en'?1:0];
   });
+  const E = LANG==='en';
+  const setHead = (sel, ua, en)=>{ const el=document.querySelector(sel); if(el) el.innerHTML = E?en:ua; };
+  setHead('#name-screen .s-head', 'Як тебе звати?<span>почни вводити імʼя або прізвище — підкажемо зі списку гостей</span>',
+    "What's your name?<span>start typing your name — we'll suggest from the guest list</span>");
+  const ni=document.getElementById('name-input'); if(ni) ni.placeholder = E?'e.g. Olia or Pryimak…':'напр. Оля або Приймак…';
+  const ng=document.getElementById('name-go'); if(ng) ng.textContent = E?'PLAY ▶':'ГРАТИ ▶';
+  const nb=document.getElementById('name-bride'); if(nb) nb.textContent = E?'👰 I am Katya':'👰 Я Катя';
+  const ngr=document.getElementById('name-groom'); if(ngr) ngr.textContent = E?'🤵 I am Dima':'🤵 Я Діма';
+  const wsub=document.querySelector('#watch-pov-menu .sub'); if(wsub) wsub.textContent = E?'Whose story to watch?':'Чию історію дивитись?';
+  const wk=document.querySelector('[data-watch-pov="katya"]'); if(wk) wk.textContent = E?'🍿 Through Katya\'s eyes':'🍿 Очима Каті';
+  const wd=document.querySelector('[data-watch-pov="dima"]'); if(wd) wd.textContent = E?'🍿 Through Dima\'s eyes':'🍿 Очима Діми';
+  ['watch-pov-back','play-pov-back'].forEach(id=>{ const b=document.getElementById(id); if(b) b.textContent = E?'← Back':'← Назад'; });
+  const bmap2 = {
+    'btn-rsvp':      ['✍️ Відповісти','✍️ RSVP'],
+    'btn-save-inv':  ['💾 Зберегти запрошення','💾 Save the invitation'],
+    'btn-ics':       ['📅 В календар','📅 Add to calendar'],
+    'btn-stream':    ['📺 Не в Україні? Буде трансляція','📺 Abroad? There will be a livestream'],
+    'btn-viber':     ['Гарне запрошення','Pretty invitation'],
+    'btn-restart':   ['На початок','Back to start'],
+    'email-go':      ['Лишити ✉','Leave it ✉'],
+    'email-skip':    ['Пізніше','Later'],
+    'selfie-snap':   ['📸 КЛАЦ','📸 SNAP'],
+    'selfie-send':   ['Надіслати','Send'],
+    'party-back':    ['НАЗАД','BACK'],
+    'party-add':     ['ДОДАТИ СВОЄ ФОТО','ADD YOUR PHOTO'],
+    'party-match-go':['ДАЛІ ▶','NEXT ▶'],
+    'pl-back':       ['НАЗАД','BACK'],
+    's-back':        ['НАЗАД','BACK'],
+    'rsvp-close':    ['✕','✕'],
+  };
+  Object.keys(bmap2).forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = bmap2[id][E?1:0]; });
+  setHead('#party-screen .s-head', 'ТІНДЕР <span>гортай гостей весілля · метч = привітатися 6 вересня 🥂</span>',
+    'TINDER <span>swipe the wedding guests · a match = say hi on Sept 6 🥂</span>');
+  setHead('#email-screen .s-head', '📮 Лишити пошту?<span>надішлемо копію запрошення — і сповістимо, коли в грі зʼявиться нове</span>',
+    "📮 Leave your email?<span>we'll send a copy of the invitation — and updates about the game</span>");
+  const ei=document.getElementById('email-input'); if(ei) ei.placeholder = E?'your@email.com':'твоя@пошта.com';
+  const ph=document.getElementById('pause-menu'); if(ph){ const t=ph.querySelector('div'); if(t) t.textContent = E?'PAUSED':'ПАУЗА'; }
+  const wh=document.getElementById('watch-hint'); if(wh) wh.textContent = E?'🍿 WATCH MODE':'🍿 РЕЖИМ ПЕРЕГЛЯДУ';
+  const wp=document.getElementById('watch-play'); if(wp) wp.textContent = E?'▶ PLAY IT MYSELF':'▶ ГРАТИ САМ';
+  const ed=document.querySelector('#end-screen .date'); if(ed) ed.textContent = E?'06 · 09 · 2026 — KYIV':'06 · 09 · 2026 — КИЇВ';
+  const ts=document.querySelector('#title-screen .sub'); if(ts) ts.textContent = E?'September 6, 2026 · Kyiv':'6 вересня 2026 · Київ';
   const wbtn = document.querySelector('#title-screen .btn.watch[data-pov="watch"]');
   if(wbtn) wbtn.textContent = LANG==='en' ? 'Story without games' : 'Історія без ігор';
   const povK = document.querySelector('#play-pov-menu .btn[data-pov="katya"]');
@@ -7249,13 +7300,14 @@ function applyLang(){
   if(povD) povD.innerHTML = LANG==='en'
     ? '🤵 Groom\'s side<br><span style="font-weight:normal;font-size:.8em;opacity:.85">you play as Dima</span>'
     : '🤵 З боку нареченого<br><span style="font-weight:normal;font-size:.8em;opacity:.85">граєте за Діму</span>';
-  const enBtn = document.getElementById('btn-story-en');
-  if(enBtn) enBtn.textContent = LANG==='en' ? '🇺🇦 Українською' : '🇬🇧 English version';
+  const lb = document.getElementById('lang-btn');
+  if(lb) lb.textContent = LANG==='en' ? 'УКР' : 'EN';
 }
-document.getElementById('btn-story-en').addEventListener('click', ()=>{
+document.getElementById('lang-btn').addEventListener('click', ()=>{
   LANG = LANG==='en' ? 'ua' : 'en';
   try{ localStorage.setItem('wed-lang', LANG); }catch(_){}
   applyLang();
+  try{ updateHudAndControls(); }catch(_){}
 });
 applyLang();
 document.getElementById('btn-newgame').addEventListener('click', ()=>{
