@@ -802,7 +802,7 @@ function setScript(pov){
     {who:null,    emo:null,     text:'(Той сезон так і не вийшов у ефір, —\nале то потім. Поки в кадрі — мир.)'},
   ];
   return [
-    {who:null,   emo:null,   text:'Офіс агенції, бриф, звичайний день, —\nа вийшло: перший розділ цих пісень.'},
+    {who:null,   emo:null,   text:'Офіс, зйомка, звичайнісінький день, —\nа вийшло: перший розділ цих пісень.'},
     {who:'guy',  emo:'normal',text:'Ну що, штормимо? Година пішла.'},
     {who:'dima', emo:'happy', text:'А куди дивитись — в камеру\nчи на режисерку?)'},
     {who:null,   emo:null,   text:'Імені не спитав. Але лишилась\nрежисерка-блондинка — й не забулась.'},
@@ -1077,9 +1077,9 @@ function drawPicnic(){
   // верхня стрічка-титр (НЕ drawCaption — та малює повноекранну картку)
   ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,14+TITLE_Y,W,26);
   ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('ДЕНЬ НАРОДЖЕННЯ МАРІЧКИ · пікнік', W-16, 9, true);
-  ctx.fillText('ДЕНЬ НАРОДЖЕННЯ МАРІЧКИ · пікнік', W/2, 25+TITLE_Y);
+  ctx.fillText(T('ДЕНЬ НАРОДЖЕННЯ МАРІЧКИ · пікнік'), W/2, 25+TITLE_Y);
   ctx.fillStyle='#e8e2d0'; fitText('субота перед першим побаченням', W-16, 8, false);
-  ctx.fillText('субота перед першим побаченням', W/2, 35+TITLE_Y);
+  ctx.fillText(T('субота перед першим побаченням'), W/2, 35+TITLE_Y);
   ctx.textAlign='left';
 }
 function dateScript(pov){
@@ -1303,12 +1303,12 @@ function drawSecret(){
   const label = me==='dima' ? 'ПІДОЗРА КАТІ' : 'ТВОЯ ЦІКАВІСТЬ';
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(60,10+TITLE_Y,200,26);
   ctx.fillStyle = '#fff'; ctx.textAlign='center'; fitText(label, 192, 9, true);
-  ctx.fillText(label, W/2, 21+TITLE_Y);
+  ctx.fillText(T(label), W/2, 21+TITLE_Y);
   ctx.fillStyle = '#333'; ctx.fillRect(80,25+TITLE_Y,160,7);
   ctx.fillStyle = s.meter>65 ? '#c0392b' : COL.gold;
   ctx.fillRect(80,25+TITLE_Y,160*Math.min(1,s.meter/100),7);
   if(s.failT>0){
-    const ft = me==='dima' ? '«Що це в тебе?» — «НІЧОГО!»' : '«Ти чого дивишся?» — «Я? Нікуди!»';
+    const ft = T(me==='dima' ? '«Що це в тебе?» — «НІЧОГО!»' : '«Ти чого дивишся?» — «Я? Нікуди!»');
     ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(W/2-96, 41+TITLE_Y, 192, 15);
     ctx.fillStyle = '#f4c46a'; fitText(ft, 184, 9, true);
     ctx.fillText(ft, W/2, 52+TITLE_Y);
@@ -1323,7 +1323,7 @@ function drawSecret(){
     ctx.fillStyle='rgba(10,8,14,.78)'; ctx.fillRect(W/2-110, H/2-58, 220, 28);
     ctx.strokeStyle=COL.gold; ctx.lineWidth=1; ctx.strokeRect(W/2-109.5, H/2-57.5, 219, 27);
     ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.textAlign='center';
-    ctx.fillText(me==='dima'?'НЕ СПАЛИВСЯ!':'«НІЧОГО НЕ БАЧИЛА»', W/2, H/2-40);
+    ctx.fillText(T(me==='dima'?'НЕ СПАЛИВСЯ!':'«НІЧОГО НЕ БАЧИЛА»'), W/2, H/2-40);
   }
   ctx.textAlign='left';
 }
@@ -1454,7 +1454,7 @@ function drawCollect(camX){
   // тост за повний збір
   if(c.toastT > 0){
     ctx.fillStyle = COL.gold; ctx.font='bold 9px monospace'; ctx.textAlign='center';
-    ctx.fillText(c.kind==='idea' ? 'ШТОРМ ЗІБРАНО!' : 'ВСІ СЕРЦЯ ТВОЇ!', W/2, 30);
+    ctx.fillText(T(c.kind==='idea' ? 'ШТОРМ ЗІБРАНО!' : 'ВСІ СЕРЦЯ ТВОЇ!'), W/2, 30);
     ctx.textAlign='left';
   }
 }
@@ -1697,7 +1697,7 @@ function drawHyper(){
   // вхідний спалах-кат
   if(t<=2){ ctx.fillStyle = 'rgba(255,255,255,'+((1-t/2.4)).toFixed(3)+')'; ctx.fillRect(0,0,W,H); }
   if(h.label){ ctx.fillStyle='#fff'; ctx.font='bold '+(PORTRAIT_MODE?14:11)+'px monospace'; ctx.textAlign='center';
-    ctx.fillText(h.label, W/2, H-bar-10); ctx.textAlign='left'; }
+    ctx.fillText(T(h.label), W/2, H-bar-10); ctx.textAlign='left'; }
   ctx.restore();
   if(t >= h.dur) game.hyper = null;
 }
@@ -2209,9 +2209,9 @@ function drawKiss(){
     ctx.fillStyle='rgba(10,8,14,.78)'; ctx.fillRect(W/2-92, 78, 184, 40);
     ctx.strokeStyle=COL.gold; ctx.lineWidth=1; ctx.strokeRect(W/2-91.5, 78.5, 183, 39);
     ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.textAlign='center';
-    ctx.fillText('ПЕРШИЙ ПОЦІЛУНОК', W/2, 95);
+    ctx.fillText(T('ПЕРШИЙ ПОЦІЛУНОК'), W/2, 95);
     ctx.fillStyle='#e8e2d0'; ctx.font='8px monospace';
-    ctx.fillText('над кручею, під ліхтариками — мов у сні', W/2, 110);
+    ctx.fillText(T('над кручею, під ліхтариками — мов у сні'), W/2, 110);
   } else {
     // серце-мішень + кільце, що сходиться
     const hb = ((game.t>>3)&1) ? 1 : 0;
@@ -2225,11 +2225,11 @@ function drawKiss(){
     ctx.beginPath(); ctx.arc(hcx, hcy+3, 0.26*56, 0, 7); ctx.stroke();     // зелена зона
     ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(W/2-104, 12+TITLE_Y, 208, 26);
     ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('ПЕРШИЙ ПОЦІЛУНОК: спіймай момент!', 196, 9, true);
-    ctx.fillText('ПЕРШИЙ ПОЦІЛУНОК: спіймай момент!', W/2, 23+TITLE_Y);
+    ctx.fillText(T('ПЕРШИЙ ПОЦІЛУНОК: спіймай момент!'), W/2, 23+TITLE_Y);
     ctx.fillStyle='#e8e2d0'; fitText('тапни, коли кільце зійдеться на серці', 196, 8, false);
-    ctx.fillText('тапни, коли кільце зійдеться на серці', W/2, 33+TITLE_Y);
+    ctx.fillText(T('тапни, коли кільце зійдеться на серці'), W/2, 33+TITLE_Y);
     if(k.msgT>0){ ctx.fillStyle='rgba(10,8,14,.7)'; ctx.fillRect(W/2-80, hcy-40, 160, 16);
-      ctx.fillStyle='#e0959f'; ctx.font='8px monospace'; ctx.fillText(k.msg, W/2, hcy-29); }
+      ctx.fillStyle='#e0959f'; ctx.font='8px monospace'; ctx.fillText(T(k.msg), W/2, hcy-29); }
     drawHint(game.watch?'':(isTouch?'тап у потрібний момент':'ПРОБІЛ у потрібний момент'), W/2, H-8);
   }
   ctx.textAlign='left';
@@ -2466,18 +2466,18 @@ function drawWalkline(){
   drawPerson(wl.x, FLOOR_Y+2, 'katya', (wl.x>>3), 1, true);
   ctx.restore();
   if(wl.oopsT>20){ ctx.fillStyle='#f4c46a'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-    ctx.fillText('іккк!', wl.x, FLOOR_Y-64); ctx.textAlign='left'; }
+    ctx.fillText(T('іккк!'), wl.x, FLOOR_Y-64); ctx.textAlign='left'; }
   // плашка-пояснення
   ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,14+TITLE_Y,W,26);
   ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText('ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!', W-16, 9, true);
-  ctx.fillText('ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!', W/2, 25+TITLE_Y);
+  ctx.fillText(T('ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!'), W/2, 25+TITLE_Y);
   ctx.fillStyle='#e8e2d0'; fitText('трошки весела — тапай лівим/правим боком і тримай рівновагу', W-16, 8, false);
-  ctx.fillText('трошки весела — тапай лівим/правим боком і тримай рівновагу', W/2, 35+TITLE_Y);
+  ctx.fillText(T('трошки весела — тапай лівим/правим боком і тримай рівновагу'), W/2, 35+TITLE_Y);
   // прогрес шляху
   ctx.fillStyle='rgba(255,255,255,.3)'; ctx.fillRect(60,H-16,200,4);
   ctx.fillStyle='#8fd07a'; ctx.fillRect(60,H-16,200*Math.min(1,(wl.x-30)/(W-108-30)),4);
   if(wl.done){ ctx.fillStyle='rgba(10,8,14,.7)'; ctx.fillRect(W/2-70,H*0.3,140,22);
-    ctx.fillStyle='#8fd07a'; ctx.font='bold 10px monospace'; ctx.fillText('ДІЙШЛА! 💅', W/2, H*0.3+15); }
+    ctx.fillStyle='#8fd07a'; ctx.font='bold 10px monospace'; ctx.fillText(T('ДІЙШЛА! 💅'), W/2, H*0.3+15); }
   ctx.textAlign='left';
 }
 function beerPick(px,py){
@@ -2505,16 +2505,16 @@ function drawBeer(){
     ctx.fillStyle=be.cap; ctx.fillRect(r.x,r.y,r.w,7); ctx.fillRect(r.x,r.y+r.h-7,r.w,7);
     ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(r.x+6,r.y+10,4,r.h-20);
     ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
-    be.lbl.forEach((t,k)=> ctx.fillText(t, r.cx, r.y+r.h+12+k*9));
+    be.lbl.forEach((t,k)=> ctx.fillText(T(t), r.cx, r.y+r.h+12+k*9));
     if(b.picked===i && !be.ok){ ctx.strokeStyle='#e0555f'; ctx.lineWidth=2; ctx.strokeRect(r.x-3,r.y-3,r.w+6,r.h+6); }
     if(b.okT>0 && be.ok){ ctx.strokeStyle='#8fd07a'; ctx.lineWidth=3; ctx.strokeRect(r.x-4,r.y-4,r.w+8,r.h+8); }
   });
   // підказка — ВЕРХНЯ СМУЖКА (не drawCaption: та малює повноекранну чорну картку!)
   const MISS = ['хм, ні. вона б чемно промовчала і не пила','знову не те — згадай, що вона писала в чаті','таке Діма точно не приніс би. ще спроба!'];
-  const sub = b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
-    : b.wrong>0 ? MISS[(b.wrong-1)%MISS.length] : 'тапни банку з її улюбленим — і подаруй 🍺';
+  const sub = T(b.okT>0 ? 'Так! Кокосове темне — Андервуд коконат 🥥'
+    : b.wrong>0 ? MISS[(b.wrong-1)%MISS.length] : 'тапни банку з її улюбленим — і подаруй 🍺');
   ctx.fillStyle='rgba(10,8,14,.66)'; ctx.fillRect(0,16+TITLE_Y-HUD_Y,W,32);
-  const bqt = 'Пригадай, яке пиво любить Катя!';
+  const bqt = T('Пригадай, яке пиво любить Катя!');
   ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; fitText(bqt, W-14, 10, true);
   ctx.fillText(bqt, W/2, 30+TITLE_Y-HUD_Y);
   ctx.fillStyle = b.okT>0?'#8fd07a':(b.wrong>0?'#e0959f':'#e8e2d0'); fitText(sub, W-14, 8, false); ctx.fillText(sub, W/2, 42+TITLE_Y-HUD_Y);
@@ -2625,7 +2625,7 @@ function drawVykup(){
       ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(bxm-64, bym-30, 128, 17);
       ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(bxm-63.5, bym-29.5, 127, 16);
       ctx.fillStyle='#f4cf5e'; ctx.textAlign='center'; ctx.font='bold 9px monospace';
-      ctx.fillText('СТРІЧКА ВИКУПУ 🎀', bxm, bym-18);
+      ctx.fillText(T('СТРІЧКА ВИКУПУ 🎀'), bxm, bym-18);
     }
   }
   // деталі почту: ВІНКИ зі стрічками у дружок, БРИЛІ у бояр
@@ -2655,35 +2655,35 @@ function drawVykup(){
   const vhy = PORTRAIT_MODE ? 44 : 16;
   ctx.fillStyle='rgba(26,18,10,.85)'; ctx.fillRect(14,vhy,W-28,34);
   ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(14.5,vhy+0.5,W-29,33);
-  ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText('· ВИКУП НАРЕЧЕНОЇ ·', W/2, vhy+14);
+  ctx.fillStyle='#f4cf5e'; ctx.font='bold 10px monospace'; ctx.fillText(T('· ВИКУП НАРЕЧЕНОЇ ·'), W/2, vhy+14);
   if(v.intro){                                                   // ── ПРАВИЛА ГРИ (картка на старті) ──
     ctx.fillStyle='rgba(26,18,10,.92)'; ctx.fillRect(24, H*0.30, W-48, 148);
     ctx.strokeStyle='#c8a050'; ctx.lineWidth=2; ctx.strokeRect(25, H*0.30+1, W-50, 146);
     ctx.textAlign='center'; ctx.fillStyle='#f4cf5e'; ctx.font='bold 11px monospace';
-    ctx.fillText('ЯК ГРАТИ У ВИКУП', W/2, H*0.30+22);
+    ctx.fillText(T('ЯК ГРАТИ У ВИКУП'), W/2, H*0.30+22);
     ctx.fillStyle='#f4e8c8'; ctx.font='8px monospace';
     ['Дружки натягнули СТРІЧКУ через дорогу —','старий звичай: молодого не пускають,',
      'поки не заплатить викуп за наречену.','',
      'У кожному з 3 раундів обери правильний хід.','Помилка — дружки беруть штраф із казни 🍬🍾.',
-     'Пройдеш усі три — стрічку опустять!'].forEach((ln,li)=> ctx.fillText(ln, W/2, H*0.30+40+li*13));
+     'Пройдеш усі три — стрічку опустять!'].forEach((ln,li)=> ctx.fillText(T(ln), W/2, H*0.30+40+li*13));
     ctx.fillStyle='rgba(244,232,200,.6)'; ctx.font='8px monospace';
     const ready = v.introT>120;
-    ctx.fillText(game.watch ? '…' : (ready ? '👇 тап — почати' : '·'.repeat(1+Math.floor(v.introT/40))), W/2, H*0.30+140);
+    ctx.fillText(game.watch ? '…' : (ready ? T('👇 тап — почати') : '·'.repeat(1+Math.floor(v.introT/40))), W/2, H*0.30+140);
     ctx.textAlign='left';
     return;
   }
   ctx.fillStyle='#f4e8c8';
   ctx.fillStyle='rgba(244,232,200,.7)'; ctx.font='8px monospace';
-  if(!v.done) ctx.fillText('раунд '+(v.round+1)+' з '+VYKUP_ROUNDS.length, W/2, vhy+28);
+  if(!v.done) ctx.fillText(T('раунд')+' '+(v.round+1)+' '+T('з')+' '+VYKUP_ROUNDS.length, W/2, vhy+28);
   { // ПИТАННЯ — окрема велика плашка нижче (не біля краю, крупним кеглем)
     const qy = PORTRAIT_MODE ? 96 : 58;
     ctx.fillStyle='rgba(26,18,10,.88)'; ctx.fillRect(16, qy, W-32, 44);
     ctx.strokeStyle='#c8a050'; ctx.lineWidth=1; ctx.strokeRect(16.5, qy+0.5, W-33, 43);
     ctx.fillStyle='#f4e8c8';
-    const qt = v.done ? 'ВИКУП СПЛАЧЕНО! Стрічку опущено ✔' : VYKUP_ROUNDS[v.round].q;
+    const qt = T(v.done ? 'ВИКУП СПЛАЧЕНО! Стрічку опущено ✔' : VYKUP_ROUNDS[v.round].q);
     fitText(qt, W-44, 11, true); ctx.fillText(qt, W/2, qy+19);
     ctx.fillStyle='rgba(244,232,200,.65)'; ctx.font='8px monospace';
-    ctx.fillText(v.done ? 'проходь до нареченої!' : 'обери хід — помилка = штраф із казни', W/2, qy+34);
+    ctx.fillText(T(v.done ? 'проходь до нареченої!' : 'обери хід — помилка = штраф із казни'), W/2, qy+34);
   }
   // ── КАЗНА ВИКУПУ (ресурсна смуга Героїв 3) ──
   { const ry = PORTRAIT_MODE ? 156 : 74, icons=[['🍬','sweets'],['🍾','fizz'],['♥','heart']];
@@ -2696,23 +2696,23 @@ function drawVykup(){
         ctx.fillStyle='#e05a64'; ctx.fillText('−1', ix+14, ry+14+v.spend.t*0.4); ctx.globalAlpha=1; }
     });
     ctx.fillStyle='rgba(26,18,10,.8)'; ctx.fillRect(W/2-34, ry+11, 68, 11);
-    ctx.fillStyle='rgba(244,232,200,.9)'; ctx.font='7px monospace'; ctx.fillText('казна викупу', W/2, ry+19); }
+    ctx.fillStyle='rgba(244,232,200,.9)'; ctx.font='7px monospace'; ctx.fillText(T('казна викупу'), W/2, ry+19); }
   if(v.done){
     ctx.fillStyle='rgba(26,18,10,.8)'; ctx.fillRect(W/2-90, H*0.36, 180, 26);
-    ctx.fillStyle='#8fd07a'; ctx.font='bold 11px monospace'; ctx.fillText('ПЕРЕМОГА КОХАННЯ', W/2, H*0.36+17);
+    ctx.fillStyle='#8fd07a'; ctx.font='bold 11px monospace'; ctx.fillText(T('ПЕРЕМОГА КОХАННЯ'), W/2, H*0.36+17);
     ctx.textAlign='left'; return;
   }
   if(v.noteT>0){
     ctx.fillStyle='rgba(26,18,10,.88)'; ctx.fillRect(18, H*0.34, W-36, 26);
     ctx.strokeStyle='#c8a050'; ctx.strokeRect(18.5, H*0.34+0.5, W-37, 25);
-    ctx.fillStyle='#f4e8c8'; fitText(v.note, W-44, 10, false); ctx.fillText(v.note, W/2, H*0.34+17);
+    ctx.fillStyle='#f4e8c8'; fitText(T(v.note), W-44, 10, false); ctx.fillText(T(v.note), W/2, H*0.34+17);
   } else {
     VYKUP_ROUNDS[v.round].opts.forEach((m,i)=>{
       const b=chessBtn(i), on=i===v.sel;
       ctx.fillStyle = on ? '#7a5a2e' : '#2b2b38'; ctx.fillRect(b.x,b.y,b.w,b.h);
       ctx.strokeStyle = on ? '#f4cf5e' : 'rgba(255,255,255,.25)'; ctx.lineWidth=2; ctx.strokeRect(b.x,b.y,b.w,b.h);
       ctx.fillStyle='#fff'; ctx.font='bold '+(PORTRAIT_MODE?10:8)+'px monospace';
-      ctx.fillText(m.label, b.x+b.w/2, b.y+(PORTRAIT_MODE?27:20));
+      ctx.fillText(T(m.label), b.x+b.w/2, b.y+(PORTRAIT_MODE?27:20));
     });
     drawHint(game.watch?'':(isTouch?'тапни хід':'← → і ПРОБІЛ'), W/2, PORTRAIT_MODE?H-30:H-12, 9);
   }
@@ -2851,6 +2851,7 @@ function updateBattle(){
     flashHyper('katya', {dur:60, tint:'#3a1420', label:'…від справжнього не ухилишся'}); }
 }
 function drawBattle(){
+  /* T() для слів і реплік бою — переклад на льоту */
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
   const b = game.battle; if(!b) return;
   // рамка бою з вишиванковим кантом (чистий Undertale-стиль)
@@ -3482,8 +3483,8 @@ function drawSvat(){
       ctx.fillStyle='rgba(238,232,216,'+(1-ct2/44)+')';
       ctx.fillRect(sx0-8+k*4, sy0+sh/2+ct2*0.9, 3, 3); }
     ctx.fillStyle='rgba(10,8,14,.72)'; ctx.fillRect(W/2-118, py2+ph2+6, 236, 14);
-    ctx.fillStyle='#f4e8c8'; ctx.textAlign='center'; fitText('(так, за традицією наречена СПРАВДІ колупала піч)', 228, 7, false);
-    ctx.fillText('(так, за традицією наречена СПРАВДІ колупала піч)', W/2, py2+ph2+16);
+    ctx.fillStyle='#f4e8c8'; ctx.textAlign='center'; fitText(T('(так, за традицією наречена СПРАВДІ колупала піч)'), 228, 7, false);
+    ctx.fillText(T('(так, за традицією наречена СПРАВДІ колупала піч)'), W/2, py2+ph2+16);
     ctx.textAlign='left';
   }
   if(s.step==='mash' && me==='dima'){
@@ -3510,8 +3511,8 @@ function drawSvat(){
     ctx.save(); ctx.translate(px2+pw2/2, py2+22); ctx.rotate(tilt);
     ctx.fillRect(-26,-2,52,4); ctx.restore();
     ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(px2+pw2/2-1, py2+12, 2, 20);
-    { const bt = (s.oopsT!==undefined && s.oopsT>0) ? '«ОЙ-ОЙ-ОЙ!» — ахнули дружки'
-        : '(рівний хліб — рівне життя, кажуть старости)';
+    { const bt = T((s.oopsT!==undefined && s.oopsT>0) ? '«ОЙ-ОЙ-ОЙ!» — ахнули дружки'
+        : '(рівний хліб — рівне життя, кажуть старости)');
       ctx.fillStyle='rgba(12,9,16,.68)'; ctx.fillRect(W/2-112, py2+ph2+5, 224, 13);
       ctx.fillStyle = (s.oopsT!==undefined && s.oopsT>0) ? '#f0a8b0' : '#f4e8c8';
       ctx.textAlign='center'; fitText(bt, 216, 8, false);
@@ -3522,7 +3523,7 @@ function drawSvat(){
     const label = me==='katya' ? 'КОЛУПАЙ ПІЧ!' : 'ТРИМАЙ ХЛІБ РІВНО!';
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(60,8+TITLE_Y,200,30);
     ctx.fillStyle = '#fff'; ctx.textAlign='center'; fitText(label, 192, 9, true);
-    ctx.fillText(label, W/2, 19+TITLE_Y);
+    ctx.fillText(T(label), W/2, 19+TITLE_Y);
     ctx.fillStyle = '#333'; ctx.fillRect(80,24+TITLE_Y,160,8);
     ctx.fillStyle = me==='katya' ? COL.rose : COL.sage;
     ctx.fillRect(80,24+TITLE_Y,160*Math.min(1,s.meter/100),8);
@@ -3539,7 +3540,7 @@ function drawSvat(){
     const sl = s.slider;
     ctx.fillStyle = 'rgba(0,0,0,.72)'; ctx.fillRect(40,26,240,66);
     ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-    ctx.fillText('ГАРБУЗ ЧИ РУШНИК?', W/2, 42);
+    ctx.fillText(T('ГАРБУЗ ЧИ РУШНИК?'), W/2, 42);
     // смуга: гарбуз | рушник | гарбуз
     const bx=70, by=52, bw=180, bh=16;
     ctx.fillStyle = '#d97e2e'; ctx.fillRect(bx,by,bw,bh);
@@ -3581,7 +3582,7 @@ function drawSvat(){
   if(s.step==='tied'){
     ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0,60,W,26);
     ctx.fillStyle = COL.gold; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-    ctx.fillText('ІСПИТ СКЛАДЕНО! РУШНИКИ ПОДАНО', W/2, Math.round(H*0.30));
+    ctx.fillText(T('ІСПИТ СКЛАДЕНО! РУШНИКИ ПОДАНО'), W/2, Math.round(H*0.30));
   }
 }
 
@@ -3897,12 +3898,12 @@ function drawProp(){
       ctx.strokeStyle = on ? '#fff' : 'rgba(255,255,255,.22)'; ctx.lineWidth = on?2:1;
       ctx.strokeRect(b.x, b.y, b.w, b.h);
       ctx.fillStyle = '#fff'; ctx.font='bold '+(isP?12:8)+'px monospace'; ctx.textAlign='center';
-      ctx.fillText(m.label, b.x+b.w/2, b.y+(isP?21:14));
+      ctx.fillText(T(m.label), b.x+b.w/2, b.y+(isP?21:14));
       ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font=(isP?10:7)+'px monospace';
-      ctx.fillText('('+m.sub+')', b.x+b.w/2, b.y+(isP?37:24));
+      ctx.fillText('('+T(m.sub)+')', b.x+b.w/2, b.y+(isP?37:24));
     });
     ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font=(isP?10:9)+'px monospace'; ctx.textAlign='center';
-    drawHint(p.wrongT>0 ? CHESS_MOVES[p.sel].note+'… ще раз' :
+    drawHint(p.wrongT>0 ? T(CHESS_MOVES[p.sel].note)+T('… ще раз') :
       (game.watch?'':(isTouch?'тапни свій хід':'↑ ↓ і ПРОБІЛ')), W/2, H-6, isP?10:9);
     ctx.textAlign='left';
     return;
@@ -3913,9 +3914,9 @@ function drawProp(){
     const sub = game.pov==='dima' ? 'вона ж нічого не підозрює (підозрює)' : 'ти ж нічого не знала (знала)';
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(40,8+TITLE_Y,240,36);
     ctx.fillStyle = '#fff'; ctx.textAlign='center'; fitText(label, 232, 9, true);
-    ctx.fillText(label, W/2, 20+TITLE_Y);
+    ctx.fillText(T(label), W/2, 20+TITLE_Y);
     ctx.fillStyle = '#bcb7a8'; fitText(sub, 232, 9, false);
-    ctx.fillText(sub, W/2, 30+TITLE_Y);
+    ctx.fillText(T(sub), W/2, 30+TITLE_Y);
     if(game.pov==='dima' && p.rum){
       const r=p.rum;
       // рюкзак крупним планом
@@ -4061,10 +4062,10 @@ function drawProp(){
     const FZ = PORTRAIT_MODE ? 170 : 0, HY = 84+FZ;         // у портреті — до центру, в ландшафті — як було
     ctx.fillStyle = 'rgba(10,10,20,.85)'; ctx.fillRect(24,10+FZ,272,120);
     ctx.fillStyle = COL.gold; ctx.font='bold 10px monospace'; ctx.textAlign='center';
-    ctx.fillText(p.finger<0 ? 'НА ЯКИЙ ПАЛЕЦЬ??' : 'ПІДХОДИТЬ!', W/2, 26+FZ);
+    ctx.fillText(T(p.finger<0 ? 'НА ЯКИЙ ПАЛЕЦЬ??' : 'ПІДХОДИТЬ!'), W/2, 26+FZ);
     if(p.finger<0){
       ctx.fillStyle = '#bcb7a8'; ctx.font='9px monospace';
-      ctx.fillText('(і яка рука? хтозна. обирай)', W/2, 36+FZ);
+      ctx.fillText(T('(і яка рука? хтозна. обирай)'), W/2, 36+FZ);
     }
     // долоня
     ctx.fillStyle = COL.skin; ctx.fillRect(108,HY,110,40);
@@ -4083,7 +4084,7 @@ function drawProp(){
     }
     if(p.finger>=0 && p.ringT>40){
       ctx.fillStyle = '#c9c4b4'; ctx.font='8px monospace';
-      ctx.fillText('(головне вже було сказано)', W/2, H-38);
+      ctx.fillText(T('(головне вже було сказано)'), W/2, H-38);
     }
     if(p.finger<0){
       ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font='9px monospace';
@@ -4165,7 +4166,7 @@ function drawDiia(){
 
   if(d.step==='surname'){
     ctx.fillStyle = '#1a1a24'; ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace'; ctx.textAlign='center';
-    ctx.fillText('Яке прізвище?', px+pw/2, py+40);
+    ctx.fillText(T('Яке прізвище?'), px+pw/2, py+40);
     d.optRects = [];
     SURNAMES.forEach((s,i)=>{
       const oy = py+48+i*30, ox = px+8, ow = pw-16, oh = 26;
@@ -4174,11 +4175,11 @@ function drawDiia(){
       ctx.fillStyle = on ? '#1E4E8A' : '#eef0f2';
       ctx.fillRect(ox, oy, ow, oh);
       ctx.fillStyle = on ? '#fff' : '#1a1a24';
-      fitText(s.label, ow-8, PORTRAIT_MODE?9:11, true);            // довгі прізвища не вилазять
-      ctx.fillText(s.label, px+pw/2, oy+11);
+      fitText(T(s.label), ow-8, PORTRAIT_MODE?9:11, true);            // довгі прізвища не вилазять
+      ctx.fillText(T(s.label), px+pw/2, oy+11);
       ctx.fillStyle = on ? 'rgba(255,255,255,.75)' : '#888';
-      fitText(s.note, ow-8, PORTRAIT_MODE?6:8, false);
-      ctx.fillText(s.note, px+pw/2, oy+20);
+      fitText(T(s.note), ow-8, PORTRAIT_MODE?6:8, false);
+      ctx.fillText(T(s.note), px+pw/2, oy+20);
     });
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font='9px monospace';
     drawHint(game.watch?'':'обери прізвище після весілля', W/2, H-6);
@@ -4186,9 +4187,9 @@ function drawDiia(){
     ctx.font='16px sans-serif'; ctx.fillStyle='#1a1a24'; ctx.textAlign='center';
     ctx.fillText('💍', px+pw/2, py+50);
     ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace';
-    ctx.fillText('Шлюб онлайн', px+pw/2, py+66);
+    ctx.fillText(T('Шлюб онлайн'), px+pw/2, py+66);
     ctx.font=(PORTRAIT_MODE?7:9)+'px monospace'; ctx.fillStyle='#999';
-    ctx.fillText('прізвище:', px+pw/2, py+78);
+    ctx.fillText(T('прізвище:'), px+pw/2, py+78);
     ctx.fillStyle='#777';
     fitText(game.diiaSurname||'', pw-12, PORTRAIT_MODE?9:11, true); // довге подвійне — меншим кеглем
     ctx.fillText(game.diiaSurname||'', px+pw/2, py+90);
@@ -4196,9 +4197,9 @@ function drawDiia(){
     ctx.fillStyle = '#dcd9d0'; ctx.fillRect(px+10, py+110, pw-20, 22);
     ctx.fillStyle = '#1E4E8A'; ctx.fillRect(px+10, py+110, (pw-20)*d.hold/100, 22);
     ctx.fillStyle = d.hold>45 ? '#fff' : '#1a1a24'; ctx.font='bold '+(PORTRAIT_MODE?8:10)+'px monospace';
-    ctx.fillText('ПОДАТИ ЗАЯВУ', px+pw/2, py+124);
+    ctx.fillText(T('ПОДАТИ ЗАЯВУ'), px+pw/2, py+124);
     ctx.fillStyle = '#777'; ctx.font='9px monospace';
-    const st = d.hold>5 ? DIIA_STATUSES[Math.min(3, Math.floor(d.hold/28))] : '';
+    const st = d.hold>5 ? T(DIIA_STATUSES[Math.min(3, Math.floor(d.hold/28))]) : '';
     ctx.fillText(st, px+pw/2, py+146);
     ctx.fillStyle = 'rgba(255,255,255,.55)';
     if(PORTRAIT_MODE) drawHint(game.watch?'':(isTouch?'утримуй палець на екрані':'утримуй ПРОБІЛ'), W/2, H-30);
@@ -4207,11 +4208,11 @@ function drawDiia(){
     ctx.fillStyle = '#3F7C77'; ctx.font='26px sans-serif';
     ctx.fillText('✓', px+pw/2, py+64);
     ctx.fillStyle = '#1a1a24'; ctx.font='bold 8px monospace';
-    ctx.fillText('Заяву надіслано', px+pw/2, py+84);
+    ctx.fillText(T('Заяву надіслано'), px+pw/2, py+84);
     ctx.font='9px monospace'; ctx.fillStyle='#777';
-    ctx.fillText('24 серпня 2026', px+pw/2, py+98);
-    fitText('найромантичніша кнопка Дії', pw-8, 9, false);
-    ctx.fillText('найромантичніша кнопка Дії', px+pw/2, py+110);
+    ctx.fillText(T('24 серпня 2026'), px+pw/2, py+98);
+    fitText(T('найромантичніша кнопка Дії'), pw-8, 9, false);
+    ctx.fillText(T('найромантичніша кнопка Дії'), px+pw/2, py+110);
     // штамп «СХВАЛЕНО» влітає (Papers, Please)
     if(d.sentT>28){
       const sc = Math.max(1, 2.2 - (d.sentT-28)*0.15);
@@ -4221,7 +4222,7 @@ function drawDiia(){
       ctx.strokeStyle='#c0102a'; ctx.lineWidth=2;
       ctx.strokeRect(-36,-11,72,22);
       ctx.fillStyle='#c0102a'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
-      ctx.fillText('СХВАЛЕНО', 0, 4);
+      ctx.fillText(T('СХВАЛЕНО'), 0, 4);
       ctx.globalAlpha=1; ctx.restore();
     }
     d.confetti.forEach(q=>{ ctx.fillStyle=q.c; ctx.fillRect(q.x, q.y, 3, 3); });
@@ -4255,6 +4256,13 @@ const CREDITS = [
 ];
 function creditsList(){
   const extra = [];
+  const TT = p => [T(p[0]), T(p[1])];
+  if(LANG==='en'){
+    const base = CREDITS.map(TT);
+    if(typeof playerName!=='undefined' && playerName) base.push(['PLAYED BY', playerName]);
+    base.push(['THANK YOU FOR PLAYING ♥','']);
+    return base;
+  }
   if(typeof playerName!=='undefined' && playerName) extra.push(['ГРАВ(-ЛА)', playerName]);
   extra.push(['ДЯКУЄМО, ЩО ДОГРАВ ♥', '']);
   return CREDITS.concat(extra);
@@ -4401,6 +4409,7 @@ function drawSongNote(x, headY, seed){
 }
 /* Бульбашка-вигук над гостем */
 function drawShout(x, headY, text){
+  text = T(text);
   ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center';
   const w = ctx.measureText(text).width + 8;
   const by = headY - 16;
@@ -4548,8 +4557,8 @@ function drawWedSofi(){
     });
     ctx.fillStyle='#3fae5a'; ctx.beginPath(); ctx.arc(zx+4, zy+4, 2, 0, 7); ctx.fill();   // зелений «онлайн»
     ctx.fillStyle='rgba(12,9,16,.72)'; ctx.fillRect(zx-5, zy-14, zw+10, 10);
-    ctx.fillStyle='#f4f0e4'; ctx.textAlign='center'; fitText('за кордоном — на звʼязку 🌍', zw+4, 6, false);
-    ctx.fillText('за кордоном — на звʼязку 🌍', zx+zw/2, zy-7); ctx.textAlign='left';
+    ctx.fillStyle='#f4f0e4'; ctx.textAlign='center'; fitText(T('за кордоном — на звʼязку 🌍'), zw+4, 6, false);
+    ctx.fillText(T('за кордоном — на звʼязку 🌍'), zx+zw/2, zy-7); ctx.textAlign='left';
   }
   // ── обряд «ВЕРБОВА ДОЩЕЧКА» (передній план): наречену ведуть до нареченого ──
   if(game.phaseT < 250){
@@ -4575,7 +4584,7 @@ function drawWedSofi(){
   ctx.fillStyle = '#2a3444'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   ctx.fillText('06 · 09 · 2026', W/2, PORTRAIT_MODE?54:26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(42,52,68,.8)';
-  ctx.fillText('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂', W/2, PORTRAIT_MODE?66:38);
+  ctx.fillText(T('тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂'), W/2, PORTRAIT_MODE?66:38);
 }
 /* ---- ФІНАЛ Б: дворик бару «Хвильовий», вечір, молодята на сцені ---- */
 function drawWedKhv(){
@@ -4669,7 +4678,7 @@ function drawWedKhv(){
   ctx.fillStyle = '#f4e8c8'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   ctx.fillText('06 · 09 · 2026', W/2, PORTRAIT_MODE?54:26);
   ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(244,232,200,.8)';
-  ctx.fillText('дворик «Хвильового» · усі співають «Штольню» 🎶', W/2, PORTRAIT_MODE?66:38);
+  ctx.fillText(T('дворик «Хвильового» · усі співають «Штольню» 🎶'), W/2, PORTRAIT_MODE?66:38);
 }
 /* Молодята сидячи: ноги звисають з краю сцени, погойдуються по черзі */
 function drawSeatedCouple(kx, dx, edgeY){
@@ -4879,7 +4888,7 @@ function drawMontage(){
   if(!m.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
     drawHint(game.watch?'':(isTouch?'тап — різати':'ПРОБІЛ — різати'), W/2, H-8); }
   else { ctx.fillStyle='rgba(10,8,14,.78)'; ctx.fillRect(W/2-70, ty+th+16, 140, 22);
-    ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ЗМОНТОВАНО!', W/2, ty+th+31); }
+    ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText(T('ЗМОНТОВАНО!'), W/2, ty+th+31); }
   ctx.textAlign='left';
 }
 
@@ -4984,7 +4993,7 @@ function drawBand(){
   if(!b.done){ ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='8px monospace';
     drawHint(game.watch?'':(isTouch?'тап у колонці':'A S D — лови ноти'), W/2, H-8); }
   else { ctx.fillStyle='rgba(10,8,14,.78)'; ctx.fillRect(W/2-76, H/2-15, 152, 22);
-    ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText('ХІТ ЗАПИСАНО!', W/2, H/2); }
+    ctx.fillStyle=COL.gold; ctx.font='bold 12px monospace'; ctx.fillText(T('ХІТ ЗАПИСАНО!'), W/2, H/2); }
   ctx.textAlign='left';
 }
 
@@ -5188,6 +5197,7 @@ function pixBands(x, y, w, h, stops){
 /* підказка-правило з темною підкладкою — читабельна на будь-якому фоні */
 function drawHint(txt, x, y, size){
   if(!txt) return;
+  txt = T(txt);
   if(PORTRAIT_MODE && y > H-46) y = H-88;     // над пальцем і ближче до центру
   ctx.save();
   ctx.font = (size||9)+'px monospace'; ctx.textAlign = 'center';
@@ -5283,6 +5293,7 @@ function drawChatSim(){
   ctx.textAlign='left';
 }
 function drawCaption(line1, line2, part){
+  line1 = T(line1); line2 = T(line2); part = T(part);
   const t = game.t;
   // фон — глибокий градієнт (не голий чорний)
   const g = ctx.createLinearGradient(0,0,0,H);
@@ -5387,7 +5398,7 @@ function novelData(){
   return [
     {bg:0, cap:['КИЇВ · 2021 · ще до війни','зйомка ШТОРМНАДО'], lines:[
       N('Ще мирний рік. Знімальний майданчик, гам:\nвона — за камерою, він — у кадрі сам.'),
-      {who:'katya', emo:'normal', text:'Офіс агенції. Знімаємо ШТОРМНАДО.\nБув якийсь бриф про метаверс.'},
+      {who:'katya', emo:'normal', text:'Знімаємо ШТОРМНАДО десь в офісі.\nБув якийсь бриф про метаверс.'},
       {who:'dima',  emo:'happy',  text:'А куди дивитись — в камеру\nчи на режисерку?)'},
       N('Імені він не спитав — і не збагнув,\nщо поряд доля ходить: він її не вчув.'),
     ]},
@@ -6023,7 +6034,10 @@ function drawNovelFx(i, boxY){
       ctx.beginPath(); ctx.moveTo(dx2-6,dy2+wing-2); ctx.lineTo(dx2,dy2); ctx.lineTo(dx2+6,dy2+wing-2); ctx.stroke(); }
   }
 }
-let LANG = 'ua';                       // 'en' — історія англійською (для лондонської рідні)
+let LANG = (localStorage.getItem('wed-lang')==='en') ? 'en' : 'ua';   // мова всього застосунку
+const EN_DICT = {};                    // укр → англ (наповнюється блоками нижче)
+const T = s => (LANG==='en' && s && EN_DICT[s]) || s;
+Object.assign(EN_DICT, {"Той, у білому поло. В камеру. Дубль три!": "You, in the white polo. Look at the camera. Take three!", "А куди дивитись — в камеру\nчи на режисерку?)": "And where do I look — at the camera\nor at the director?)", "(в камеру, Дімо.)": "(at the camera, Dima.)", "(Той сезон так і не вийшов у ефір, —\nале то потім. Поки в кадрі — мир.)": "(That season never made it to the air —\nbut that's for later. For now — peace everywhere.)", "Офіс, зйомка, звичайнісінький день, —\nа вийшло: перший розділ цих пісень.": "An office shoot, an ordinary day, they thought —\nyet it became the first chapter of this plot.", "Ну що, штормимо? Година пішла.": "So, shall we brainstorm? Clock is ticking.", "Імені не спитав. Але лишилась\nрежисерка-блондинка — й не забулась.": "He didn't ask her name. And yet\nthe blonde director — he could not forget.", "Знімаємо ШТОРМНАДО десь в офісі.\nБув якийсь бриф про метаверс.": "We're shooting STORMNADO in some office.\nA brief about the metaverse or so.", "ПІСЛЯ ЗЙОМКИ · 2021": "AFTER THE SHOOT · 2021", "ТОГО Ж РОКУ": "THE SAME YEAR", "Доля явно щось знала.": "Fate clearly knew something.", "(це про нас)": "(that's about us)", "Азаза.": "Haha.", "Між зйомками і свайпом — прірва: то війна.\nВсе, що було «до», — сховала темна стіна.": "Between the shoot and the swipe — a war-torn wall:\neverything from 'before' hid behind it all.", "І от посеред всього цього огрому —\nодин свайп управо. Дорога додому.": "And there, amidst the darkness and the fright —\none swipe right. A road home through the night.", "(Стоп. Це ж той хлопець зі зйомок! —\nупізнала одразу. І написала перша.)": "(Wait. That's the guy from the shoot! —\nshe knew at once. And wrote him first.)", "(Він її не згадав. Але, буває,\nсерце знає те, що памʼять не тримає.)": "(He didn't recall her. But you see —\nthe heart remembers what the mind sets free.)", "ПАРА З Dima Liutyi · 10.08.2022": "MATCHED WITH Dima Liutyi · 10.08.2022", "Привіт) Діма, а ми знайомились —\nя ж знімала Штормнадо з тобою": "Hi) Dima, we've actually met —\nI directed Stormnado with you", "Та я ж був в команді нахапченків,\nтреба було багато хапать, не памʼятаю)": "I was on the grab-it-all team back then,\nhad to grab a lot, don't remember)", "Це інша зйомка, Діма": "That's a different shoot, Dima", "Блін. «Штормклуб» прочитав.\nТоді все памʼятаю)": "Oops. I read it as 'Stormclub'.\nNow I remember everything)", "Треба це якось відсвяткувати)": "We should celebrate that somehow)", "Можеш і зайти на концерт зі мною.\nЧи ні… в четвер же тренування": "You could join me at a concert.\nOr no… I've got training on Thursday", "А шо за тренування? Зальчик?": "What training? The gym?", "Джиу-джитсу. Майже боксік)\nтільки ми душимо, а не бʼємо": "Jiu-jitsu. Almost like boxing)\nexcept we choke, not punch", "О, туди ж мій друг ходить —\nЯрослав Соколовський": "Oh, my friend goes there too —\nYaroslav Sokolovskyi", "Далі — вже телеграм, без зупинки, —\nі якось мова зайшла про напитки:": "Then — straight to Telegram, non-stop, —\nand somehow the talk turned to drinks:", "а яке пиво ти любиш, до речі?": "what beer do you like, by the way?", "дуже люблю кокосове темне,\nв Хвильовому наливають": "I really love coconut dark,\nthey pour it at Khvylovy", "Андервуд коконат": "Underwood Coconut", "але взагалі справа в кокосі.\nлюблю кокос": "but honestly it's about the coconut.\nI love coconut", "Тобто ти любиш кокос як горіх?\nЧи як коканейро? МЕНІ ВАЖЛИВО ЗНАТИ": "So you love coconut as a nut?\nOr as cocaneiro? I NEED TO KNOW", ")))) ну не поняла прікола": ")))) ok I didn't get the joke", "в суботу пікнік у Марічки —\nбуду в центрі після": "Saturday is Marichka's picnic —\nI'll be downtown after", "То може нарешті побачимось?)": "So maybe we finally meet?)", "Так почалась найдовша з переписок:\nсто двадцять пʼять тисяч записок.": "And so began the longest chat of all:\na hundred twenty-five thousand notes in total.", "11 серпня 2022. (Бачив. Дубль три.)": "August 11, 2022. (He had seen her. Take three.)", "Стоп. Це ж хлопець зі зйомок 2021-го…": "Wait. That's the guy from the 2021 shoot…", "Субота. Пікнік у зеленім парку:\nМарічці — рік новий, і всім по чарку!": "Saturday. A picnic in the park so green:\nMarichka's birthday — glasses raised between!", "«За Марічку!» — келишки дзвенять, —\nі вдруге, й втретє: хто ж їх буде рахувать!": "'To Marichka!' — the glasses ring with cheer, —\na second time, a third: who's counting here!", "Так. Мені пора. В мене…\nпобачення. НЕ ДИВІТЬСЯ ТАК!": "Right. I have to go. I have…\na date. STOP LOOKING AT ME LIKE THAT!", "І Катя — трошки весела, легенька —\nна перше побачення пішла хутенько.": "And Katya — tipsy, light as air —\nwalked to her first date from there.", "Тим часом у Каті — пікнік, гуляння:\nв Марічки день народження зрання.": "Meanwhile Katya's at a picnic play:\nit's Marichka's birthday all day.", "(а я вже йду на Пейзажку.\nЗ пивом. З тим самим.)": "(and I'm already heading to Peizazhka.\nWith beer. With THE beer.)", "Вона прийде весела із гостини —\nнайкращий настрій для такої днини.": "She'll come from the party bright and gay —\nthe perfect mood for such a day.", "ДЕНЬ НАРОДЖЕННЯ МАРІЧКИ · пікнік": "MARICHKA'S BIRTHDAY · picnic", "субота перед першим побаченням": "the Saturday before the first date", "Обоє щойно вийшли з стосунків довгих, —\nтож «просто пиво». Без обіцянок жодних.": "Both fresh out of long relationships, so —\n'just a beer'. No promises to owe.", "Нічого такого. Правда ж?": "Nothing serious. Right?", "Абсолютно. Просто пиво.": "Absolutely. Just beer.", "Він запамʼятав те слово, ту дрібничку:\nкокосове темне. З Хвильового. Звичку.": "He remembered that word, that little thing:\ncoconut dark. From Khvylovy. Her string.", "Тадам. Тримай.": "Ta-dam. For you.", "Андервуд коконат?! Ти ЗАПАМʼЯТАВ?": "Underwood Coconut?! You REMEMBERED?", "Андервуд коконат?! Я ж один раз згадала…": "Underwood Coconut?! I mentioned it once…", "Запамʼятав із чату слово те —\nі в серденько поклав, як зерно золоте.": "He kept that word from chat with care —\nand planted it like gold seed there.", "…а можна, я проведу тебе додому?": "…may I walk you home?", "Світять над кручею ліхтарики дрібні,\nа вустонька зійшлися вперше — мов у сні.": "The little lanterns glowed above the steep —\nand their first kiss came like a dream in sleep.", "Казали двоє: пиво, й більш нічого, ні, —\nа вже любов вилася по стерні.": "They both said: beer, and nothing more, no way, —\nyet love was winding through the field that day.", "Розтало «несерйозно», мов той сніг, —\nвід судженого ще ніхто не втік.": "The 'nothing serious' melted just like snow —\nno one escapes their destined one, you know.", "Пригадай, яке пиво любить Катя!": "Recall which beer Katya loves!", "Так! Кокосове темне — Андервуд коконат 🥥": "Yes! Coconut dark — Underwood Coconut 🥥", "тапни банку з її улюбленим — і подаруй 🍺": "tap the can she loves — and gift it 🍺", "хм, ні. вона б чемно промовчала і не пила": "hmm, no. she'd politely say nothing and not drink it", "знову не те — згадай, що вона писала в чаті": "wrong again — remember what she wrote in the chat", "таке Діма точно не приніс би. ще спроба!": "Dima would never bring that. try again!", "Андервуд": "Underwood", "коконат": "Coconut", "світлий": "pale", "лагер": "lager", "пшеничне": "wheat", "ПІСЛЯ ПІКНІКА: дійди до Діми рівненько!": "AFTER THE PICNIC: walk straight to Dima!", "трошки весела — тапай лівим/правим боком і тримай рівновагу": "a bit tipsy — tap left/right side to keep balance", "ПЕРШИЙ ПОЦІЛУНОК: спіймай момент!": "THE FIRST KISS: catch the moment!", "тапни, коли кільце зійдеться на серці": "tap when the ring closes on the heart", "ПЕРШИЙ ПОЦІЛУНОК": "THE FIRST KISS", "над кручею, під ліхтариками — мов у сні": "above the steep, under lanterns — like a dream", "♥ …мов у сні ♥": "♥ …like a dream ♥", "…від справжнього не ухилишся": "…you can't dodge the real thing", "Ой у Лондоні тумани та дощі,\nа серце в Києві — хоч плач, хоч не проси.": "Oh, London is all fog and rain outside,\nbut her heart stayed in Kyiv — however she tried.", "Той місяць — у родині брата, в Кості:\nз Вікою й дітьми — як удома, в гості.": "That month she stayed at brother Kostia's place:\nwith Vika and the kids — a home-like space.", "В чужім краю валіза й ліхтарі,\nа дума в серці: швидше повернись.": "A suitcase and streetlights in a foreign land,\none thought inside her heart: come back again.", "Вернулась раніше — на місяць, на долю.\n«Не через тебе» (та через нас, з любові).": "She came back early — by a month, by fate.\n'Not because of you' (because of us — don't wait).", "Рушив потяг, місяць не добуто:\nлюбов із візою докупи не зшито.": "The train departed, month cut short en route:\nyou cannot stitch a visa to love's pursuit.", "Одинадцять тисяч листів — за місяць лік.\nКвиток додому — раніш: серцю невтерпік.": "Eleven thousand letters in one month, all told.\nA ticket home — bought early: hearts can't hold.", "Одинадцять тисяч тих листів злетіло, —\nй вона на місяць раніше прилетіла.": "Eleven thousand letters flew across the blue —\nand one month early she came flying too.", "Вона за 2500 км. Я був закоханий\nі — чесно — скучав.": "She was 2500 km away. I was in love\nand — honestly — I missed her.", "Вона за 2500 км. Ми стільки писали…\nЯ був закоханий і — чесно — скучав.": "She was 2500 km away. We wrote so much…\nI was in love and — honestly — I missed her.", "Просто цікаво, як там вона.\n…вже вп’яте за сьогодні.": "Just wondering how she's doing.\n…for the fifth time today.", "Місяць у Лондоні — заради візи.": "A month in London — for the visa.", "Єдиний міст додому — цей чат.\nВідповідай на все! (тап / ПРОБІЛ)": "The only bridge back home is this chat.\nReply to everything! (tap / SPACE)", "Тримай темп листування! (тап / ПРОБІЛ)": "Keep up the texting pace! (tap / SPACE)", "ПРОБІЛ — відповідай на все!": "SPACE — reply to everything!", "тапай — відповідай на все!": "tap — reply to everything!", "2500 км": "2500 km", "◀ ▶ рухати · A — крутити · ▼ — швидше": "◀ ▶ move · A — rotate · ▼ — faster", "◀ ▶ рухати · ПРОБІЛ — крутити · ▼ — швидше": "◀ ▶ move · SPACE — rotate · ▼ — faster", "Білогородка. У дворі у Дана\nкотиків принесла кішка зрана.": "Bilohorodka. In Dan's backyard one day\na cat brought kittens out to play.", "Катя в сторіз побачила мале —\nй одразу: «це вона». Отак і все.": "Katya saw the little one online —\nand knew at once: 'she's mine'. The end. Fine.", "Це вона.": "That's her.", "Повелась на іграшку — і зосталась:\nу затишнім кутку тут прописалась 🐈": "She fell for a toy — and stayed for good:\nsettled in her cozy neighborhood 🐈", "вона обрала вас 🐈": "she chose you 🐈", "ПРАВИЛА: щоб покликати Кітану — треба\nнявкати, а гра «слухає» твій голос.": "RULES: to call Kitana you have to\nmeow — the game listens to your voice.", "Тому далі браузер спитає доступ до мікрофона —\nце лише щоб чути твоє «няв». Дозволь 🎤": "So the browser will ask for microphone access —\nonly to hear your 'meow'. Please allow 🎤", "🐈 Нявкай — Кітана біжить до вас!\nЧастіше нявкаєш — швидше. (нема мікрофона? тап / ПРОБІЛ)": "🐈 Meow — and Kitana runs to you!\nMeow more often — she runs faster. (no mic? tap / SPACE)", "🐈 нявкай частіше — біжить швидше!": "🐈 meow more often — she runs faster!", "тапай — кожен тап це «няв»": "tap — every tap is a 'meow'", "ПРОБІЛ — кожне натискання це «няв»": "SPACE — every press is a 'meow'", "«киць»": "'kitty'", "— У вас куниця, у нас мисливець!": "— You have a marten, we have a hunter!", "За звичаєм гарбуз — то «ні», відмова.\nГоловне — не переплутати ні слова.": "By custom, pumpkin means a 'no', rejection.\nThe key is not to mix up one inflection.", "Рушники подали — згода, не інак:\nдорога до вінця відкрита. Так!": "The towels are given — that means yes, that's that:\nthe road to wedlock's open. And that's flat!", "тап — зупинити на рушнику": "tap — stop on the towel", "ПРОБІЛ — зупинити на рушнику": "SPACE — stop on the towel", "тапни відповідь": "tap the answer", "тапни варіант": "tap an option", "… ще раз": "… try again", "ІСПИТ СТАРОСТІВ!\nЧим Діма пояснив, що не памʼятає ту зйомку 2021-го?": "THE ELDERS' EXAM!\nHow did Dima explain not remembering that 2021 shoot?", "«Був у команді нахапченків»": "'I was on the grab-it-all team'", "«Мене там не було»": "'I wasn't there'", "«Памʼятаю кожен дубль!»": "'I remember every take!'", "«Куниця б памʼятала!» — хитають головами старости.": "'A marten would remember!' — the elders shake their heads.", "Де Катя і Діма вперше побачились?": "Where did Katya and Dima first meet?", "Хто з друзів Діми теж ходив на джиу-джитсу з Катею?": "Which of Dima's friends also did jiu-jitsu with Katya?", "Про який прікол Катя спитала Діму першого вечора?": "What joke did Katya ask Dima about on the first evening?", "Скільки повідомлень вони написали за жовтень 2022?": "How many messages did they write in October 2022?", "Скільки повідомлень вони написали\nза жовтень 2022 (місяць Лондона)?": "How many messages did they write\nin October 2022 (the London month)?", "Як Діма найчастіше кличе Катю в чаті?": "What does Dima call Katya most often in chat?", "Як Діма спершу пояснив, що не памʼятає ту зйомку?": "How did Dima first explain not remembering that shoot?", "Хто такий SPACE SPICE BOY?": "Who is SPACE SPICE BOY?", "«Катерино Батьківно»": "'Kateryna Batkivno'", "«пані режисерко»": "'madam director'", "мільйон": "a million", "«Відчувалось як мільйон, але ні.»": "'Felt like a million, but no.'", "«Не чули такого в цій хаті.»": "'Never heard of that in this house.'", "Чому Діма кепсько виглядав на тій зйомці ШТОРМНАДО?": "Why did Dima look rough at that STORMNADO shoot?", "Що Діма пообіцяв собі після зйомки ШТОРМНАДО?": "What did Dima promise himself after the STORMNADO shoot?", "Що Катя подарувала Дімі 14 лютого 2026?": "What did Katya gift Dima on Feb 14, 2026?", "Чим коробочка з каблучкою привернула увагу?": "How did the ring box catch attention?", "обряд «Вербова дощечка»: наречену ведуть до нареченого": "the 'Willow Plank' rite: the bride is led to the groom", "Позняки — Дімине місце сили:\nтут виріс він, тут вдвох і осіли.": "Pozniaky — Dima's place of power and pride:\nhe grew up here, now they both reside.", "Позняки. Катю сюди все життя\nдоля закидала — й привела до пуття.": "Pozniaky. All her life fate would strand\nKatya here — then led her home as planned.", "ТАЄМНА ОПЕРАЦІЯ «КОРОБОЧКА».\nЗа тиждень до будиночків.": "SECRET OPERATION 'LITTLE BOX'.\nOne week before the cabins.", "ТИМ ЧАСОМ, ЗА ТИЖДЕНЬ ДО БУДИНОЧКІВ.\nДіма щось задумав.": "MEANWHILE, A WEEK BEFORE THE CABINS.\nDima is up to something.", "Він ховає щось у рюкзаку. Вже третій день.": "He's hiding something in his backpack. Third day now.", "Головне — щоб вона не побачила.": "The main thing — she must not see it.", "Тримай А, щоб ховати коробочку,\nколи Катя дивиться!": "Hold A to hide the box\nwhen Katya looks!", "Тримай А — дивись у телефон\nі вдавай, що не помічаєш!": "Hold A — stare at your phone\nand pretend you don't notice!", "тримай палець на екрані": "hold your finger on the screen", "тримай ПРОБІЛ": "hold SPACE", "утримуй": "hold", "утримуй ПРОБІЛ": "hold SPACE", "утримуй палець на екрані": "hold your finger on the screen", "(Здається, обійшлось. Здається.)": "(Seems it worked out. Seems.)", "Він і не здогадується, бідний,\nщо ти все знаєш. Вигляд зроби гідний 😏": "He has no clue, poor guy, that you\nknow everything. Keep a straight face too 😏", "Фух. Операція «Коробочка» — успіх.": "Phew. Operation 'Little Box' — success.", "Нічого не бачила. Нічогісінько.": "I saw nothing. Nothing at all.", "Я нічого не бачила. Нічогісінько.": "I saw nothing. Nothing at all.", "ЗА КІЛЬКА ДНІВ": "A FEW DAYS LATER", "Вона все знає — думає, що ні.\nБайдуже: вперед, у ці зимові дні.": "She knows it all — he thinks she's unaware.\nNo matter: onward through the winter air.", "Ти знала ще зранку. Та серце — овва! —\nгупає так, що аж чути слова.": "You knew since morning. Yet — oh wow — your heart\nis pounding loud enough to hear each part.", "Мат. І тримай подарунок —\n«Шахмати для дибілів».": "Checkmate. And here's your present —\n'Chess for dummies'.", "І тримай подарунок —\n«Шахмати для дибілів».": "And here's your present —\n'Chess for dummies'.", "Шах і мат.": "Checkmate.", "Все. Здаюсь. Ходити нема куди.": "That's it. I resign. Nowhere to move.", "Теж маю щось… десь тут…": "I also have something… somewhere here…", "Хочу, щоб ти стала… Катериною Лютою.": "I want you to become… Kateryna Liuta.", "І попри те, що ти мене часом бісиш —\nхочу з тобою жити.": "And even though you drive me crazy sometimes —\nI want to live my life with you.", "Слова незграбні — ну і хай:\nу них вмістився цілий рай.": "The words were clumsy — let them be:\nthey held a whole paradise, you see.", "(вона сказала «так»\nще до крапки.)": "(she said 'yes'\nbefore the full stop.)", "Так!": "Yes!", "Тура на d8 — мат по 8-й": "Rook to d8 — back-rank mate", "Ферзь на b8 — теж мат": "Queen to b8 — also mate", "Тура d7 — задушити": "Rook d7 — squeeze him", "Пішак g6 — дірка для короля": "Pawn g6 — luft for the king", "Пішак f6 — тікати на f7": "Pawn f6 — run to f7", "Просто здатися": "Just resign", "класика задньої горизонталі!": "a back-rank classic!", "ферзь добіг перший!": "the queen got there first!", "повільно, але теж виграш: мат за два ходи": "slow, but still a win: mate in two", "Тd8+ Крг7, Фb2-h8 — мат.": "Rd8+ Kg7, Qb2-h8 — mate.", "Тd8+ Крg7, Фb2-h8 — мат.": "Rd8+ Kg7, Qb2-h8 — mate.", "Фb7! — і поле f7 уже під боєм. Мат наступним.": "Qb7! — and f7 is covered. Mate next move.", "чесно. і романтично.": "honest. and romantic.", "ПРОГРАВ. ЯК ЗАВЖДИ.": "LOST. AS ALWAYS.", "ОСЬ ВОНА — тапни коробочку!": "THERE IT IS — tap the box!", "хапай речі пальцем і відкидай — вона десь на дні": "grab things with your finger and toss them — it's at the bottom", "тапни палець": "tap a finger", "тапай А швидко": "tap A fast", "тисни ПРОБІЛ швидко": "press SPACE fast", "обери прізвище після весілля": "choose the surname after the wedding", "Люті": "Liuti", "обоє — Лютий": "both become Liutyi", "Синявська + Лютий": "Syniavska + Liutyi", "кожен лишає своє": "each keeps their own", "Синявська-Люта": "Syniavska-Liuta", "подвійне": "double-barrelled", "КИЇВ · 2021 · ЩЕ ДО ВІЙНИ": "KYIV · 2021 · BEFORE THE WAR", "вечорниці — де молодь сходилась за ділом. у наших це зйомка": "vechornytsi — where youth met over work. for ours it's a film shoot", "ЧАСТИНА ПЕРША · ВЕЧОРНИЦІ": "PART ONE · VECHORNYTSI", "СЕРПЕНЬ 2022 · ВЖЕ ІНШЕ ЖИТТЯ": "AUGUST 2022 · ANOTHER LIFE", "війна все змінила. сучасні вечорниці звуться тіндер": "the war changed everything. modern vechornytsi are called Tinder", "на вечорницях годилось частувати. у нас — кокосове темне": "at vechornytsi one had to treat guests. ours — coconut dark", "ЖОВТЕНЬ 2022 · КИЇВ ↔ ЛОНДОН": "OCTOBER 2022 · KYIV ↔ LONDON", "женихання здавна велось листами. у нас — 11 223 повідомлення": "courtship was long done by letters. ours — 11,223 messages", "ЧАСТИНА ДРУГА · ЖЕНИХАННЯ": "PART TWO · COURTSHIP", "ОСІНЬ 2023 · БІЛОГОРОДКА": "AUTUMN 2023 · BILOHORODKA", "пара заводить перше спільне господарство: кицю Кітану": "the couple starts their first shared household: Kitana the cat", "ОГЛЯДИНИ · РЕМЕСЛО МОЛОДОЇ": "OHLIADYNY · THE BRIDE'S CRAFT", "ОГЛЯДИНИ · РЕМЕСЛО МОЛОДОГО": "OHLIADYNY · THE GROOM'S CRAFT", "оглядини: дивляться, хто що вміє. Катине ремесло — монтаж": "ohliadyny: they check each other's skills. Katya's craft is editing", "а Дімине ремесло — синтезатори і сцена: SPACE SPICE BOY": "and Dima's craft — synthesizers and stage: SPACE SPICE BOY", "СВАТАННЯ": "SVATANNIA", "старости, рушник — і гарбуз напоготові": "the elders, the towel — and a pumpkin at the ready", "ЧАСТИНА ТРЕТЯ · СВАТАННЯ": "PART THREE · SVATANNIA", "ЛЮТИЙ 2026 · ПОЗНЯКИ": "FEBRUARY 2026 · POZNIAKY", "перед заручинами дари ховають. Катя «нічого не бачила»": "before the betrothal gifts are hidden. Katya 'saw nothing'", "перед заручинами дари ховають: Діма ховає коробочку": "before the betrothal gifts are hidden: Dima hides the box", "ЧАСТИНА ЧЕТВЕРТА · ЗАРУЧИНИ": "PART FOUR · BETROTHAL", "14 ЛЮТОГО 2026 · МІНІМАЛІСТ": "FEBRUARY 14, 2026 · MINIMALIST BAR", "будиночки за містом. сніг. Діма освідчується": "cabins outside the city. snow. Dima proposes", "24 СЕРПНЯ 2026": "AUGUST 24, 2026", "розпис — по-сучасному: заява в Дії": "registry — the modern way: an application in Diia", "ЧАСТИНА ПʼЯТА · РОЗПИС": "PART FIVE · THE REGISTRY", "6 ВЕРЕСНЯ 2026 · КИЇВ": "SEPTEMBER 6, 2026 · KYIV", "день, заради якого ця гра": "the day this game is for", "ЧАСТИНА ШОСТА · ВЕСІЛЛЯ": "PART SIX · THE WEDDING", "Монтаж — це вже моя стихія.": "Editing — now that's my element.", "Ріж таймлайн, коли бігунець на ▸ мітці.\n(тап / ПРОБІЛ)": "Cut the timeline when the playhead hits the ▸ mark.\n(tap / SPACE)", "(Цей випуск Катя так і не монтувала, —\nа гра змонтує все, чого бракувало.)": "(Katya never edited that show, it's true —\nbut this game edits all she never got to.)", "Ідеальний рез.": "A perfect cut.", "тап — різати": "tap — cut", "ПРОБІЛ — різати": "SPACE — cut", "Оце — моя стихія. Пісня живе,\nпоки ти в ритмі!": "This is my element. The song's alive\nas long as you keep the rhythm!", "Оце — «Позняки». Наша.": "This one is 'Pozniaky'. Ours.", "Лови ноти на лінії — і пісня грає.\nПроґавив — тиша. (тап у колонці / A S D)": "Catch the notes on the line — and the song plays.\nMiss — silence. (tap the column / A S D)", "A S D — лови ноти": "A S D — catch the notes", "тап у колонці": "tap the column", "Дружки заступили дорогу: «Викуп за наречену!»": "The bridesmaids block the road: 'Ransom for the bride!'", "Дати одну цукерку": "Give one candy", "«ОДНУ?! За ТАКУ наречену?» — і цукерку забрали.": "'ONE?! For a bride like THIS?' — and they took the candy.", "Цукерки і шампан — усе!": "Candy and champagne — all of it!", "«Оце розмова!» — дружки приймають викуп.": "'Now we're talking!' — the bridesmaids accept the ransom.", "Спробувати проскочити": "Try to slip past", "Зловили за рукав. Джиу-джитсу тут не в тебе. Штраф!": "Caught by the sleeve. Jiu-jitsu isn't on your side here. Fine!", "«А тепер доведи, що знаєш наречену!»": "'Now prove you know the bride!'", "«Її пиво — світлий лагер»": "'Her beer is a pale lager'", "«ХТО?! Іди вчи матчастину» — штраф цукеркою.": "'WHO?! Go study the basics' — a candy fine.", "«Її пиво — кокосове темне»": "'Her beer is coconut dark'", "«Андервуд коконат!» — дружки схвально кивають.": "'Underwood Coconut!' — the bridesmaids nod approvingly.", "«Вона не пʼє пива»": "'She doesn't drink beer'", "Регіт. Навіть Кітана знає, що це не так.": "Laughter. Even Kitana knows that's not true.", "«І останнє: чим платиш за такий скарб?»": "'And lastly: what do you pay for such a treasure?'", "Гривня і добре слово": "A hryvnia and a kind word", "«Курс не той!» — хитають головами дружки.": "'Wrong exchange rate!' — the bridesmaids shake their heads.", "Пообіцяти концерт гурту": "Promise a band concert", "«Хитро! Але співати й так будеш. Ще!»": "'Sly! But you'll sing anyway. More!'", "Серце. Одне. Назавжди": "A heart. One. Forever", "Дружки: «Оце курс. Забирай наречену!»": "Bridesmaids: 'Now THAT's the rate. Take your bride!'", "· ВИКУП НАРЕЧЕНОЇ ·": "· THE BRIDE RANSOM ·", "ВИКУП СПЛАЧЕНО! Стрічку опущено ✔": "RANSOM PAID! The ribbon is lowered ✔", "проходь до нареченої!": "go to your bride!", "обери хід — помилка = штраф із казни": "choose a move — a mistake costs the treasury", "раунд": "round", "з": "of", "ЯК ГРАТИ У ВИКУП": "HOW TO PLAY THE RANSOM", "Дружки натягнули СТРІЧКУ через дорогу —": "The bridesmaids stretched a RIBBON across the road —", "старий звичай: молодого не пускають,": "an old custom: the groom is not let through", "поки не заплатить викуп за наречену.": "until he pays a ransom for the bride.", "У кожному з 3 раундів обери правильний хід.": "In each of the 3 rounds pick the right move.", "Помилка — дружки беруть штраф із казни 🍬🍾.": "A mistake — the bridesmaids fine your treasury 🍬🍾.", "Пройдеш усі три — стрічку опустять!": "Pass all three — and the ribbon comes down!", "СТРІЧКА ВИКУПУ 🎀": "THE RANSOM RIBBON 🎀", "👇 тап — почати": "👇 tap — start", "тапни хід": "tap a move", "тапни свій хід": "tap your move", "← → і ПРОБІЛ": "← → and SPACE", "↑ ↓ і ПРОБІЛ": "↑ ↓ and SPACE", "← → — вирівнюй хліб!": "← → — level the bread!", "тапай ЛІВОРУЧ/ПРАВОРУЧ — вирівнюй!": "tap LEFT/RIGHT — keep it level!", "тисни ПРОБІЛ швидко-швидко": "press SPACE fast-fast", "тапай А швидко-швидко": "tap A fast-fast", "тап у потрібний момент": "tap at the right moment", "ПРОБІЛ у потрібний момент": "SPACE at the right moment", "тап — далі": "tap — next", "тап — до титрів": "tap — to the credits", "тап — і на вечірку в «Хвильовий»": "tap — and to the party at Khvylovy", "ПРОБІЛ": "SPACE", "Денна частина · церемонія": "Day part · the ceremony", "6 вересня 2026 · збір о 12:00": "September 6, 2026 · gather at 12:00", "«Бути Софі», Київ": "'Buty Sofi', Kyiv", "Вечірня частина · свято": "Evening part · the celebration", "6 вересня 2026 · 17:30": "September 6, 2026 · 17:30", "«Хвильовий», Київ": "'Khvylovy', Kyiv", "Ти з нами 6 вересня?": "Are you with us on September 6?", "Скільки вас буде?": "How many of you will come?", "Пʼєш алкоголь?": "Do you drink alcohol?", "Пісня, під яку ти точно танцюєш?": "A song you'll definitely dance to?", "А в Лондоні, Вікусю, — під одним ми дахом:\nу вас із Костею й дітьми жилось без страху!": "And in London, Vika dear, — under one roof:\nwith you, Kostia and the kids — a living proof!", "А ви ж, Алінко з Жорою, — сусіди наші,\nчерез стіну на Позняках, у добрій чаші!": "And you, Alina and Zhora, — neighbours true,\nthrough the wall in Pozniaky — here's to you!", "А ви ж, байкери, — на конях на залізних:\nприкотили в Хвильовий з усіх усюд різних!": "And you, the bikers, — on your steeds of steel:\nyou rolled to Khvylovy — how great you feel!", "А ви ж, брате Сашо з Борею, — у Софі раді:\nрідня зібралась, як на святковім параді!": "And you, brother Sasha with Boria, — at Sofi glad:\nthe family gathered like a grand parade!", "А ти ж, Лано Чубахо, — з бенду, з рідного двору:\nзаграй нам у Хвильовому, як у стару пору!": "And you, Lana Chubakha, — from the band, our own:\nplay for us at Khvylovy like days long gone!", "А ти ж, Лесю, — подруга з татамі, з бою:\nі Діму знала — світ тісний, не скрою!": "And you, Lesia, — my tatami fighting friend:\nyou knew Dima too — small world, no need to pretend!", "А ти ж, Насте, — Діму знаєш ще з тих пір:\nсплелися нитки долі — тісний світ, повір!": "And you, Nastia, — you've known Dima since way back:\nthe threads of fate entwined — small world, that's fact!", "А ти, Інно з Богданом, — з нами у дворі:\nхай гірко — молодятам, солодко — порі!": "And you, Inna with Bohdan, — in our yard with cheer:\nbitter for the newlyweds, sweet for the year!", "А ти, Альоно Казанець, — у Хвильовому:\nде пісня йде по колу вечоровому!": "And you, Aliona Kazanets, — at Khvylovy's night:\nwhere songs go round the circle till the light!", "А ти, Алісо, — з татамі подруга завзята:\nготувались до змагань — тепер гуляєм свято!": "And you, Alisa, — my keen tatami mate:\nwe trained for contests — now we celebrate!", "А ти, Анічко Дідоро, — дружка вірная:\nаж з Праги прилетіла — до мене, рідная!": "And you, Anichka Didora, — bridesmaid true:\nflew all the way from Prague — my dear, that's you!", "А ти, Анічко Дідоро, — дружка перша, знана:\nаж з Праги прилетіла — на весілля зрана!": "And you, Anichka Didora, — first bridesmaid, known:\nflew in from Prague at dawn to see us grown!", "А ти, Анічко, з нами — у Хвильовому:\nде пиво пінне ллється по-святковому!": "And you, Anichka, with us — at Khvylovy:\nwhere foamy beer flows festively and free!", "А ти, Владе Бранашко, — вернувся з Мексики:\nревнеш «кабанчика» — здригнуться всі столики!": "And you, Vlad Branashko, — back from Mexico's shore:\none 'kabanchyk' roar — and tables shake once more!", "А ти, Вікусю, — дружка, з Лондона рідненька:\nжили під дахом одним — тепер під вінцем близенько!": "And you, Vika dear, — bridesmaid from London town:\nwe shared a roof — now share the wedding crown!", "А ти, Даринко, — з Сашею-Масянею в парі:\nгуляєм у Хвильовому при місячнім ліхтарі!": "And you, Darynka, — with Sasha by your side:\nwe party at Khvylovy in the moonlight wide!", "А ти, Женю Галич, — Вікин друг, співаче:\nз «Оторвальда» голос — хай весілля скаче!": "And you, Zhenia Halych, — Vika's friend who sings:\nthat 'Otorvald' voice — let the wedding swing!", "А ти, Катрусю Большакова, — з нами\nу Хвильовому, за весільними столами!": "And you, Katrusia Bolshakova, — here with all,\nat Khvylovy, at the wedding hall!", "А ти, Катю Матвійчук, — однокурсниця моя:\nстрілись раптом — й у Хвильовім гуля сімʼя!": "And you, Katia Matviichuk, — my classmate of old:\nwe met again — now partying, all told!", "А ти, Катю Плешакова, — у Хвильовому:\nгуляння тут до рання по-домовому!": "And you, Katia Pleshakova, — at Khvylovy's do:\nwe party here till dawn, home-style and true!", "А ти, Луїзо, — дружка мила, згідна:\nз Антоном і Ярусею — уся родина рідна!": "And you, Luiza, — bridesmaid sweet and kind:\nwith Anton and Yarusia — family combined!", "А ти, Лідусю, — теж у Хвильовому:\nде «гірко!» аж лунає по цілому дому!": "And you, Lidusia, — at Khvylovy as well:\nwhere 'hirko!' rings out like a wedding bell!", "А ти, Марічко, — дружка моя мила:\nяк на татамі поруч — так під вінцем сила!": "And you, Marichka, — bridesmaid dear to me:\nbeside me on tatami — now at the ceremony!", "А ти, Насте Запорожець, — з джиу-джитсу теж:\nчерез стегно кидали — тепер танцюєш все ж!": "And you, Nastia Zaporozhets, — jiu-jitsu crew:\nwe threw each other — now we dance it through!", "А ти, Ніко Селего, — наш обряд ведеш:\nтрадиційно, щиро — кращої не знайдеш!": "And you, Nika Seleha, — you lead our rite:\ntraditional and true — no better sight!", "А ти, Олеже Бурий, — теж боярин славний:\nпід вінцем за друга станеш — звичай давній!": "And you, Oleh Buryi, — a groomsman of grace:\nstanding by your friend — an ancient place!", "А ти, Олеже Сміря, — боярин Дімин вірний:\nплече в плече у день оцей безмірний!": "And you, Oleh Smiria, — Dima's groomsman true:\nshoulder to shoulder this whole day through!", "А ти, Плахотній, — Дімин боярин, друже:\nз дитячого табору світ тісний, аж дуже!": "And you, Plakhotnii, — Dima's groomsman, friend:\nfrom summer camp — small world without an end!", "А ти, Тімуре з Яною, — у Хвильовому:\nгуляєм до світанку по-бойовому!": "And you, Timur with Yana, — at Khvylovy's fest:\nwe party till the sunrise — battle-dressed!", "А ти, Юлечко Приймак, — у Хвильовому:\nтанцюємо до ранку по-новому!": "And you, Yulechka Pryimak, — at Khvylovy too:\nwe dance until the morning, fresh and new!", "А ти, Юлю Рябухіна, — з Артемом, у нас:\nу Хвильовому гуляння — саме час!": "And you, Yulia Riabukhina, — with Artem here:\nthe party at Khvylovy — the time is near!", "А ти, Ярику з Мариною, — Дімин боярин, брат:\nстоїш за нього твердо — і кожен цьому рад!": "And you, Yarik with Maryna, — groomsman, brother:\nyou stand by him — and glad is every other!", "А ти, бабусю рідна, — в Софі за столом:\nблагослови онуків хлібом і теплом!": "And you, dear grandma, — at the Sofi feast:\nbless your grandchildren with bread and peace!", "А ти, братику Костю, — з Лондона до нас,\nа Віка з дітьми — в зумі, з нами ураз!": "And you, brother Kostia, — from London you came,\nwhile Vika and the kids Zoom in the same!", "А ти, дядьку Сашо, — рідна кров, у Софі:\nза столом під дзвіницею — у першій строфі!": "And you, uncle Sasha, — our own blood, at Sofi:\nat the table by the bell tower — first strophe!", "А то ж у Дановім дворі знайшли ту кицю:\nвін нагледів — ми забрали чарівницю!": "It was in Dan's yard we found that little cat:\nhe spotted her — we took the charmer, and that's that!", "А ти, ": "And you, ", " — з нами у «Бути Софі» зрання:\nпід дзвіницею стіл — і святкування!": " — with us at 'Buty Sofi' since the morn:\na table by the bell tower — and cheers reborn!", " — з нами у Хвильовім дворі:\nгуляння наше — аж до самої зорі!": " — with us in Khvylovy's yard so bright:\nour party lasts until the morning light!", "І ще. Тримай.": "And one more. For you.", "ПІДОЗРА КАТІ": "KATYA'S SUSPICION", "ТВОЯ ЦІКАВІСТЬ": "YOUR CURIOSITY", "НЕ СПАЛИВСЯ!": "NOT BUSTED!", "«НІЧОГО НЕ БАЧИЛА»": "'I SAW NOTHING'", "«Що це в тебе?» — «НІЧОГО!»": "'What's that you got?' — 'NOTHING!'", "«Ти чого дивишся?» — «Я? Нікуди!»": "'What are you looking at?' — 'Me? Nothing!'", "КОЛУПАЙ ПІЧ!": "PICK AT THE STOVE!", "ТРИМАЙ ХЛІБ РІВНО!": "KEEP THE BREAD LEVEL!", "(так, за традицією наречена СПРАВДІ колупала піч)": "(yes, by tradition the bride REALLY picked at the stove)", "«ОЙ-ОЙ-ОЙ!» — ахнули дружки": "'OH-OH-OH!' — the bridesmaids gasped", "(рівний хліб — рівне життя, кажуть старости)": "(level bread — level life, the elders say)", "ЗНАЙДИ КОРОБОЧКУ В РЮКЗАКУ!": "FIND THE BOX IN THE BACKPACK!", "РОБИ ЗДИВОВАНЕ ОБЛИЧЧЯ!": "MAKE A SURPRISED FACE!", "вона ж нічого не підозрює (підозрює)": "she suspects nothing (she does)", "ти ж нічого не знала (знала)": "you knew nothing (you did)", "НА ЯКИЙ ПАЛЕЦЬ??": "WHICH FINGER??", "ПІДХОДИТЬ!": "IT FITS!", "(і яка рука? хтозна. обирай)": "(and which hand? who knows. pick one)", "(головне вже було сказано)": "(the main thing was already said)", "зарано! носами стукнулись)": "too early! you bumped noses)", "запізно! момент утік…": "too late! the moment slipped…", "іккк!": "hic!", "ДІЙШЛА! 💅": "MADE IT! 💅", "казна викупу": "ransom treasury", "ЗМОНТОВАНО!": "EDITED!", "ХІТ ЗАПИСАНО!": "HIT RECORDED!", "ШТОРМНАДО · чорновий монтаж": "STORMNADO · rough cut", "різів: ": "cuts: ", "ГІРКО!": "HIRKO!", "ГІРКО!!!": "HIRKO!!!", "За молодят!": "To the newlyweds!", "многая літа!": "many happy years!", "Вербовая дощечка, дощечка! 🎶": "The willow plank, the plank! 🎶", "Станьте на рушник!": "Step on the towel!", "Хліб і сіль — молодятам!": "Bread and salt for the newlyweds!", "Кланяйтесь родові!": "Bow to the family!", "тераса «Бути Софі» · Софія Київська · «Гірко!» 🥂": "'Buty Sofi' terrace · St. Sophia · 'Hirko!' 🥂", "дворик «Хвильового» · усі співають «Штольню» 🎶": "Khvylovy courtyard · everyone sings 'Shtolnia' 🎶", "за кордоном — на звʼязку 🌍": "abroad — on the line 🌍", "Лондон на звʼязку 🇬🇧": "London calling 🇬🇧", "🎶 Штольня 🎶": "🎶 Shtolnia 🎶", "ля-ля-ля-ля": "la-la-la-la", "гуляєм!": "party on!", "♥ ЛЮТІ ♥": "♥ THE LIUTYIS ♥", "Яке прізвище?": "Which surname?", "Шлюб онлайн": "Marriage online", "прізвище:": "surname:", "ПОДАТИ ЗАЯВУ": "SUBMIT APPLICATION", "Заяву надіслано": "Application sent", "24 серпня 2026": "August 24, 2026", "найромантичніша кнопка Дії": "the most romantic button in Diia", "СХВАЛЕНО": "APPROVED", "Перевіряємо, чи це ви…": "Checking it's really you…", "Дія.Підпис…": "Diia.Sign…", "Узгоджуємо зірки…": "Aligning the stars…", "Майже…": "Almost…", "СЕРЙОЗНІ СТОСУНКИ": "SERIOUS RELATIONSHIP", "ПЛАНИ НА МАЙБУТНЄ": "PLANS FOR THE FUTURE", "ЗНАЙОМСТВО З МАМОЮ": "MEETING THE MOM", "СПІЛЬНИЙ ПОБУТ": "LIVING TOGETHER", "ВІДПУСТКА РАЗОМ": "VACATION TOGETHER", "* Ви обоє: «це взагалі не побачення».": "* You both: 'this is not a date at all'.", "* НЕСЕРЙОЗНІСТЬ замовляє ще пива.": "* NON-SERIOUSNESS orders another beer.", "* Серця самонавідні. Опір марний.": "* The hearts are homing. Resistance is futile.", "* НЕСЕРЙОЗНІСТЬ у відчаї:\n  всі аргументи одразу!": "* NON-SERIOUSNESS in despair:\n  all arguments at once!", "влучно.": "a hit.", "і це правда.": "and it's true.", "заперечення провалено": "objection failed", "+1 до любові": "+1 to love", "ой.": "oops.", "мамі ти сподобаєшся": "mom will like you", "НЕСЕРЙОЗНІСТЬ": "NON-SERIOUSNESS", "Від цього не ухилишся.": "You can't dodge this.", "ШАХ І МАТ.": "CHECKMATE.", "ВИГРАШ. ПОВІЛЬНИЙ І БОЛЮЧИЙ.": "A WIN. SLOW AND PAINFUL.", "ВИКУП СПЛАЧЕНО! Стрічку опущено — проходь до нареченої ✔": "RANSOM PAID! Ribbon lowered — go to your bride ✔", "ІСПИТ СКЛАДЕНО! РУШНИКИ ПОДАНО": "EXAM PASSED! THE TOWELS ARE GIVEN", "ГАРБУЗ ЧИ РУШНИК?": "PUMPKIN OR TOWEL?", "ВСІ СЕРЦЯ ТВОЇ!": "ALL HEARTS ARE YOURS!", "ШТОРМ ЗІБРАНО!": "THE STORM IS GATHERED!", "ПЕРЕМОГА КОХАННЯ": "LOVE WINS", "Дякуємо! Надішли нам відповіді:": "Thank you! Send us your answers:", "Шкода, що не вийде 💛 Але церемонію можна буде подивитись НАЖИВО онлайн!": "So sorry you can't make it 💛 But you can watch the ceremony LIVE online!", "Дякуємо! Тебе не було в списку — ми підтвердимо вручну 💛 Надішли відповіді:": "Thank you! You weren't on the list — we'll confirm manually 💛 Send your answers:", "Дякуємо! Відповідь записано ✓ Можеш ще й:": "Thank you! Answer recorded ✓ You can also:", "📺 Посилання на трансляцію": "📺 Livestream link", "✉️ Нагадати мені про трансляцію": "✉️ Remind me about the stream", "✈️ Надіслати в Telegram": "✈️ Send via Telegram", "📋 Скопіювати": "📋 Copy", "Готово": "Done", "Звісно! 🥂": "Of course! 🥂", "Дуже постараюсь": "I'll do my best", "Ніяк 😢": "Can't make it 😢", "Я": "Me", "Я +1": "Me +1", "Ми сім’єю": "With family", "Так 🥂": "Yes 🥂", "Ні, безалко": "No, alcohol-free", "Спершу представся 🙂": "First, introduce yourself 🙂", "КАТЯ ♥ ДІМА": "KATYA ♥ DIMA", "шлях до весілля": "the road to the wedding", "У ГОЛОВНИХ РОЛЯХ": "STARRING", "КАТЯ": "KATYA", "ДІМА": "DIMA", "режисерка · наречена": "director · the bride", "креативний директор · музикант · наречений": "creative director · musician · the groom", "ТАКОЖ У РОЛЯХ": "ALSO STARRING", "КІТАНА": "KITANA", "найкраща кішка · сама себе": "best cat · as herself", "СТАРОСТИ": "THE ELDERS", "самі себе (вигадані)": "as themselves (fictional)", "ГАРБУЗ": "THE PUMPKIN", "драматичне камео": "a dramatic cameo", "КРЕАТИВНИК": "THE CREATIVE", "той тіп із кадру": "that guy from the frame", "СЦЕНАРІЙ": "WRITTEN BY", "саме життя, 2021–2026": "life itself, 2021–2026", "МОНТАЖ": "EDITED BY", "Катя (а хто ж ще)": "Katya (who else)", "МУЗИКА": "MUSIC", "Space Spice Boy (морально)": "Space Spice Boy (morally)", "ЕТНОГРАФІЯ": "ETHNOGRAPHY", "Музей Івана Гончара (за духом)": "the Honchar Museum (in spirit)", "ЗНЯТО ЗА МОТИВАМИ": "BASED ON", "125 000 повідомлень": "125,000 messages", "КИЇВ": "KYIV", "ГРАВ(-ЛА)": "PLAYED BY", "ДЯКУЄМО, ЩО ДОГРАВ ♥": "THANK YOU FOR PLAYING ♥", "Катя": "Katya", "Діма": "Dima", "Макс": "Max", "Кітана": "Kitana"});
 const NOVEL_PARTS=['ВЕЧОРНИЦІ','ВЕЧОРНИЦІ','ВЕЧОРНИЦІ','ЖЕНИХАННЯ','ЖЕНИХАННЯ','СВАТАННЯ','ЗАРУЧИНИ','ЗАРУЧИНИ','ВЕСІЛЛЯ'];
 const NOVEL_PARTS_EN=['VECHORNYTSI','VECHORNYTSI','VECHORNYTSI','ZHENYKHANNIA','ZHENYKHANNIA','SVATANNIA','BETROTHAL','BETROTHAL','WEDDING'];
 const NPART = bg => (LANG==='en'?NOVEL_PARTS_EN:NOVEL_PARTS)[bg];
@@ -6032,7 +6046,7 @@ function novelDataEn(){
   return [
     {bg:0, cap:['KYIV · 2021 · before the war','the STORMNADO shoot'], lines:[
       N("A peaceful year. A film set, lights and cameras:\nshe runs the shoot, and he is in the frame."),
-      {who:'katya', emo:'normal', text:"Ad agency. We're shooting STORMNADO.\nSome brief about the metaverse."},
+      {who:'katya', emo:'normal', text:"Some office somewhere. We're shooting\nSTORMNADO. A brief about the metaverse."},
       {who:'dima',  emo:'happy',  text:"Where should I look — at the camera\nor at the director?)"},
       N("He never even asked her name that day —\nnot knowing fate had looked his way."),
     ]},
@@ -6360,6 +6374,7 @@ const elArrow = document.getElementById('darrow');
 const elPortraitWrap = document.getElementById('portrait-wrap');
 
 function startDialog(lines, onEnd){
+  if(LANG==='en') lines = lines.map(l => Object.assign({}, l, {text: T(l.text)}));
   game.dialog = {lines, idx:0, shown:0, timer:0, waitTimer:0};
   game.onDialogEnd = onEnd || null;
   elDialog.classList.remove('hidden');
@@ -6378,7 +6393,7 @@ function showLine(){
   if(ln.who){
     const c = CHARS[ln.who];
     elPortraitWrap.style.display='';
-    elName.textContent = c.name + (ln.who===game.pov && !game.watch ? ' (ти)' : '');
+    elName.textContent = T(c.name) + (ln.who===game.pov && !game.watch ? (LANG==='en'?' (you)':' (ти)') : '');
     elName.className = c.cls;
     drawPortraitInto(pctx, ln.who, ln.emo);
     elText.style.textAlign='left';
@@ -6640,7 +6655,7 @@ function finishGame(){
     const s = SLOTS[GUEST.slot];
     title.textContent = GUEST.name + '!';
     body.innerHTML = zaprosyny +
-      `<b>${s.what}</b><br>${s.when}<br>${s.where}${surn}` + more;
+      `<b>${T(s.what)}</b><br>${T(s.when)}<br>${T(s.where)}${surn}` + more;
   } else {
     title.textContent = playerName ? (playerName.toUpperCase() + ', ТЕБЕ КЛИЧУТЬ') : 'ЗАПРОСИНИ';
     body.innerHTML = zaprosyny +
@@ -7143,9 +7158,43 @@ function resetTitleMenus(){
   document.getElementById('play-pov-menu').classList.add('hidden');
   const wm = document.getElementById('watch-pov-menu'); if(wm) wm.classList.add('hidden');
 }
+function applyLang(){
+  const map = {
+    'btn-newgame': ['Нова гра','New game'],
+    'btn-sampler': ['Семплер','Sampler'],
+    'btn-viber':   ['Гарне запрошення','Pretty invitation'],
+    'btn-party':   ['Тіндер','Tinder'],
+    'btn-selfie':  ['Додай себе','Add yourself'],
+    'btn-memory':  ['Фото з нами','Photo with us'],
+    'btn-install': ['📲 На робочий стіл','📲 Add to home screen'],
+    'rating-btn':  ['📊 Рейтинг','📊 Leaderboard'],
+    'pause-resume':['▶ Продовжити','▶ Resume'],
+    'pause-skip':  ['⏭ Пропустити сцену','⏭ Skip scene'],
+    'pause-menu-go':['⌂ Головне меню','⌂ Main menu'],
+    'pause-face':  ['🖼 Змінити обличчя героя','🖼 Change hero face'],
+  };
+  Object.keys(map).forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent = map[id][LANG==='en'?1:0];
+  });
+  const wbtn = document.querySelector('#title-screen .btn.watch[data-pov="watch"]');
+  if(wbtn) wbtn.textContent = LANG==='en' ? 'Story without games' : 'Історія без ігор';
+  const povK = document.querySelector('#play-pov-menu .btn[data-pov="katya"]');
+  const povD = document.querySelector('#play-pov-menu .btn[data-pov="dima"]');
+  if(povK) povK.innerHTML = LANG==='en'
+    ? '👰 Bride\'s side<br><span style="font-weight:normal;font-size:.8em;opacity:.85">you play as Katya</span>'
+    : '👰 З боку нареченої<br><span style="font-weight:normal;font-size:.8em;opacity:.85">граєте за Катю</span>';
+  if(povD) povD.innerHTML = LANG==='en'
+    ? '🤵 Groom\'s side<br><span style="font-weight:normal;font-size:.8em;opacity:.85">you play as Dima</span>'
+    : '🤵 З боку нареченого<br><span style="font-weight:normal;font-size:.8em;opacity:.85">граєте за Діму</span>';
+  const enBtn = document.getElementById('btn-story-en');
+  if(enBtn) enBtn.textContent = LANG==='en' ? '🇺🇦 Українською' : '🇬🇧 English version';
+}
 document.getElementById('btn-story-en').addEventListener('click', ()=>{
-  tryFullscreen(); LANG='en'; startNovel();
+  LANG = LANG==='en' ? 'ua' : 'en';
+  try{ localStorage.setItem('wed-lang', LANG); }catch(_){}
+  applyLang();
 });
+applyLang();
 document.getElementById('btn-newgame').addEventListener('click', ()=>{
   tryFullscreen();
   document.getElementById('main-menu').classList.add('hidden');
@@ -7396,7 +7445,7 @@ function update(){
     case 'match':
       if(game.phaseT === 95 || (!game.watch && input.actionEdge && game.phaseT>25)){
         input.actionEdge = false;
-        game.chatsim = {lines: chatScript(game.pov), idx:0, shown:0};
+        game.chatsim = {lines: chatScript(game.pov).map(l=>Object.assign({},l,{text:T(l.text)})), idx:0, shown:0};
         setPhase('chat');
       }
       break;
@@ -9337,7 +9386,7 @@ function rsvpShow(){
   elRsvpSummary.classList.add('hidden');
   elRsvpDots.textContent = RSVP_QUESTIONS.map((_,i)=> i===rsvp.idx?'●':(i<rsvp.idx?'✓':'○')).join(' ');
   if(!item){ rsvpFinish(); return; }
-  elRsvpQ.textContent = item.q;
+  elRsvpQ.textContent = T(item.q);
   elRsvpOpts.innerHTML = '';
   if(item.input){
     elRsvpInput.classList.remove('hidden');
@@ -9356,7 +9405,7 @@ function rsvpShow(){
       const b = document.createElement('button');
       b.className = 'btn';
       b.style.background = '#2b2b38';
-      b.textContent = opt;
+      b.textContent = T(opt);
       b.addEventListener('click', ()=>{
         rsvp.answers.push(opt);
         // «Ніяк» на першому питанні → далі не питаємо, одразу фініш
@@ -9378,11 +9427,11 @@ function rsvpText(){
 }
 function rsvpFinish(){
   const declined = (rsvp.answers[0]||'').indexOf('Ніяк')===0;
-  elRsvpQ.textContent = declined
+  elRsvpQ.textContent = T(declined
     ? 'Шкода, що не вийде 💛 Але церемонію можна буде подивитись НАЖИВО онлайн!'
     : rsvp.pending
     ? 'Дякуємо! Тебе не було в списку — ми підтвердимо вручну 💛 Надішли відповіді:'
-    : 'Дякуємо! Надішли нам відповіді:';
+    : 'Дякуємо! Надішли нам відповіді:');
   elRsvpDots.textContent = '';
   // тихо пишемо yes/no у застосунок весілля (якщо знаємо, хто це)
   const gid = rsvpGuestId();
@@ -9407,23 +9456,23 @@ function rsvpFinish(){
     elRsvpOpts.appendChild(b);
   };
   if(declined){
-    mk('📺 Посилання на трансляцію', 'var(--sage)', ()=>{
+    mk(T('📺 Посилання на трансляцію'), 'var(--sage)', ()=>{
       if(STREAM_URL) open(STREAM_URL, '_blank', 'noopener');
       else alert('📺 Посилання на трансляцію додамо ближче до дати.\nЛишай пошту — надішлемо нагадування!');
     });
-    mk('✉️ Нагадати мені про трансляцію', 'var(--rose)', ()=>{
+    mk(T('✉️ Нагадати мені про трансляцію'), 'var(--rose)', ()=>{
       const es = document.getElementById('email-screen');
       es.querySelector('.s-head').innerHTML = '📮 Куди надіслати нагадування про трансляцію?<span>перед церемонією пришлемо лист із посиланням</span>';
       es.classList.remove('hidden');
     });
   }
-  mk('✈️ Надіслати в Telegram', 'var(--terra)', ()=>{
+  mk(T('✈️ Надіслати в Telegram'), 'var(--terra)', ()=>{
     open('https://t.me/share/url?url=%20&text='+encodeURIComponent(rsvpText()), '_blank');
   });
-  mk('📋 Скопіювати', 'var(--sage)', e=>{
+  mk(T('📋 Скопіювати'), 'var(--sage)', e=>{
     navigator.clipboard?.writeText(rsvpText());
   });
-  mk('Готово', '#55515f', ()=>{
+  mk(T('Готово'), '#55515f', ()=>{
     elRsvp.classList.add('hidden');
     elEnd.classList.remove('hidden');
   });
