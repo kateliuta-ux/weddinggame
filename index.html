@@ -4283,20 +4283,41 @@ function drawCouple(kx, dx, baseY){
   ctx.fillStyle = '#f4f0e4'; ctx.fillRect(dx-4, baseY-48+(1-bob), 4, 6);  // сорочка
 }
 /* Гість за столом / у дворику: маленька піксельна фігурка з келихом */
-function drawGuest(x, y, col, seated, t, faceImg, sc){
+function drawGuest(x, y, col, seated, t, faceImg, sc, gender){
   sc = sc || 1;
   const b = (((t>>4)+x)&1)*sc;
-  ctx.fillStyle = '#221c26';
-  ctx.fillRect(x-5*sc, y-(seated?26:34)*sc-b, 12*sc, (seated?20:28)*sc);   // контур тіла
-  ctx.fillStyle = col;
-  ctx.fillRect(x-4*sc, y-(seated?25:33)*sc-b, 10*sc, (seated?18:26)*sc);   // тіло
+  const fem = gender==='f';
+  if(fem && !seated){
+    // жіночий силует: ліф + сукня-трапеція до низу
+    ctx.fillStyle = '#221c26';
+    ctx.fillRect(x-5*sc, y-34*sc-b, 12*sc, 14*sc);                          // контур ліфа
+    ctx.beginPath(); ctx.moveTo(x-5*sc, y-21*sc-b); ctx.lineTo(x+7*sc, y-21*sc-b);
+    ctx.lineTo(x+9*sc, y+1-b); ctx.lineTo(x-7*sc, y+1-b); ctx.closePath(); ctx.fill();  // контур сукні
+    ctx.fillStyle = col;
+    ctx.fillRect(x-4*sc, y-33*sc-b, 10*sc, 13*sc);                          // ліф
+    ctx.beginPath(); ctx.moveTo(x-4*sc, y-21*sc-b); ctx.lineTo(x+6*sc, y-21*sc-b);
+    ctx.lineTo(x+8*sc, y-b); ctx.lineTo(x-6*sc, y-b); ctx.closePath(); ctx.fill();      // сукня
+  } else if(fem && seated){
+    ctx.fillStyle = '#221c26';
+    ctx.fillRect(x-5*sc, y-26*sc-b, 12*sc, 20*sc);
+    ctx.fillStyle = col;
+    ctx.fillRect(x-4*sc, y-25*sc-b, 10*sc, 12*sc);                          // ліф
+    ctx.fillRect(x-5*sc, y-13*sc-b, 12*sc, 6*sc);                           // спідниця ширша за столом
+  } else {
+    ctx.fillStyle = '#221c26';
+    ctx.fillRect(x-5*sc, y-(seated?26:34)*sc-b, 12*sc, (seated?20:28)*sc);  // контур тіла
+    ctx.fillStyle = col;
+    ctx.fillRect(x-4*sc, y-(seated?25:33)*sc-b, 10*sc, (seated?18:26)*sc);  // тіло
+  }
   {                                                                        // деталі на всіх масштабах
     ctx.fillStyle='rgba(0,0,0,.16)'; ctx.fillRect(x-4*sc, y-(seated?25:33)*sc-b, 3*sc, (seated?18:26)*sc); // тінь збоку
     ctx.fillStyle='#f4e8c8'; ctx.fillRect(x-1*sc, y-(seated?24:32)*sc-b, 2.4*sc, 3.6*sc);                  // комірець
     ctx.fillStyle='rgba(255,255,255,.14)'; ctx.fillRect(x+3*sc, y-(seated?25:33)*sc-b, 1.6*sc, (seated?18:26)*sc); // відблиск
-    ctx.fillStyle='#221c26'; ctx.fillRect(x-2*sc, y-3*sc, 4*sc, 3*sc); ctx.fillRect(x+1.4*sc, y-3*sc, 4*sc, 3*sc); // черевики
+    if(!fem){ ctx.fillStyle='#221c26'; ctx.fillRect(x-2*sc, y-3*sc, 4*sc, 3*sc); ctx.fillRect(x+1.4*sc, y-3*sc, 4*sc, 3*sc); } // черевики
   }
   const hy = y-(seated?33:41)*sc-b;
+  if(fem){ ctx.fillStyle='#5a3d24';                                          // довге волосся за головою
+    ctx.fillRect(x-5*sc, hy+2*sc, 3*sc, 11*sc); ctx.fillRect(x+4*sc, hy+2*sc, 3*sc, 11*sc); }
   if(faceImg && faceImg.complete && faceImg.naturalWidth>0){
     // голова гостя — його справжнє фото (квадрат у кружечку)
     const cx = x+1*sc, cy = hy+4*sc, r = 6*sc;
@@ -4309,7 +4330,9 @@ function drawGuest(x, y, col, seated, t, faceImg, sc){
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
   } else {
     ctx.fillStyle = '#e8c49c'; ctx.fillRect(x-3*sc, hy, 8*sc, 9*sc);      // піксельна голова
-    ctx.fillStyle = '#221c26'; ctx.fillRect(x-3*sc, hy, 8*sc, 3*sc);      // волосся
+    ctx.fillStyle = fem ? '#5a3d24' : '#221c26';
+    ctx.fillRect(x-3*sc, hy, 8*sc, 3*sc);                                  // волосся
+    if(fem) ctx.fillRect(x-3*sc, hy, 2*sc, 7*sc);                          // гривка збоку
   }
   // келих вгору (цокається в такт)
   ctx.fillStyle = '#f4e8c8';
@@ -4331,15 +4354,26 @@ function drawParent(x, y, who, dir, faceImg, t){
 function guestFace(i){
   return GUEST_FACES.length ? GUEST_FACES[i % GUEST_FACES.length].img : null;
 }
+function guestName(i){
+  return GUEST_FACES.length ? (GUEST_FACES[i % GUEST_FACES.length].name||'') : '';
+}
+/* стать за іменем (укр. евристика): титули > словник чоловічих > закінчення а/я = жіноче */
+function guestGender(name){
+  const n = (name||'').toLowerCase();
+  if(!n) return null;
+  if(/мама|бабус|тітк|тьот|сусідка|хрещена(?!\S* чоловік)|дружин|донь|ліка\b|іра\b|юля|віка|катя|катер|луїз|аня\b|анна|аліна|марі|дарин|іванк|ліда|альон|наст|інна|яна\b|уляна|леся|оксана|лана\b|ніка\b|марина|като\b|аліса/.test(n)) return 'f';
+  if(/папа|тато|батьк|дядь|дядя|брат|чоловік|сусід(?!ка)|дан\b|тімур|олег|ярік|ярик|влад|валєр|павлуш|дзен|духніч|безвер|жора|рома\b|артем|богдан|антон|вова\b|сашею|давід|георгій|кост|женя галич|ярослав|дмитро|діма|саша\b|боря|масян/.test(n)) return 'm';
+  return /[ая]\s|[ая]$/.test(n.split(/\s+/)[0]) ? 'f' : 'm';
+}
 /* ── ВЕСІЛЬНА ПАРТІЯ: дружки (Катині) та бояри (Дімині) обабіч молодят ──
    фото — у того, хто додав селфі; інакше піксельна голівка */
 function faceByName(pat){ const f = GUEST_FACES.find(g => (g.name||'').toLowerCase().includes(pat)); return f ? f.img : null; }
 function pickFace(pats){ for(const p of pats){ const im = faceByName(p); if(im) return im; } return null; }
-const BRIDES = [ {col:'#a8505f', f:['дідор','кукрицьк','вік','луїз']},   // Аня Дідора / Віка
-                 {col:'#c98a9c', f:['маріч','пінаєвськ','луїз','кукрицьк']} ];  // Марічка / Луїза
-const GROOMS = [ {col:'#3a4a6a', f:['плахотн','бур','ярік','сміря']},   // Плахотній / Олег Бурий
-                 {col:'#2e3440', f:['соколовськ','ярік','сміря','плахотн']} ];  // Ярік / Олег Сміря
-function drawAttendant(x, baseY, spec, sc){ drawGuest(x, baseY, spec.col, false, game.t + x, pickFace(spec.f), sc||1); }
+const BRIDES = [ {col:'#a8505f', g:'f', f:['дідор','кукрицьк','вік','луїз']},   // Аня Дідора / Віка
+                 {col:'#c98a9c', g:'f', f:['маріч','пінаєвськ','луїз','кукрицьк']} ];  // Марічка / Луїза
+const GROOMS = [ {col:'#3a4a6a', g:'m', f:['плахотн','бур','ярік','сміря']},   // Плахотній / Олег Бурий
+                 {col:'#2e3440', g:'m', f:['соколовськ','ярік','сміря','плахотн']} ];  // Ярік / Олег Сміря
+function drawAttendant(x, baseY, spec, sc){ drawGuest(x, baseY, spec.col, false, game.t + x, pickFace(spec.f), sc||1, spec.g); }
 /* Ноти, що злітають над гостем (спів) */
 function drawSongNote(x, headY, seed){
   for(let i=0;i<3;i++){
@@ -4439,7 +4473,7 @@ function drawWedSofi(){
   // НІКА СЕЛЕГА веде обряд (без підпису — просто веде)
   {
     const nk = pickFace(['селега','ніка']);
-    drawGuest(112, FLOOR_Y+22, '#7a4a8a', false, game.t+3, nk, 1.5);
+    drawGuest(112, FLOOR_Y+22, '#7a4a8a', false, game.t+3, nk, 1.5, 'f');
     const NIKA = ['Вербовая дощечка, дощечка! 🎶','Станьте на рушник!','Хліб і сіль — молодятам!','Кланяйтесь родові!'];
     drawShout(112, FLOOR_Y-46, NIKA[(game.t>>7) % NIKA.length]);
   }
@@ -4469,7 +4503,8 @@ function drawWedSofi(){
   const sofiGuests = [[tx+16,'#5a7ea6',0],[tx+42,'#a8505f',8],[tx+88,'#3F7C77',4]];
   const SHOUTS = ['ГІРКО!', 'ГІРКО!!!', 'За молодят!', 'многая літа!'];
   sofiGuests.forEach(([gx,col,off],i)=>{
-    drawGuest(gx, ty-24, col, true, game.t+off, guestFace(i), 1.4);
+    drawGuest(gx, ty-24, col, true, game.t+off, guestFace(i), 1.4,
+      guestGender(guestName(i)) || (i%2 ? 'm' : 'f'));
     // по черзі один кричить, решта наспівують ноти
     const active = ((game.t>>6) % sofiGuests.length) === i;
     if(active) drawShout(gx, ty-32, SHOUTS[(game.t>>6) % SHOUTS.length]);
@@ -4603,7 +4638,8 @@ function drawWedKhv(){
   // гості з келихами у дворику — усі СПІВАЮТЬ «Штольню»
   const khvGuests = [[34,26,'#5a7ea6',0],[82,38,'#a8505f',6],[128,28,'#3F7C77',3],[170,42,'#B58A2E',9]];
   khvGuests.forEach(([gx,gy,col,off],i)=>{
-    drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off, guestFace(i), 1.9);   // КРУПНІ гості — видно фото-обличчя
+    drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off, guestFace(i), 1.9,
+      guestGender(guestName(i)) || (i%2 ? 'f' : 'm'));   // КРУПНІ гості — видно фото-обличчя
     drawSongNote(gx, FLOOR_Y+gy-82, off);           // ноти над головою
   });
   // гості тягнуть «Штольню» (без перебріхування слів — тільки настрій)
