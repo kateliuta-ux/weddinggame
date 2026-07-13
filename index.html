@@ -165,7 +165,7 @@
   #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(10px,2cqw,13px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
 
   /* ---------- семплер ---------- */
-  #sampler-screen{background:#14121c;gap:2%;padding:7% 2% 6%;overflow-y:auto;justify-content:flex-start}
+  #sampler-screen{background:#14121c;gap:2%;padding:14% 2% 6%;overflow-y:auto;justify-content:flex-start}
   .s-head{color:#fff;font-weight:bold;font-size:clamp(11px,2.6cqw,18px);letter-spacing:1px;text-align:center}
   .s-head span{display:block;color:#bcb7a8;font-weight:normal;font-size:clamp(10px,2cqw,13px);margin-top:2px}
   #s-grid{
@@ -4966,7 +4966,7 @@ function startBand(){
   setPhase('band'); stopChip();
   startDialog(bandIntroScript(), ()=>{
     game.band.started = true;
-    try{ ensureAudio(); const el=bandAudio(); el.currentTime=0; bgmFadeTo(BGM_VOL,200); }catch(_){}
+    try{ ensureAudio(); const el=bandAudio(); el.currentTime=0; duckEl(el, 0.001, 10); bgmFadeTo(BGM_VOL,200); }catch(_){}
   });
 }
 function bandHit(lane){
@@ -4975,7 +4975,7 @@ function bandHit(lane){
   for(const n of b.notes){
     if(!n.hit && n.lane===lane && Math.abs(n.y - (H-70)) < 26){ n.hit = true; b.hits++; shake(1,5);
       // влучив у ритм → пісня звучить далі (вікно ~1.2с)
-      try{ if(!musicMuted){ const el=bandAudio(); if(el.paused) el.play(); } }catch(_){}
+      try{ if(!musicMuted){ const el=bandAudio(); if(el.paused) el.play(); duckEl(el, 1, 120); } }catch(_){}
       b.flowT = 72;
       if(b.hits>=b.need){ b.done = true; b.doneT = 0; } return; }
   }
@@ -4983,7 +4983,7 @@ function bandHit(lane){
 function updateBand(){
   const b = game.band; if(!b || !b.started) return;
   if(b.done){ b.doneT++;
-    if(b.doneT===1){ try{ bandAudio().pause(); }catch(_){} }
+    if(b.doneT===1){ try{ const el=bandAudio(); duckEl(el, 1, 100); el.pause(); el._gain && (el._gain.gain.value=1); }catch(_){} }
     if(b.doneT===60){
       startDialog(bandOutroScript(), ()=>{
         if(game.watch){ setPhase('cap2'); return; }
@@ -4998,7 +4998,7 @@ function updateBand(){
   }
   b.t++;
   // пісня грає ЛИШЕ поки влучаєш: вікно спливло → пауза
-  if(b.flowT>0){ b.flowT--; if(b.flowT===0){ try{ bandAudio().pause(); }catch(_){} } }
+  if(b.flowT>0){ b.flowT--; if(b.flowT===0){ try{ const el=bandAudio(); if(!duckEl(el, 0.001, 220)) el.pause(); }catch(_){} } }
   for(let i=0;i<3;i++) if(b.hitFlash[i]>0) b.hitFlash[i]--;
   // ноти летять У РИТМІ треку: біт кожні 30 тіків (~120 bpm), патерн по бітах
   if(b.t%30===0 && b.notes.length<40){
@@ -5114,8 +5114,17 @@ function bgmMaster(){
   return bgmGain;
 }
 function routeBgm(el){
-  try{ ensureAudio(); const s = audioCtx.createMediaElementSource(el); s.connect(bgmMaster()); el._routed = true; }
+  try{ ensureAudio(); const s = audioCtx.createMediaElementSource(el);
+    const g = audioCtx.createGain(); g.gain.value = 1;
+    s.connect(g); g.connect(bgmMaster()); el._gain = g; el._routed = true; }
   catch(_){ el.volume = BGM_VOL; }   // запасний варіант (десктоп)
+}
+/* плавно приглушити/повернути КОНКРЕТНИЙ трек (без pause — без клацань) */
+function duckEl(el, vol, ms){
+  try{ if(el._gain){ const g=el._gain.gain, now=audioCtx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(vol, now+(ms||150)/1000); return true; } }catch(_){}
+  return false;
 }
 /* фаза → трек; kitana = тиша (мікрофон). Капшни не мапимо — грає далі поточний. */
 const CHIP_MAP = {
@@ -5149,6 +5158,7 @@ function playChip(key){
   let el = bgmEls[key];
   if(!el){ el = new Audio(src); el.loop = true; el.volume = BGM_VOL; bgmEls[key] = el; routeBgm(el); }
   if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  try{ if(el._gain) el._gain.gain.value = 1; }catch(_){}
   el.currentTime = 0; el.play().catch(()=>{});
   chipKey = key;
 }
@@ -7523,13 +7533,13 @@ function update(){
     }
 
     case 'capMont':
-      if(game.phaseT > 170 || input.actionEdge) startMontage();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startMontage();
       break;
     case 'montage':
       updateMontage();
       break;
     case 'capBand':
-      if(game.phaseT > 170 || input.actionEdge) startBand();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startBand();
       break;
     case 'band':
       if(input.actionEdge && !game.dialog){ input.actionEdge=false; }  // тап-обробка нижче в pointerdown
@@ -7537,7 +7547,7 @@ function update(){
       break;
 
     case 'cap2':
-      if(game.phaseT > 170 || input.actionEdge) setPhase('tinder');
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) setPhase('tinder');
       break;
 
     case 'tinder':
@@ -7597,7 +7607,7 @@ function update(){
       break;
 
     case 'cap3':
-      if(game.phaseT > 170 || input.actionEdge) setPhase('date');
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) setPhase('date');
       break;
 
     case 'date': {
@@ -7649,7 +7659,7 @@ function update(){
       break;
 
     case 'cap4':
-      if(game.phaseT > 170 || input.actionEdge) startRun();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startRun();
       break;
 
     case 'run':
@@ -7657,7 +7667,7 @@ function update(){
       break;
 
     case 'capK':
-      if(game.phaseT > 170 || input.actionEdge) startKitana();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startKitana();
       break;
 
     case 'kitana':
@@ -7666,7 +7676,7 @@ function update(){
       break;
 
     case 'cap5':
-      if(game.phaseT > 170 || input.actionEdge) startSvat();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startSvat();
       break;
 
     case 'svat':
@@ -7674,7 +7684,7 @@ function update(){
       break;
 
     case 'capS':
-      if(game.phaseT > 170 || input.actionEdge) startSecret();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startSecret();
       break;
 
     case 'secret':
@@ -7682,7 +7692,7 @@ function update(){
       break;
 
     case 'cap6':
-      if(game.phaseT > 170 || input.actionEdge) startProposal();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startProposal();
       break;
 
     case 'prop':
@@ -7690,7 +7700,7 @@ function update(){
       break;
 
     case 'cap7':
-      if(game.phaseT > 170 || input.actionEdge) startDiia();
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)) startDiia();
       break;
 
     case 'diia':
@@ -7698,7 +7708,7 @@ function update(){
       break;
 
     case 'cap8':
-      if(game.phaseT > 170 || input.actionEdge){
+      if(game.phaseT > 340 || (input.actionEdge && game.phaseT > 30)){
         // фінал за слотом гостя: A → тераса «Бути Софі», B → дворик «Хвильового».
         // Пріоритет: персональний код (slot) → мапа гість→локація за іменем → обидва по черзі
         const vByName = guestVenue();
