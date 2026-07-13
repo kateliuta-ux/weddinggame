@@ -5414,9 +5414,16 @@ function sampleFromB64(b64){
     const bin = atob(b64), u8 = new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
     const i16 = new Int16Array(u8.buffer);
+    // обрізати тишу на початку (старі записи могли зберегтись із паузою — грала «тиша»)
+    let peak=0; for(let i=0;i<i16.length;i++){ const a=Math.abs(i16[i]); if(a>peak) peak=a; }
+    let s0=0; const thr=peak*0.08;
+    while(s0<i16.length && Math.abs(i16[s0])<thr) s0++;
+    s0 = Math.max(0, s0-320);                                  // 20мс запасу на атаку
+    const n = i16.length - s0;
+    if(n < 800) return null;                                   // самий шум — семпла нема
     ensureAudio();
-    const buf = audioCtx.createBuffer(1, i16.length, 16000), ch = buf.getChannelData(0);
-    for(let i=0;i<i16.length;i++) ch[i] = i16[i]/32767;
+    const buf = audioCtx.createBuffer(1, n, 16000), ch = buf.getChannelData(0);
+    for(let i=0;i<n;i++) ch[i] = i16[s0+i]/32767;
     return buf;
   }catch(_){ return null; }
 }
@@ -8516,35 +8523,61 @@ document.getElementById('s-samp').addEventListener('click', async ()=>{
     an = audioCtx.createAnalyser(); an.fftSize=1024; src.connect(an);
     startLiveWave(an);                                        // ЖИВА ХВИЛЯ мікрофона
     bar.classList.remove('hidden'); fill.style.width='0%';
-    btn.textContent='🔴 ЗАПИС…';
-    st.textContent='🎙 кажи, співай або нявкай — 1.5 секунди!';
-    // збір PCM: ScriptProcessor (працює скрізь, зокрема iOS)
+    btn.textContent='🔴 СЛУХАЮ…';
+    st.textContent='🎙 зроби свій звук — запис почнеться сам, від першого звуку!';
+    // збір PCM: ScriptProcessor (працює скрізь, зокрема iOS).
+    // ЗАПИС ПО ТРИГЕРУ: чекаємо на звук і пишемо 1.2с ВІД ПЕРШОГО ЗВУКУ —
+    // тиша на початку (поки людина збирається) у семпл не потрапляє
     sp = audioCtx.createScriptProcessor(2048, 1, 1);
     mute0 = audioCtx.createGain(); mute0.gain.value = 0;      // щоб мікрофон не дудів у динаміки
     src.connect(sp); sp.connect(mute0); mute0.connect(audioCtx.destination);
-    const chunks=[]; let got=0; const need=Math.ceil(audioCtx.sampleRate*1.5);
+    const chunks=[]; let got=0, startedRec=false, prevChunk=null;
+    const need = Math.ceil(audioCtx.sampleRate*1.2);
     sp.onaudioprocess = e=>{
-      const d=e.inputBuffer.getChannelData(0);
-      chunks.push(new Float32Array(d)); got+=d.length;
-      fill.style.width = Math.min(100, got/need*100)+'%';     // прогрес запису
+      const d = e.inputBuffer.getChannelData(0);
+      if(!startedRec){
+        let pk=0; for(let i=0;i<d.length;i++){ const a=Math.abs(d[i]); if(a>pk) pk=a; }
+        if(pk > 0.045){
+          startedRec = true;
+          btn.textContent='🔴 ЗАПИС…'; st.textContent='🔴 пишу твій звук!';
+          if(prevChunk){ chunks.push(prevChunk); got+=prevChunk.length; }   // шматочок «атаки» перед порогом
+        } else { prevChunk = new Float32Array(d); return; }
+      }
+      if(got < need){
+        chunks.push(new Float32Array(d)); got += d.length;
+        fill.style.width = Math.min(100, got/need*100)+'%';   // прогрес запису
+      }
     };
-    await new Promise(res=> setTimeout(res, 1700));
+    // чекаємо: або записали 1.2с, або 6с тиші — здаємось
+    const t0 = Date.now();
+    await new Promise(res=>{ const iv=setInterval(()=>{
+      if(got>=need || Date.now()-t0>6000){ clearInterval(iv); res(); } }, 60); });
     try{ sp.disconnect(); src.disconnect(); mute0.disconnect(); }catch(_){}
     stream.getTracks().forEach(t=>t.stop());
     cancelAnimationFrame(waveAnim);
-    // склеїти семпли
-    const all=new Float32Array(Math.min(got, need));
-    { let o=0; for(const c2 of chunks){ for(let i=0;i<c2.length && o<all.length;i++,o++) all[o]=c2[i]; } }
-    let peak=0; for(let i=0;i<all.length;i++){ const a=Math.abs(all[i]); if(a>peak) peak=a; }
-    if(!all.length || peak<0.01){
+    if(!startedRec || !got){
       bar.classList.add('hidden'); btn.textContent=oldTxt;
       st.textContent='тиша 🤔 нічого не почули — ближче до мікрофона і ще раз';
       smpSampRec=false; return;
     }
+    // склеїти семпли
+    const all=new Float32Array(Math.min(got, need));
+    { let o=0; for(const c2 of chunks){ for(let i=0;i<c2.length && o<all.length;i++,o++) all[o]=c2[i]; } }
+    let peak=0; for(let i=0;i<all.length;i++){ const a=Math.abs(all[i]); if(a>peak) peak=a; }
+    if(peak<0.01){
+      bar.classList.add('hidden'); btn.textContent=oldTxt;
+      st.textContent='тиша 🤔 нічого не почули — ближче до мікрофона і ще раз';
+      smpSampRec=false; return;
+    }
+    // прибрати залишок тиші на самому початку (до 8% піку)
+    let s0=0; const thr=peak*0.08;
+    while(s0<all.length && Math.abs(all[s0])<thr) s0++;
+    s0 = Math.max(0, s0 - ((audioCtx.sampleRate*0.02)|0));
+    const cut = s0>0 ? all.subarray(s0) : all;
     // нормалізація + ресемпл у 16кГц
-    const k=0.9/peak, ratio=audioCtx.sampleRate/16000, n16=Math.floor(all.length/ratio);
+    const k=0.9/peak, ratio=audioCtx.sampleRate/16000, n16=Math.floor(cut.length/ratio);
     const buf=audioCtx.createBuffer(1, n16, 16000), ch=buf.getChannelData(0);
-    for(let i=0;i<n16;i++){ const j=(i*ratio)|0; ch[i]=Math.max(-1, Math.min(1, all[j]*k)); }
+    for(let i=0;i<n16;i++){ const j=(i*ratio)|0; ch[i]=Math.max(-1, Math.min(1, cut[j]*k)); }
     userSampleBuf = buf; userSampleB64 = sampleToB64(buf);
     try{ localStorage.setItem('wed-sample', userSampleB64); }catch(_){}
     smpWaveIdx = SMP_WAVES.findIndex(w=>w[0]==='smp'); SMP.wave='smp';
