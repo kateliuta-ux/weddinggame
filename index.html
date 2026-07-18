@@ -614,6 +614,21 @@
     </div>
   </div>
 
+  <!-- ВОРОТА: пароль з візитівки або гра гостем (перше, що бачить будь-хто) -->
+  <div id="gate-screen" class="overlay hidden" style="background:rgba(10,9,16,.97);gap:13px;z-index:640">
+    <div class="s-head">💌 Катя ♥ Діма · 6 вересня 2026<span>запрошення-гра · введи пароль зі своєї візитівки — і гра впізнає тебе</span></div>
+    <input id="gate-pass" type="text" maxlength="24" placeholder="пароль з візитівки…" autocomplete="off" autocapitalize="none"
+      style="font-family:inherit;font-size:16px;padding:.6em;width:min(80%,300px);text-align:center;
+             background:#f8f8f3;border:3px solid #000;color:#1a1a24">
+    <div id="gate-status" style="color:#f4cf5e;font-size:12.5px;min-height:16px;text-align:center;max-width:86%"></div>
+    <div class="menu" style="gap:8px">
+      <button class="btn katya" id="gate-go">🔑 УВІЙТИ</button>
+      <button class="btn" id="gate-guest" style="background:#55515f">грати як гість ▶</button>
+    </div>
+    <div style="color:#8f8a7c;font-size:11px;max-width:82%;text-align:center;line-height:1.5">
+      пароль відкриває персональне запрошення (твій час і місце),<br>тіндер гостей і додавання свого фото у гру</div>
+  </div>
+
   <!-- пропозиція додати фото одразу після вибору імені (перед стартом гри) -->
   <div id="selfie-offer" class="overlay hidden" style="background:rgba(12,12,20,.94);gap:14px">
     <div class="s-head" id="so-head">📸 Додай своє фото!<span>твоя піксельна голівка зʼявиться прямо в грі</span></div>
@@ -8088,6 +8103,7 @@ function nameSubmit(){
 /* пропозиція фото — один раз, одразу після вибору імені (перед стартом гри) */
 let selfieOfferGo = null;
 function offerSelfieThen(go){
+  if(!isAuthed()){ go(); return; }                          // без пароля фото не пропонуємо
   if(localStorage.getItem('wed-selfie-offered') || localStorage.getItem('wed-selfie-sent')){ go(); return; }
   localStorage.setItem('wed-selfie-offered','1');
   const first = ((playerName||'').split(/\s+/)[0] || 'Гість').replace(/[<>&]/g,'');
@@ -9468,6 +9484,7 @@ function selfieKidsFor(name){
   return null;
 }
 async function openSelfie(){
+  if(!isAuthed()){ gateLockedMsg(); return; }              // фото в гру — лише з паролем візитівки
   document.getElementById('end-screen').classList.add('hidden');
   elTitle.classList.add('hidden');
   document.getElementById('selfie-screen').classList.remove('hidden');
@@ -9722,6 +9739,7 @@ async function checkMatchNotify(){
 }
 setTimeout(checkMatchNotify, 2200);
 function openParty(){
+  if(!isAuthed()){ gateLockedMsg(); return; }              // тіндер — лише з паролем візитівки
   partyDeck = buildPartyDeck(); partyIdx = 0; partyBusy = false; sessionMatches = [];
   partyLikedMe = new Set();
   loadMyMatches().then(names=>{                                   // відкрив тіндер = побачив лайки
@@ -10350,71 +10368,136 @@ function tryFullscreen(){
 /* Список — резервний (вставлений вручну). Якщо відкрито читання колекції
    guests у Firebase, гра підтягне АКТУАЛЬНИЙ список сама (loadGuestsLive). */
 let RSVP_GUEST_LIST = `
-g1781813835774;Мама Леся Синявська;К;;1
-g1781813848562;Папа Паша Овечкін;К;;1
-g1781813867090;Віка Кукрицька;К;;0
-g1781813882415;Луїза Шабліян;К;Антон Міхайленко;0
-g1781813904967;Аня Кімельфельд;К;;0
-g1781813921543;Юля Приймак;К;;0
-g1781813938759;Аліна Сміла;К;Жора;0
-g1781813965048;Катя Большакова;К;;0
-g1781813970341;Ліда;К;;0
-g1781813982362;Дан;К;;0
-g1781814044022;Марія Пінаєвська;К;Вова;0
-g1781814128008;Дарина;К;Саша Масяня Олександр Алекс;0
-g1781855826271;Юля Рябухіна;К;Артем Щербань;0
-g1781855841086;Іванка;К;Рома;0
-g1781855868807;Катя Плешакова;К;;0
-g1781863514005;Дядя Саша;К;;1
-g1781863528069;Брат Саша;К;Брат Боря;0
-g1781863598784;Аня Дідора;К;;0
-g1781864190608;Альона Казанець;К;;0
-g1781864209138;Настя Білоруска Крестенко Анні;К;;0
-g1781864236003;Інна Кандаурова;К;Богдан;0
-g1781864246321;Леся;К;Діма;0
-g1781864270163;Настя Запорожець;К;Уляна;0
-g1781864289887;Тімур;К;Яна;0
-g1781865782041;Аліса;К;;0
-g1781872792125;Мама Світлана;Н;;1
-g1781872806567;Папа Олег;Н;;1
-g1781872824065;Бабуся Марія;Н;;1
-g1781872842661;Дядько Віктор;Н;;1
-g1781872864554;Тітка Тома;Н;;1
-g1781872877920;Сусід Олександр;Н;;1
-g1781872995801;Сусідка Іра;Н;;1
-g1781873009119;Сусідка Юля;Н;;1
-g1781873027984;Сусідка Віка;Н;;1
-g1781873085024;Хрещена;Н;;1
-g1781873112567;Хрещени чоловік;Н;;1
-g1781873130730;Оксана бикова;Н;;0
-g1781873162994;Олег Бурий;Н;;0
-g1781873183238;Ярік Соколовський;Н;Марина;0
-g1781873197438;Олег Сміря;Н;;0
-g1781873240687;Настя Мітіна;Н;;0
-g1781873251619;Влад Тріфа;Н;;0
-g1781873263811;Валєра;Н;;0
-g1781873285101;Діма Дмитро Плахотній;Н;Анна Гарбар;0
-g1781873300232;Лана Чубаха;Н;;0
-g1781873420900;Настя Гулєнко;Н;Саша Олександр гулянко;0
-g1781873431541;Павлуша;Н;;0
-g1781873442149;Аня Анна Цюрко;Н;;0
-g1781873471996;Като;Н;;0
-g1781873493882;Марина (бікер);Н;;0
-g1781873513462;Влад (бікер));Н;;0
-g1781873538177;Аліна (бікер);Н;;0
-g1781873551974;Ніка Селега;Н;;0
-g1782392112389;Катя Матвійчук;К;;0
-g1782489072928;Женя Галич;К;;0
-g1782489130977;Влад Бранашко;К;;0
-g1783198185147;Дзен;Н;;0
-g1783198785170;Духніч;Н;;0
-g1783198825850;Безвер;Н;;0
-g1783202872352;Марія R;Н;;0
+g1781813835774;Мама Леся Синявська;К;;1;калина-23
+g1781813848562;Папа Паша Овечкін;К;;1;барвінок-30
+g1781813867090;Віка Кукрицька;К;;0;рушник-37
+g1781813882415;Луїза Шабліян;К;Антон Міхайленко;0;вишня-44
+g1781813904967;Аня Кімельфельд;К;;0;мальва-51
+g1781813921543;Юля Приймак;К;;0;лелека-58
+g1781813938759;Аліна Сміла;К;Жора;0;коровай-65
+g1781813965048;Катя Большакова;К;;0;верба-72
+g1781813970341;Ліда;К;;0;півонія-79
+g1781813982362;Дан;К;;0;соняшник-86
+g1781814044022;Марія Пінаєвська;К;Вова;0;тополя-93
+g1781814128008;Дарина;К;Саша Масяня Олександр Алекс;0;явір-10
+g1781855826271;Юля Рябухіна;К;Артем Щербань;0;ластівка-17
+g1781855841086;Іванка;К;Рома;0;зозуля-24
+g1781855868807;Катя Плешакова;К;;0;ромашка-31
+g1781863514005;Дядя Саша;К;;1;волошка-38
+g1781863528069;Брат Саша;К;Брат Боря;0;любисток-45
+g1781863598784;Аня Дідора;К;;0;мʼята-52
+g1781864190608;Альона Казанець;К;;0;конвалія-59
+g1781864209138;Настя Білоруска Крестенко Анні;К;;0;пролісок-66
+g1781864236003;Інна Кандаурова;К;Богдан;0;фіалка-73
+g1781864246321;Леся;К;Діма;0;троянда-80
+g1781864270163;Настя Запорожець;К;Уляна;0;жоржина-87
+g1781864289887;Тімур;К;Яна;0;айстра-94
+g1781865782041;Аліса;К;;0;нагідка-11
+g1781872792125;Мама Світлана;Н;;1;чебрець-18
+g1781872806567;Папа Олег;Н;;1;материнка-25
+g1781872824065;Бабуся Марія;Н;;1;смородина-32
+g1781872842661;Дядько Віктор;Н;;1;ожина-39
+g1781872864554;Тітка Тома;Н;;1;малина-46
+g1781872877920;Сусід Олександр;Н;;1;суниця-53
+g1781872995801;Сусідка Іра;Н;;1;журавлина-60
+g1781873009119;Сусідка Юля;Н;;1;шипшина-67
+g1781873027984;Сусідка Віка;Н;;1;бузина-74
+g1781873085024;Хрещена;Н;;1;липа-81
+g1781873112567;Хрещени чоловік;Н;;1;каштан-88
+g1781873130730;Оксана бикова;Н;;0;горобина-95
+g1781873162994;Олег Бурий;Н;;0;ялина-12
+g1781873183238;Ярік Соколовський;Н;Марина;0;береза-19
+g1781873197438;Олег Сміря;Н;;0;клен-26
+g1781873240687;Настя Мітіна;Н;;0;ясен-33
+g1781873251619;Влад Тріфа;Н;;0;груша-40
+g1781873263811;Валєра;Н;;0;яблуня-47
+g1781873285101;Діма Дмитро Плахотній;Н;Анна Гарбар;0;слива-54
+g1781873300232;Лана Чубаха;Н;;0;черешня-61
+g1781873420900;Настя Гулєнко;Н;Саша Олександр гулянко;0;абрикос-68
+g1781873431541;Павлуша;Н;;0;пшениця-75
+g1781873442149;Аня Анна Цюрко;Н;;0;житечко-82
+g1781873471996;Като;Н;;0;льон-89
+g1781873493882;Марина (бікер);Н;;0;хміль-96
+g1781873513462;Влад (бікер));Н;;0;мак-13
+g1781873538177;Аліна (бікер);Н;;0;гарбузик-20
+g1781873551974;Ніка Селега;Н;;0;дубок-27
+g1782392112389;Катя Матвійчук;К;;0;терен-34
+g1782489072928;Женя Галич;К;;0;глід-41
+g1782489130977;Влад Бранашко;К;;0;аґрус-48
+g1783198185147;Дзен;Н;;0;порічка-55
+g1783198785170;Духніч;Н;;0;полин-62
+g1783198825850;Безвер;Н;;0;деревій-69
+g1783202872352;Марія R;Н;;0;звіробій-76
 `.trim().split('\n').filter(l=>l.includes(';')).map(l=>{
   const p = l.split(';');
   return {id:(p[0]||'').trim(), name:(p[1]||'').trim(), side:(p[2]||'').trim(),
-          plus1:(p[3]||'').trim(), censor:(p[4]||'').trim()==='1'};
+          plus1:(p[3]||'').trim(), censor:(p[4]||'').trim()==='1',
+          pass:(p[5]||'').trim().toLowerCase().replace(/[^а-яіїєґa-z0-9ʼ']/g,'')};
 });
+/* ── ВОРОТА: пароль з візитівки / «грати як гість» / версія для старших (?v=invite) ──
+   Пароль → гра впізнає гостя: його час і місце, камео, відкриті тіндер і фото.
+   Без пароля — грати можна, але тіндер і додавання фото зачинені. */
+const normPass = v => (v||'').toLowerCase().replace(/[^а-яіїєґa-z0-9ʼ']/g,'');
+let AUTH_GUEST = null;
+function isAuthed(){ return !!(AUTH_GUEST || GUEST); }
+function updateGateLocks(){
+  const lock = !isAuthed();
+  ['btn-party','btn-selfie'].forEach(id=>{
+    const b = document.getElementById(id);
+    if(b){ b.style.opacity = lock ? .55 : 1; b.dataset.locked = lock ? '1' : ''; }
+  });
+}
+function gateLockedMsg(){
+  const gs = document.getElementById('gate-screen');
+  document.getElementById('gate-status').textContent =
+    '🔒 Тіндер гостей і фото відкриваються паролем з візитівки. Введи його — або грай далі як гість';
+  gs.classList.remove('hidden');
+  setTimeout(()=>{ try{ document.getElementById('gate-pass').focus(); }catch(_){} }, 80);
+}
+function gateAuth(g, greet){
+  AUTH_GUEST = g; myGuest = g; playerName = g.name;
+  localStorage.setItem('wed-pass-auth', g.id);
+  localStorage.setItem('wed-player-name', g.name);
+  localStorage.setItem('wed-gate-done','auth');
+  CENSORED = g.censor || CENSORED;
+  if(greet){
+    document.getElementById('gate-status').textContent =
+      '🎉 Привіт, '+(g.name.split(/\s+/)[0])+'! Тебе впізнано — персональне запрошення, тіндер і фото відкриті';
+    try{ sfxScore(880); }catch(_){}
+    setTimeout(()=>{ document.getElementById('gate-screen').classList.add('hidden'); updateGateLocks(); }, 1600);
+  }
+  updateGateLocks();
+}
+function gateTry(){
+  const st = document.getElementById('gate-status');
+  const v = normPass(document.getElementById('gate-pass').value);
+  if(!v){ st.textContent = 'введи пароль — він написаний на твоїй візитівці 🙂'; return; }
+  const g = RSVP_GUEST_LIST.find(x=> x.pass && x.pass===v);
+  if(!g){ st.textContent = 'не впізнаю пароль 🤔 звір літери з візитівкою — або грай як гість'; try{ sfxScore(180); }catch(_){} return; }
+  gateAuth(g, true);
+}
+document.getElementById('gate-go').addEventListener('click', gateTry);
+document.getElementById('gate-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') gateTry(); });
+document.getElementById('gate-guest').addEventListener('click', ()=>{
+  localStorage.setItem('wed-gate-done','guest');
+  document.getElementById('gate-screen').classList.add('hidden');
+  updateGateLocks();
+});
+(function gateBoot(){
+  const savedId = localStorage.getItem('wed-pass-auth');
+  if(savedId){ const g = RSVP_GUEST_LIST.find(x=>x.id===savedId); if(g) gateAuth(g, false); }
+  const elder = PARAMS.get('v')==='invite';
+  if(elder){                                      // версія для старших: одразу нарядне запрошення
+    localStorage.setItem('wed-gate-done','elder');
+    setTimeout(()=>{ try{ openViber(true); }catch(_){} }, 500);
+    updateGateLocks(); return;
+  }
+  if(GUEST || AUTH_GUEST){ updateGateLocks(); return; }   // персональне посилання/уже впізнаний
+  if(!localStorage.getItem('wed-gate-done')){
+    document.getElementById('gate-screen').classList.remove('hidden');
+  }
+  updateGateLocks();
+})();
 /* Живий список: тягне АКТУАЛЬНИХ гостей із застосунку весілля.
    Працює, якщо в правилах відкрито читання: match /guests/{doc} { allow read: if true; }
    Бере поле імені (name/title/…) і, якщо є, слот (slot/group/stream/side) → Софі/Хвильовий. */
@@ -10790,7 +10873,7 @@ async function sendInvitationEmail(){
             '\n🌍 Трансляція церемонії (для тих, хто не поруч): ' +
             (STREAM_URL || 'посилання надішлемо ближче до дати'),
           dress_code: (typeof DRESS_CODE!=='undefined' && DRESS_CODE!=='—') ? DRESS_CODE : 'підкажемо ближче до дати',
-          game_link: 'https://kateliuta-ux.github.io/weddinggame/',
+          game_link: 'https://kateliuta-ux.github.io/kd-0609/',
           stream_link: STREAM_URL || 'посилання надішлемо ближче до дати',
         },
       }),
