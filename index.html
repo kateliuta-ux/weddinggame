@@ -6952,6 +6952,15 @@ function drawNovel(){
     }
   }
   if(chap.bg===8){                                         // поверх весільної сцени — головне запрошення
+    if(!isAuthed()){                                      // гостям без пароля час/місце не показуємо
+      ctx.fillStyle='rgba(13,26,24,.82)'; ctx.fillRect(24,96,W-48,44);
+      ctx.strokeStyle='rgba(150,196,178,.75)'; ctx.lineWidth=1.5; ctx.strokeRect(25,97,W-50,42);
+      ctx.textAlign='center'; ctx.fillStyle='#e6f2e2'; ctx.font='bold 10px monospace';
+      ctx.fillText(LANG==='en' ? '🔒 TIME & PLACE — BY CARD PASSWORD' : '🔒 ЧАС І МІСЦЕ — ЗА ПАРОЛЕМ З ВІЗИТІВКИ', W/2, 115);
+      ctx.fillStyle='rgba(230,242,226,.75)'; ctx.font='8px monospace';
+      ctx.fillText(LANG==='en' ? 'enter it on the start screen' : 'введи його на стартовому екрані', W/2, 130);
+      ctx.textAlign='left';
+    } else {
     const v = guestVenue();                                // sofi / khv / null(обидві)
     const blocks = [];
     if(v!=='khv') blocks.push(SLOTS.A);
@@ -6971,6 +6980,7 @@ function drawNovel(){
     });
     if(DRESS_CODE!=='—'){ ctx.fillStyle='#c9d9c4'; ctx.font='8px monospace'; ctx.fillText('дрес-код: '+DRESS_CODE, W/2, ly); }
     ctx.textAlign='left';
+    }
   }
   const bob = talking?((game.t>>3)&1):0;
   if(ln.who){
@@ -7483,6 +7493,7 @@ document.getElementById('btn-stream').addEventListener('click', ()=>{
   es.classList.remove('hidden');
 });
 document.getElementById('btn-ics').addEventListener('click', ()=>{
+  if(!isAuthed()){ gateLockedMsg('invite'); return; }
   // календар з реальним часом і локацією твого потоку
   const s = mySlot();
   const ev = s ? [
@@ -7685,7 +7696,7 @@ function saveInvitation(){
     }
   }, 'image/png');
 }
-document.getElementById('btn-save-inv').addEventListener('click', saveInvitation);
+document.getElementById('btn-save-inv').addEventListener('click', ()=>{ if(!isAuthed()){ gateLockedMsg('invite'); return; } saveInvitation(); });
 
 /* ---------------- кічове запрошення «для тьоті у Viber» ---------------- */
 // монохромні дингбати (не айфон-емоджі), розфарбовані під Територію-А (глам 90х)
@@ -7776,8 +7787,8 @@ function closeViber(){
   if(viberFrom==='title'){ elTitle.classList.remove('hidden'); return; }
   document.getElementById('end-screen').classList.remove('hidden');
 }
-document.getElementById('btn-viber').addEventListener('click', ()=> openViber(false));
-document.getElementById('btn-viber-title').addEventListener('click', ()=> openViber(true));
+document.getElementById('btn-viber').addEventListener('click', ()=>{ if(!isAuthed()){ gateLockedMsg('invite'); return; } openViber(false); });
+document.getElementById('btn-viber-title').addEventListener('click', ()=>{ if(!isAuthed()){ gateLockedMsg('invite'); return; } openViber(true); });
 document.getElementById('viber-close').addEventListener('click', closeViber);
 document.getElementById('viber-f').addEventListener('click', ()=>{ viberGender='f'; viberRefresh(); });
 document.getElementById('viber-m').addEventListener('click', ()=>{ viberGender='m'; viberRefresh(); });
@@ -10461,18 +10472,19 @@ function updateGateLocks(){
     if(b){ b.style.opacity = lock ? .55 : 1; b.dataset.locked = lock ? '1' : ''; }
   });
 }
-function gateLockedMsg(){
+function gateLockedMsg(kind){
   const gs = document.getElementById('gate-screen');
-  document.getElementById('gate-status').textContent =
-    '🔒 Тіндер гостей і фото відкриваються паролем з візитівки. Введи його — або грай далі як гість';
+  document.getElementById('gate-status').textContent = kind==='invite'
+    ? '🔒 Запрошення з часом і місцем відкривається паролем з візитівки'
+    : '🔒 Тіндер гостей і фото відкриваються паролем з візитівки. Введи його — або грай далі як гість';
   gs.classList.remove('hidden');
   setTimeout(()=>{ try{ document.getElementById('gate-pass').focus(); }catch(_){} }, 80);
 }
 function gateAuth(g, greet){
   AUTH_GUEST = g; myGuest = g; playerName = g.name;
-  localStorage.setItem('wed-pass-auth', g.id);
+  sessionStorage.setItem('wed-pass-auth', g.id);
   localStorage.setItem('wed-player-name', g.name);
-  localStorage.setItem('wed-gate-done','auth');
+  sessionStorage.setItem('wed-gate-done','auth');
   CENSORED = g.censor || CENSORED;
   if(greet){
     document.getElementById('gate-status').textContent =
@@ -10488,7 +10500,7 @@ function gateTry(){
   if(!v){ st.textContent = 'введи пароль — він написаний на твоїй візитівці 🙂'; return; }
   if(v===DEV_PASS){                                        // Катя й Діма: режим розробника
     DEV_MODE = true; localStorage.setItem('wed-dev','1');
-    localStorage.setItem('wed-gate-done','dev');
+    sessionStorage.setItem('wed-gate-done','dev');
     st.textContent = '⚙️ Привіт, молодята! DEV-режим: усе відкрито, гостей можна перемикати';
     try{ sfxScore(880); }catch(_){}
     devBadge(); updateGateLocks();
@@ -10502,13 +10514,13 @@ function gateTry(){
 document.getElementById('gate-go').addEventListener('click', gateTry);
 document.getElementById('gate-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') gateTry(); });
 document.getElementById('gate-guest').addEventListener('click', ()=>{
-  localStorage.setItem('wed-gate-done','guest');
+  sessionStorage.setItem('wed-gate-done','guest');
   document.getElementById('gate-screen').classList.add('hidden');
   updateGateLocks();
 });
 (function gateBoot(){
   if(DEV_MODE) devBadge();
-  const savedId = localStorage.getItem('wed-pass-auth');
+  const savedId = sessionStorage.getItem('wed-pass-auth');
   if(savedId){ const g = RSVP_GUEST_LIST.find(x=>x.id===savedId); if(g) gateAuth(g, false); }
   // автовхід із посилання: ?p=ПАРОЛЬ (для старших і для розсилки — нічого вводити не треба)
   const urlPass = normPass(PARAMS.get('p')||'');
@@ -10516,14 +10528,14 @@ document.getElementById('gate-guest').addEventListener('click', ()=>{
     if(urlPass===DEV_PASS){ DEV_MODE=true; localStorage.setItem('wed-dev','1'); localStorage.setItem('wed-gate-done','dev'); devBadge(); }
     else { const g = RSVP_GUEST_LIST.find(x=> x.pass && x.pass===urlPass); if(g) gateAuth(g, false); }
   }
-  const elder = PARAMS.get('v')==='invite';
+  const elder = PARAMS.get('v')==='invite' && isAuthed();   // запрошення одразу — лише з паролем у посиланні (?p=…)
   if(elder){                                      // версія для старших: одразу нарядне запрошення
-    localStorage.setItem('wed-gate-done','elder');
+    sessionStorage.setItem('wed-gate-done','elder');
     setTimeout(()=>{ try{ openViber(true); }catch(_){} }, 500);
     updateGateLocks(); return;
   }
   if(GUEST || AUTH_GUEST){ updateGateLocks(); return; }   // персональне посилання/уже впізнаний
-  if(!localStorage.getItem('wed-gate-done')){
+  if(!sessionStorage.getItem('wed-gate-done')){
     document.getElementById('gate-screen').classList.remove('hidden');
   }
   updateGateLocks();
@@ -10890,8 +10902,12 @@ async function sendInvitationEmail(){
   const name = (localStorage.getItem('wed-player-name')||'Гість').trim();
   const v = guestVenue();
   const blocks = [];
-  if(v!=='khv') blocks.push(SLOTS.A.what+' — '+SLOTS.A.where+', '+SLOTS.A.when);
-  if(v!=='sofi') blocks.push(SLOTS.B.what+' — '+SLOTS.B.where+', '+SLOTS.B.when);
+  if(isAuthed()){
+    if(v!=='khv') blocks.push(SLOTS.A.what+' — '+SLOTS.A.where+', '+SLOTS.A.when);
+    if(v!=='sofi') blocks.push(SLOTS.B.what+' — '+SLOTS.B.where+', '+SLOTS.B.when);
+  } else {
+    blocks.push('Час і місце — на твоїй візитівці з паролем 😉 (введи його в грі — і все відкриється)');
+  }
   try{
     const r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method:'POST', headers:{'Content-Type':'application/json'},
