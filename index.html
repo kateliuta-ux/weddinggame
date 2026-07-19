@@ -523,15 +523,23 @@
       <div class="v-venue" id="viber-venue" style="font-family:Georgia,serif;font-size:14px;color:#7a2f8a">6 вересня 2026 · Київ</div>
       <div class="v-wish">Нехай ваша присутність<br>принесе нам щастя й любов!<br>З любов'ю та повагою</div>
       <div class="v-bottom">❧&nbsp;⋆&nbsp;✿&nbsp;⋆&nbsp;❧</div>
-      <div class="v-gender" style="display:flex;gap:8px;justify-content:center;margin:6px 0">
-        <button class="btn" id="viber-f" style="padding:6px 10px;font-size:12px;background:#c02a7a">для жінки</button>
-        <button class="btn" id="viber-m" style="padding:6px 10px;font-size:12px;background:#7a2f8a">для чоловіка</button>
-      </div>
       <div class="v-buttons">
+        <button class="btn" id="viber-dress" style="background:#7a2f8a">🧵 Дрес-код</button>
         <button class="btn" id="viber-save" style="background:#c02a7a">Зберегти</button>
         <button class="btn" id="viber-close" style="background:#55515f">Закрити</button>
       </div>
     </div>
+  </div>
+
+  <div id="dress-screen" class="overlay hidden" style="background:rgba(14,12,20,.96);gap:12px;z-index:320">
+    <div class="s-head">ДРЕС-КОД · НЕО-ЕТНО <span>сучасне святкове + українська нотка. ось приклади:</span></div>
+    <canvas id="dress-canvas" width="380" height="170" style="width:min(88vw,380px);image-rendering:pixelated"></canvas>
+    <div style="max-width:min(88vw,380px);text-align:center;font-size:12px;line-height:1.75;color:#e8e4f0">
+      <div>✅ вишиванка чи сорочка · намисто · вінок · пояс-крайка</div>
+      <div style="color:#c9b47a">кольори: червоний · зелений · синій · гірчиця · бордо</div>
+      <div style="margin-top:8px;color:#d89aa4">🚫 краще без: <b>білого</b> — воно того дня на нареченій,<br>і без спортивного-камуфляжного</div>
+    </div>
+    <button class="btn" id="dress-close" style="background:#55515f">Закрити</button>
   </div>
 
   <div id="selfie-screen" class="overlay hidden" style="background:#14121c;gap:10px">
@@ -7586,6 +7594,39 @@ function cardKalyna(g, cx, cy, s){
   g.fillStyle = '#2f5d4a';
   g.beginPath(); g.ellipse(cx+7*s, cy-4*s, 4*s, 2*s, -0.6, 0, 7); g.fill();
 }
+const DRESS_FIGS = [
+  {hair:'#4a3020', shirt:'#c0392b', orn:'#fdfdf6', orn2:'#e8c05a', lbl:'вишиванка'},
+  {hair:'#2a1a10', shirt:'#fdfdf6', orn:'#c0202e', orn2:'#1a5a8a', namysto:true, skirt:'#8a2432', vinok:true, lbl:'вінок і намисто'},
+  {hair:'#6a5030', shirt:'#2e6a4a', orn:'#e8c05a', poyas:true, lbl:'сорочка й пояс'},
+  {hair:'#3a2a18', shirt:'#fdfdf6', orn:'#2e6a8a', orn2:'#c0202e', namysto:true, skirt:'#2a4a6a', lbl:'етно-акцент'},
+];
+function drawDressFig(g,x0,yy,px,o){
+  const P=(cells,col)=>{ g.fillStyle=col; cells.forEach(([cx,cy,w,h])=>g.fillRect(x0+cx*px, yy+cy*px, (w||1)*px, (h||1)*px)); };
+  P([[2,0,4,1],[1,1,6,3]],o.hair);
+  P([[2,2,4,3]],'#e8b48c');
+  if(o.vinok){ P([[1,0],[3,-1],[5,0]],'#d84a6a'); P([[2,-1],[4,0]],'#e8a23c'); }
+  P([[1,5,6,5]],o.shirt);
+  P([[3,5,2,5]],'#fdfdf6');
+  P([[3,6],[4,7],[3,8],[4,9]],o.orn);
+  P([[3,7],[4,6],[3,9],[4,8]],o.orn2||o.orn);
+  if(o.namysto){ P([[2,5],[3,6],[4,6],[5,5]],'#c0202e'); }
+  if(o.poyas){ P([[1,9,6,1]],'#c0202e'); }
+  if(o.skirt){ P([[1,10,6,4]],o.skirt); P([[1,13,6,1]],o.orn); }
+  else { P([[1,10,2,4]],'#3a3a4a'); P([[5,10,2,4]],'#3a3a4a'); }
+  P([[1,14,2,1]],'#7a4a2a'); P([[5,14,2,1]],'#7a4a2a');
+}
+function openDressScreen(){
+  document.getElementById('dress-screen').classList.remove('hidden');
+  const cv=document.getElementById('dress-canvas'); const g2=cv.getContext('2d');
+  g2.clearRect(0,0,cv.width,cv.height); g2.imageSmoothingEnabled=false;
+  const px=9, fw=8*px, gap=(cv.width-4*fw-2*16)/3;
+  DRESS_FIGS.forEach((o,i)=>{
+    const x0=16+i*(fw+gap);
+    drawDressFig(g2,x0,18,px,o);
+    g2.fillStyle='#c9d9c4'; g2.font='8px monospace'; g2.textAlign='center';
+    o.lbl.split(' і ').length; g2.fillText(o.lbl, x0+3.5*px, 18+16*px);
+  });
+}
 function buildInvitationCard(){
   const c = document.createElement('canvas'); c.width = 720; c.height = 1470;
   const g = c.getContext('2d');
@@ -7684,27 +7725,8 @@ function buildInvitationCard(){
     g.fillStyle = '#2b2b38'; g.font = 'bold 24px Georgia, serif';
     g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 18;
     // ── 8-бітні приклади: гості в кольорових вишиванках із намистом/вінками/поясами
-    const P = (x0,yy,px,cells,col)=>{ g.fillStyle=col; cells.forEach(([cx,cy,w,h])=>g.fillRect(x0+cx*px, yy+cy*px, (w||1)*px, (h||1)*px)); };
-    const drawDressGuest = (x0,yy,o)=>{
-      const px=7;
-      P(x0,yy,px,[[2,0,4,1],[1,1,6,3]],o.hair);                    // волосся
-      P(x0,yy,px,[[2,2,4,3]],'#e8b48c');                            // обличчя
-      if(o.vinok){ P(x0,yy,px,[[1,0],[3,-1],[5,0]],'#d84a6a'); P(x0,yy,px,[[2,-1],[4,0]],'#e8a23c'); }
-      P(x0,yy,px,[[1,5,6,5]],o.shirt);                              // сорочка/вишиванка
-      P(x0,yy,px,[[3,5,2,5]],'#fdfdf6');                            // маніжка
-      P(x0,yy,px,[[3,6],[4,7],[3,8],[4,9]],o.orn);                  // орнамент хрестиками
-      P(x0,yy,px,[[3,7],[4,6],[3,9],[4,8]],o.orn2||o.orn);
-      if(o.namysto){ P(x0,yy,px,[[2,5],[3,6],[4,6],[5,5]],'#c0202e'); }
-      if(o.poyas){ P(x0,yy,px,[[1,9,6,1]],'#c0202e'); }
-      if(o.skirt){ P(x0,yy,px,[[1,10,6,4]],o.skirt); P(x0,yy,px,[[1,13,6,1]],o.orn); }
-      else { P(x0,yy,px,[[1,10,2,4]],'#3a3a4a'); P(x0,yy,px,[[5,10,2,4]],'#3a3a4a'); }
-      P(x0,yy,px,[[1,14,2,1]],'#7a4a2a'); P(x0,yy,px,[[5,14,2,1]],'#7a4a2a');   // чоботи
-    };
     const gy = y+6;
-    drawDressGuest(158, gy, {hair:'#4a3020', shirt:'#c0392b', orn:'#fdfdf6', orn2:'#e8c05a', poyas:false});
-    drawDressGuest(258, gy, {hair:'#2a1a10', shirt:'#fdfdf6', orn:'#c0202e', orn2:'#1a5a8a', namysto:true, skirt:'#8a2432', vinok:true});
-    drawDressGuest(358, gy, {hair:'#6a5030', shirt:'#2e6a4a', orn:'#e8c05a', poyas:true});
-    drawDressGuest(458, gy, {hair:'#3a2a18', shirt:'#fdfdf6', orn:'#2e6a8a', orn2:'#c0202e', namysto:true, skirt:'#2a4a6a'});
+    DRESS_FIGS.forEach((o,i)=> drawDressFig(g, 158+i*100, gy, 7, o));
     y = gy + 118;
     g.fillStyle = '#8a8272'; g.font = 'italic 21px Georgia, serif';
     g.fillText('вишиванка · намисто · вінок · пояс — як любиш', 360, y); y += 40;
@@ -7802,7 +7824,7 @@ function inviteName(){ return ((GUEST&&GUEST.name)||localStorage.getItem('wed-pl
 function inviteHello(){
   const n=inviteName();
   if(n && n.toLowerCase()!=='гість') return n+'!';
-  return (viberGender==='f' ? 'Шановна гостя' : 'Шановний гість') + '!';   // без імені — ввічливо й за статтю
+  return 'Сонечко, тебе чекаємо!';   // одна версія для всіх
 }
 function viberRefresh(){
   const n=inviteName();
@@ -7811,7 +7833,6 @@ function viberRefresh(){
   const vv = viberVenue();
   document.getElementById('viber-venue').textContent = vv;
   document.getElementById('viber-venue').style.display = vv ? '' : 'none';
-  document.getElementById('viber-invite').classList.toggle('male', viberGender==='m');
 }
 function openViber(fromTitle){
   viberFrom = fromTitle ? 'title' : 'end';
@@ -7836,8 +7857,8 @@ function closeViber(){
 document.getElementById('btn-viber').addEventListener('click', ()=>{ if(!isAuthed()){ gateLockedMsg('invite'); return; } openViber(false); });
 document.getElementById('btn-viber-title').addEventListener('click', ()=>{ if(!isAuthed()){ gateLockedMsg('invite'); return; } openViber(true); });
 document.getElementById('viber-close').addEventListener('click', closeViber);
-document.getElementById('viber-f').addEventListener('click', ()=>{ viberGender='f'; viberRefresh(); });
-document.getElementById('viber-m').addEventListener('click', ()=>{ viberGender='m'; viberRefresh(); });
+document.getElementById('viber-dress').addEventListener('click', ()=>{ openDressScreen(); });
+document.getElementById('dress-close').addEventListener('click', ()=>{ document.getElementById('dress-screen').classList.add('hidden'); });
 /* збереження: кічова картинка (золотий блиск + троянди + рамка сердечками) */
 function buildViberCard(){
   const male = viberGender==='m';
