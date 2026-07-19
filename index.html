@@ -2842,7 +2842,7 @@ function drawVykup(){
   {
     const kx = (game.t*1.1)%(W+60)-30;
     drawKitana(kx, H-16, 1);
-    [[0.0,'#B58A2E','m'],[3.1,'#c98a9c','f']].forEach(([ph,col,g],i)=>{
+    [[0.0,'#B58A2E','m'],[3.1,'#8a2432','f']].forEach(([ph,col,g],i)=>{
       const gx = W/2 + Math.sin(game.t*0.006+ph)*(W*0.32);
       drawGuest(gx, H-22, col, false, game.t+i*30, guestFace(i), 1.25, g);
     });
@@ -5011,7 +5011,7 @@ function drawWedSofi(){
   ctx.fillRect(tx+10, ty-28, 12, 3); ctx.fillRect(tx+80, ty-28, 12, 3);
   ctx.fillStyle = '#c9584a'; ctx.fillRect(tx+12, ty-30, 8, 2);   // борщик умовний
   // гості за столом — кричать радість і тягнуть народну пісню
-  const sofiGuests = [[tx+16,'#5a7ea6',0],[tx+42,'#a8505f',8],[tx+88,'#3F7C77',4]];
+  const sofiGuests = [[tx+16,'#c0392b',0],[tx+42,'#2a4a6a',8],[tx+88,'#2e6a4a',4]];   // дрес-код: червоний/синій/зелений
   const SHOUTS = ['ГІРКО!', 'ГІРКО!!!', 'За молодят!', 'многая літа!'];
   sofiGuests.forEach(([gx,col,off],i)=>{
     drawGuest(gx, ty-24, col, true, game.t+off, guestFace(i), 1.4,
@@ -5161,7 +5161,7 @@ function drawWedKhv(){
   ctx.fillStyle = '#221c26';
   ctx.fillRect(sx+sw-14, syTop-26, 2, 26); ctx.fillRect(sx+sw-17, syTop-30, 8, 6);
   // гості з келихами у дворику — усі СПІВАЮТЬ «Штольню»
-  const khvGuests = [[34,26,'#5a7ea6',0],[82,38,'#a8505f',6],[128,28,'#3F7C77',3],[170,42,'#B58A2E',9]];
+  const khvGuests = [[34,26,'#c0392b',0],[82,38,'#8a2432',6],[128,28,'#2e6a4a',3],[170,42,'#B58A2E',9]];   // дрес-код: червоний/бордо/зелений/гірчиця
   khvGuests.forEach(([gx,gy,col,off],i)=>{
     drawGuest(gx, FLOOR_Y+gy, col, false, game.t+off, guestFace(i), 1.9,
       guestGender(guestName(i)) || (i%2 ? 'f' : 'm'));   // КРУПНІ гості — видно фото-обличчя
