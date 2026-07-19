@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Катя ♥ Діма — весілля 6,9,26 · запрошення-гра · лютевесілля.укр</title>
+<title>Катя ♥ Діма — весілля 6.9.2026 · запрошення-гра · лютевесілля.укр</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a8323c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,13 +11,13 @@
 <meta name="apple-mobile-web-app-title" content="Катя♥Діма">
 <link rel="apple-touch-icon" href="icon-192.png">
 <!-- щоб гру знаходив пошук: опис, канонічна адреса та картка для месенджерів -->
-<meta name="description" content="Катя і Діма запрошують на весілля 6,9,26 у Києві. Запрошення-гра: пройди нашу історію і поклич себе на свято. лютевесілля.укр">
+<meta name="description" content="Катя і Діма запрошують на весілля 6.9.2026 у Києві. Запрошення-гра: пройди нашу історію і поклич себе на свято. лютевесілля.укр">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://xn--b1afbvda4be1ira8e.xn--j1amh/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="лютевесілля.укр">
 <meta property="og:title" content="Катя ♥ Діма — запрошення-гра на весілля">
-<meta property="og:description" content="6,9,26 · Київ. Пройди нашу історію — і поклич себе на свято.">
+<meta property="og:description" content="6.9.2026 · Київ. Пройди нашу історію — і поклич себе на свято.">
 <meta property="og:url" content="https://xn--b1afbvda4be1ira8e.xn--j1amh/">
 <meta property="og:image" content="https://xn--b1afbvda4be1ira8e.xn--j1amh/invite-card.png">
 <meta property="og:locale" content="uk_UA">
@@ -507,7 +507,7 @@
         style="width:78%;max-width:260px;filter:drop-shadow(1px 2px 0 rgba(255,255,255,.7))"
         onerror="this.outerHTML='Запрошуємо<br>на весілля!'"></div>
       <div class="v-names">Катерина&nbsp;♥&nbsp;Дмитро</div>
-      <div class="v-date">✧ 6,9,26 ✧ Київ ✧</div>
+      <div class="v-date">✧ 6.9.2026 ✧ Київ ✧</div>
       <svg class="v-glasses" viewBox="0 0 80 90" width="64" height="72">
         <path d="M18 8 Q18 34 30 38 L30 72 L20 80 L44 80 L34 72 L34 38 Q46 34 46 8 Z" fill="rgba(255,252,240,.85)" stroke="#d8c8a8" stroke-width="1.5"/>
         <path d="M20 10 Q20 20 24 26 L40 26 Q44 20 44 10 Z" fill="#f4d98a"/>
@@ -750,7 +750,7 @@ const SLOTS = {
   B: {what:'Вечірня частина · свято',   when:'6 вересня 2026 · 16:20',         where:'«Хвильовий», Київ',
       ics:{start:'20260906T162000', end:'20260906T235900', loc:'Хвильовий, Київ'}},
 };
-const DRESS_CODE = '—';                  // Катя дасть формулювання — поки прочерк
+const DRESS_CODE = 'нео-етно';
 const FLOWERS_NOTE = 'Принесеш кілька живих квітів —\nз них разом зберемо декор простору 🌸';
 /* «що дарувати»: вони збирають гроші — формулюємо делікатно.
    Катя може переписати; ось три готові варіанти на вибір:
@@ -6079,7 +6079,7 @@ function novelData(){
       {who:'katya', emo:'happy', text:'Так!'},
       N('Сказала «так», не дослухавши слова, —\nбо серце відповідь тримало вже готову.'),
     ]},
-    {bg:8, cap:['6,9,26 · Київ','весілля'], lines:[
+    {bg:8, cap:['6.9.2026 · Київ','весілля'], lines:[
       N('Од свайпу вправо — та до рушничка,\nвід пива на Пейзажці — та до вінця.'),
       N('Шостого вересня вінчання, їй-бо, —\nприходьте, любі: буде вам тепло.'),
     ]},
@@ -6858,7 +6858,7 @@ function novelDataEn(){
       {who:'katya', emo:'happy', text:"Yes!"},
       N("She said her 'yes' before the sentence end —\nher heart had known the answer, my dear friend."),
     ]},
-    {bg:8, cap:['6,9,26 · Kyiv','the wedding'], lines:[
+    {bg:8, cap:['6.9.2026 · Kyiv','the wedding'], lines:[
       N("From one swipe right — to the embroidered towel,\nfrom beer at Peizazhka — to the wedding vow."),
       N("On September 6 we celebrate —\ncome join us, dear ones: don't be late!"),
     ]},
@@ -7587,22 +7587,22 @@ function cardKalyna(g, cx, cy, s){
   g.beginPath(); g.ellipse(cx+7*s, cy-4*s, 4*s, 2*s, -0.6, 0, 7); g.fill();
 }
 function buildInvitationCard(){
-  const c = document.createElement('canvas'); c.width = 720; c.height = 1280;
+  const c = document.createElement('canvas'); c.width = 720; c.height = 1470;
   const g = c.getContext('2d');
   const W2 = 720;
   // тло — світле, весільне (біле з ніжним рум'янцем)
-  const bgg = g.createLinearGradient(0,0,0,1280);
+  const bgg = g.createLinearGradient(0,0,0,1470);
   bgg.addColorStop(0,'#ffffff'); bgg.addColorStop(.5,'#fdf6f8'); bgg.addColorStop(1,'#fff8ef');
-  g.fillStyle = bgg; g.fillRect(0,0,720,1280);
+  g.fillStyle = bgg; g.fillRect(0,0,720,1470);
   // золоті блискітки по всьому полю (делікатно)
   let sd = 11; const rnd = ()=>{ sd=(sd*1103515245+12345)&0x7fffffff; return sd/0x7fffffff; };
   for(let i=0;i<90;i++){
     g.fillStyle = ['rgba(212,175,90,','rgba(255,255,255,','rgba(230,180,200,'][i%3] + (0.3+rnd()*0.4) + ')';
-    g.beginPath(); g.arc(rnd()*720, rnd()*1280, rnd()*1.8+0.4, 0, 7); g.fill();
+    g.beginPath(); g.arc(rnd()*720, rnd()*1470, rnd()*1.8+0.4, 0, 7); g.fill();
   }
   // тонка золота рамка
-  g.strokeStyle = '#d4af5a'; g.lineWidth = 3; g.strokeRect(26,26,668,1228);
-  g.strokeStyle = 'rgba(200,150,180,.6)'; g.lineWidth = 1; g.strokeRect(34,34,652,1212);
+  g.strokeStyle = '#d4af5a'; g.lineWidth = 3; g.strokeRect(26,26,668,1418);
+  g.strokeStyle = 'rgba(200,150,180,.6)'; g.lineWidth = 1; g.strokeRect(34,34,652,1402);
   // гіпсофіла — дрібні білі суцвіття (кластери крапок)
   const gyps = (cx,cy,n)=>{ for(let i=0;i<n;i++){ const a=rnd()*7,r=rnd()*16;
     g.fillStyle='rgba(255,255,255,.95)'; g.beginPath(); g.arc(cx+Math.cos(a)*r, cy+Math.sin(a)*r, 1.6,0,7); g.fill();
@@ -7612,8 +7612,8 @@ function buildInvitationCard(){
   g.fillText('👼', 92, 96); g.fillText('👼', 628, 96);
   g.font='30px serif';
   ['🕊️','🌹','🌷','🌹','🕊️'].forEach((e,i)=> g.fillText(e, 210+i*75, 92));
-  ['🌹','🕊️','🌷','🕊️','🌹'].forEach((e,i)=> g.fillText(e, 210+i*75, 1210));
-  for(let i=0;i<6;i++){ gyps(180+i*72, 70, 10); gyps(180+i*72, 1234, 10); }
+  ['🌹','🕊️','🌷','🕊️','🌹'].forEach((e,i)=> g.fillText(e, 210+i*75, 1400));
+  for(let i=0;i<6;i++){ gyps(180+i*72, 70, 10); gyps(180+i*72, 1424, 10); }
 
   g.textAlign = 'center';
   const d = invitationData();
@@ -7682,7 +7682,32 @@ function buildInvitationCard(){
   y = Math.max(y, 928);
   if(DRESS_CODE && DRESS_CODE !== '—'){
     g.fillStyle = '#2b2b38'; g.font = 'bold 24px Georgia, serif';
-    g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 40;
+    g.fillText('дрес-код: ' + DRESS_CODE, 360, y); y += 18;
+    // ── 8-бітні приклади: гості в кольорових вишиванках із намистом/вінками/поясами
+    const P = (x0,yy,px,cells,col)=>{ g.fillStyle=col; cells.forEach(([cx,cy,w,h])=>g.fillRect(x0+cx*px, yy+cy*px, (w||1)*px, (h||1)*px)); };
+    const drawDressGuest = (x0,yy,o)=>{
+      const px=7;
+      P(x0,yy,px,[[2,0,4,1],[1,1,6,3]],o.hair);                    // волосся
+      P(x0,yy,px,[[2,2,4,3]],'#e8b48c');                            // обличчя
+      if(o.vinok){ P(x0,yy,px,[[1,0],[3,-1],[5,0]],'#d84a6a'); P(x0,yy,px,[[2,-1],[4,0]],'#e8a23c'); }
+      P(x0,yy,px,[[1,5,6,5]],o.shirt);                              // сорочка/вишиванка
+      P(x0,yy,px,[[3,5,2,5]],'#fdfdf6');                            // маніжка
+      P(x0,yy,px,[[3,6],[4,7],[3,8],[4,9]],o.orn);                  // орнамент хрестиками
+      P(x0,yy,px,[[3,7],[4,6],[3,9],[4,8]],o.orn2||o.orn);
+      if(o.namysto){ P(x0,yy,px,[[2,5],[3,6],[4,6],[5,5]],'#c0202e'); }
+      if(o.poyas){ P(x0,yy,px,[[1,9,6,1]],'#c0202e'); }
+      if(o.skirt){ P(x0,yy,px,[[1,10,6,4]],o.skirt); P(x0,yy,px,[[1,13,6,1]],o.orn); }
+      else { P(x0,yy,px,[[1,10,2,4]],'#3a3a4a'); P(x0,yy,px,[[5,10,2,4]],'#3a3a4a'); }
+      P(x0,yy,px,[[1,14,2,1]],'#7a4a2a'); P(x0,yy,px,[[5,14,2,1]],'#7a4a2a');   // чоботи
+    };
+    const gy = y+6;
+    drawDressGuest(158, gy, {hair:'#4a3020', shirt:'#c0392b', orn:'#fdfdf6', orn2:'#e8c05a', poyas:false});
+    drawDressGuest(258, gy, {hair:'#2a1a10', shirt:'#fdfdf6', orn:'#c0202e', orn2:'#1a5a8a', namysto:true, skirt:'#8a2432', vinok:true});
+    drawDressGuest(358, gy, {hair:'#6a5030', shirt:'#2e6a4a', orn:'#e8c05a', poyas:true});
+    drawDressGuest(458, gy, {hair:'#3a2a18', shirt:'#fdfdf6', orn:'#2e6a8a', orn2:'#c0202e', namysto:true, skirt:'#2a4a6a'});
+    y = gy + 118;
+    g.fillStyle = '#8a8272'; g.font = 'italic 21px Georgia, serif';
+    g.fillText('вишиванка · намисто · вінок · пояс — як любиш', 360, y); y += 40;
   }
   g.fillStyle = '#a8323c'; g.font = '22px Georgia, serif';
   g.fillText('🌸 принеси кілька живих квітів — для декору', 360, y); y += 30;
@@ -7693,8 +7718,8 @@ function buildInvitationCard(){
 
   // вірш унизу
   g.fillStyle = '#bcb7a8'; g.font = 'italic 22px Georgia, serif';
-  g.fillText('Од свайпу вправо — та до рушничка,', 360, 1148);
-  g.fillText('приходь на свято, доки грає скрипочка!', 360, 1176);
+  g.fillText('Од свайпу вправо — та до рушничка,', 360, 1338);
+  g.fillText('приходь на свято, доки грає скрипочка!', 360, 1366);
   return c;
 }
 function saveInvitation(){
@@ -7874,7 +7899,7 @@ function buildViberCard(){
   g.fillStyle = male?'#e8eef6':'#e0356a'; g.font = 'bold 50px Georgia, serif';
   g.fillText('Катерина  ♥  Дмитро', 360, 448);
   g.fillStyle = male?'#f4e2a0':'#a8681c'; g.font = 'bold 34px Georgia, serif';
-  g.fillText('✧ 6,9,26 ✧ Київ ✧', 360, 512);
+  g.fillText('✧ 6.9.2026 ✧ Київ ✧', 360, 512);
   const vvn = viberVenue();
   if(vvn){ g.fillStyle = male?'#d8e4f0':'#8a2a5a'; g.font = 'bold 26px Georgia, serif'; g.fillText(vvn, 360, 560); }
   g.fillStyle = male?'#c8d4e4':'#a0407a'; g.font = 'italic 27px Georgia, serif';
@@ -10107,9 +10132,9 @@ function updateTitleMeta(){
   const k = localStorage.getItem('wed-done-katya'), d = localStorage.getItem('wed-done-dima');
   const sub = document.querySelector('#title-screen .sub');
   if(!sub) return;
-  if(k && d) sub.textContent = 'обидві історії пройдено ♥ · 6,9,26 · Київ';
-  else if(k) sub.textContent = 'а тепер — очима Діми? · 6,9,26 · Київ';
-  else if(d) sub.textContent = 'а тепер — очима Каті? · 6,9,26 · Київ';
+  if(k && d) sub.textContent = 'обидві історії пройдено ♥ · 6.9.2026 · Київ';
+  else if(k) sub.textContent = 'а тепер — очима Діми? · 6.9.2026 · Київ';
+  else if(d) sub.textContent = 'а тепер — очима Каті? · 6.9.2026 · Київ';
 }
 updateTitleMeta();
 
