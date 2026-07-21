@@ -11228,8 +11228,8 @@ if(PARAMS.get('demofaces')){
     startGame('katya', true);
     setPhase('sitcom');
     const HOLD = ()=> sitcomFrames().length*80 - 10;   // уся купа показана, але БЕЗ авто-переходу далі
-    game.phaseT = HOLD();
-    setInterval(()=>{ if(game.phase==='sitcom') game.phaseT = HOLD(); }, 60);   // тримати заставку замороженою
+    // ПРИМУСОВО тримати заставку sitcom (перебиваємо авто-перехід у режимі перегляду)
+    setInterval(()=>{ if(game.phase!=='sitcom') setPhase('sitcom'); game.phaseT = HOLD(); }, 50);
   }catch(e){ console.log('demofaces', e); } }, 500);
 }
 
