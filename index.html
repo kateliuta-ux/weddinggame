@@ -9130,10 +9130,9 @@ async function saveGuestSample(b64){
 }
 async function loadGuestSamples(){
   try{
-    const r = await fetch(FS_BASE+'sampler-samples?key='+FB.apiKey+'&pageSize=50');
-    if(!r.ok) return [];
-    const j = await r.json();
-    return (j.documents||[]).map(d=>({
+    const docs = await fsGetAll(FS_BASE+'sampler-samples?key='+FB.apiKey+'&pageSize=300');
+    if(!docs) return [];
+    return docs.map(d=>({
       name: d.fields?.name?.stringValue || 'гість',
       b64: d.fields?.sample?.stringValue || '',
       at: +(d.fields?.at?.integerValue || 0),
@@ -9268,11 +9267,10 @@ async function saveVoiceTrack(author, blob, pattern, sampleB64, email){
 }
 async function loadVoiceTracks(){
   try{
-    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=200'+
+    const docs = await fsGetAll(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=300'+
       ['author','audio','mime','pattern','sample','at','email'].map(f=>'&mask.fieldPaths='+f).join(''));   // маска: не тягнемо правки редакторської
-    if(!r.ok) return [];
-    const j = await r.json();
-    return (j.documents||[]).map(d=>({
+    if(!docs) return [];
+    return docs.map(d=>({
       author: d.fields?.author?.stringValue || 'невідомий співець',
       audio: d.fields?.audio?.stringValue || '',
       mime: d.fields?.mime?.stringValue || 'audio/webm',
@@ -9477,6 +9475,18 @@ function smpDeserialize(code){
 }
 // літерал, бо FB оголошено нижче по файлу (інакше TDZ кладе весь скрипт)
 const FS_BASE = 'https://firestore.googleapis.com/v1/projects/wedding-6e47f/databases/(default)/documents/';
+/* читаємо ВСІ сторінки (при 150 гостях одна сторінка не вміщає все — інакше частина даних невидима) */
+async function fsGetAll(url){
+  let docs=[], token=null, guard=0;
+  do{
+    const r = await fetch(url + (token ? '&pageToken='+encodeURIComponent(token) : ''));
+    if(!r.ok) return docs.length ? docs : null;
+    const j = await r.json();
+    if(j.documents) docs = docs.concat(j.documents);
+    token = j.nextPageToken || null;
+  } while(token && ++guard < 25);
+  return docs;
+}
 const FB = {
   apiKey: 'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA',
   projectId: 'wedding-6e47f',
@@ -9530,10 +9540,9 @@ async function saveTrack(author, pattern, sampleB64, email){
 }
 async function loadTracks(){
   try{
-    const r = await fetch(FS_BASE+'sampler-tracks?key='+FB.apiKey+'&pageSize=100');
-    if(!r.ok) return null;
-    const j = await r.json();
-    return (j.documents||[]).map(d=>({
+    const docs = await fsGetAll(FS_BASE+'sampler-tracks?key='+FB.apiKey+'&pageSize=300');
+    if(!docs) return null;
+    return docs.map(d=>({
       author: d.fields?.author?.stringValue || 'невідомий митець',
       pattern: d.fields?.pattern?.stringValue || '',
       sample: d.fields?.sample?.stringValue || '',
@@ -9546,10 +9555,10 @@ async function loadTracks(){
 let CONFIRMED_EMAILS = null;
 async function loadConfirms(){
   try{
-    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=300&mask.fieldPaths=kind&mask.fieldPaths=cemail');
-    if(!r.ok) return new Set();
-    const j = await r.json(); const s=new Set();
-    (j.documents||[]).forEach(d=>{ const f=d.fields||{}; if(f.kind&&f.kind.stringValue==='trackconfirm'&&f.cemail&&f.cemail.stringValue) s.add(f.cemail.stringValue.trim().toLowerCase()); });
+    const docs = await fsGetAll(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=300&mask.fieldPaths=kind&mask.fieldPaths=cemail');
+    if(!docs) return new Set();
+    const s=new Set();
+    docs.forEach(d=>{ const f=d.fields||{}; if(f.kind&&f.kind.stringValue==='trackconfirm'&&f.cemail&&f.cemail.stringValue) s.add(f.cemail.stringValue.trim().toLowerCase()); });
     return s;
   }catch(e){ return new Set(); }
 }
@@ -10042,10 +10051,9 @@ async function saveMatch(toName){
 async function loadMyMatches(){
   const me=(localStorage.getItem('wed-player-name')||'').trim().toLowerCase(); if(!me) return [];
   try{
-    const r=await fetch(FS_BASE+'matches?key='+FB.apiKey+'&pageSize=300');
-    const j=await r.json();
+    const docs=await fsGetAll(FS_BASE+'matches?key='+FB.apiKey+'&pageSize=300')||[];
     const names=new Set();
-    (j.documents||[]).forEach(d=>{
+    docs.forEach(d=>{
       const f=d.fields||{};
       const fr=(f.from&&f.from.stringValue)||''; if(fr==='__selftest') return;
       if((f.to&&f.to.stringValue||'').toLowerCase()===me) names.add(fr);
@@ -10095,10 +10103,9 @@ const HIDE_DOCS = new Set(['11C0788YMDaPpyzSldQi','JVn93SeHaUGa1l08osaM','__self
   'gYVDK8o97KQ3bjtLaXnG','actCmPHa5unhGlVRLRsw','bvGXCCK5MA9tCWYZAPOj']);   // тех-проби редакторської
 async function loadMemories(){
   try{
-    const r = await fetch(FS_BASE+'memories?key='+FB.apiKey+'&pageSize=60');
-    if(!r.ok) return;
-    const j = await r.json();
-    (j.documents||[]).forEach(d=>{
+    const docs = await fsGetAll(FS_BASE+'memories?key='+FB.apiKey+'&pageSize=300');
+    if(!docs) return;
+    docs.forEach(d=>{
       const did = d.name.split('/').pop();
       const src = d.fields?.image?.stringValue;
       const nm = d.fields?.name?.stringValue || 'гостя';
@@ -10166,10 +10173,9 @@ loadMemories();   // підвантажити спільні фото госте
 const GUEST_FACES = [];
 async function loadSelfies(){
   try{
-    const r = await fetch(FS_BASE+'selfies?key='+FB.apiKey+'&pageSize=100');
-    if(!r.ok) return;
-    const j = await r.json();
-    (j.documents||[]).forEach(d=>{
+    const docs = await fsGetAll(FS_BASE+'selfies?key='+FB.apiKey+'&pageSize=300');
+    if(!docs) return;
+    docs.forEach(d=>{
       const did = d.name.split('/').pop();
       const src = d.fields?.image?.stringValue;
       const nm = d.fields?.name?.stringValue || 'гість';
@@ -10205,11 +10211,10 @@ async function saveScore(){
 }
 async function loadScores(){
   try{
-    const r = await fetch(FS_BASE+'scores?key='+FB.apiKey+'&pageSize=300');
-    if(!r.ok) return null;
-    const j = await r.json();
+    const docs = await fsGetAll(FS_BASE+'scores?key='+FB.apiKey+'&pageSize=300');
+    if(!docs) return null;
     const best = {};                                      // найкращий результат кожного імені
-    (j.documents||[]).forEach(d=>{
+    docs.forEach(d=>{
       if(HIDE_DOCS.has(d.name.split('/').pop())) return;      // тестові прогони — не в рейтинг
       const nm = d.fields?.name?.stringValue; if(!nm) return;
       const sc = +(d.fields?.score?.integerValue || 0);
@@ -10730,7 +10735,12 @@ g1791000000066;Гість у Хвильовому 66;К;;0;HOMBOVTS1
 /* ── ВОРОТА: пароль з візитівки / «грати як гість» / версія для старших (?v=invite) ──
    Пароль → гра впізнає гостя: його час і місце, камео, відкриті тіндер і фото.
    Без пароля — грати можна, але тіндер і додавання фото зачинені. */
-const normPass = v => (v||'').toLowerCase().replace(/[^а-яіїєґa-z0-9ʼ']/g,'');
+/* паролі гостей — латиниця+цифри. Якщо гість набрав укр. розкладкою (кир. двійники к/о/с/у…),
+   зводимо їх до латиниці, щоб вхід усе одно спрацював. */
+const normPass = v => {
+  const H={'а':'a','в':'b','е':'e','і':'i','к':'k','м':'m','н':'h','о':'o','р':'p','с':'c','т':'t','у':'y','х':'x'};
+  return (v||'').toLowerCase().replace(/[а-яіїєґ]/g, c=> H[c]||c).replace(/[^a-z0-9]/g,'');
+};
 let AUTH_GUEST = null;
 let DEV_MODE = localStorage.getItem('wed-dev')==='1';        // режим розробника (Катя й Діма, пароль K1TANA)
 const DEV_PASS = 'k1tana';

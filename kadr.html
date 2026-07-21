@@ -166,6 +166,7 @@
 'use strict';
 const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
 const FS='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
+async function fsGetAll(url){ let docs=[],t=null,g=0; do{ const r=await fetch(url+(t?'&pageToken='+encodeURIComponent(t):'')); if(!r.ok) return docs.length?docs:null; const j=await r.json(); if(j.documents) docs=docs.concat(j.documents); t=j.nextPageToken||null; }while(t&&++g<25); return docs; }
 const PARAMS=new URLSearchParams(location.search);
 const CAP=27;
 const LIVE_TS   = Date.UTC(2026,8,6,4,0,0);    // 6.9 07:00 Kyiv — камери «з плівкою»
@@ -194,9 +195,9 @@ let allDocs=[];
 
 async function loadAll(){
   try{
-    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300');
-    if(r.ok){ const j=await r.json();
-      allDocs=(j.documents||[]).map(d=>d.fields||{}).filter(f=>f.kind&&f.kind.stringValue); }
+    // читаємо ВСІ сторінки; маска — лише поля камер (не тягнемо аудіо пісень)
+    const docs=await fsGetAll(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300&mask.fieldPaths=kind&mask.fieldPaths=task&mask.fieldPaths=image&mask.fieldPaths=at');
+    if(docs) allDocs=docs.map(d=>d.fields||{}).filter(f=>f.kind&&f.kind.stringValue);
   }catch(e){}
 }
 const kadrDocs = ()=> allDocs.filter(f=>f.kind.stringValue==='kadr'&&f.image);
