@@ -10668,9 +10668,9 @@ function gateLockedMsg(kind){
 }
 function gateAuth(g, greet){
   AUTH_GUEST = g; myGuest = g; playerName = g.name;
-  sessionStorage.setItem('wed-pass-auth', g.id);
+  localStorage.setItem('wed-pass-auth', g.id);
   localStorage.setItem('wed-player-name', g.name);
-  sessionStorage.setItem('wed-gate-done','auth');
+  localStorage.setItem('wed-gate-done','auth');
   CENSORED = g.censor || CENSORED;
   if(greet){
     document.getElementById('gate-status').textContent =
@@ -10686,7 +10686,7 @@ function gateTry(){
   if(!v){ st.textContent = 'введи пароль — він написаний на твоїй візитівці 🙂'; return; }
   if(v===DEV_PASS){                                        // Катя й Діма: режим розробника
     DEV_MODE = true; localStorage.setItem('wed-dev','1');
-    sessionStorage.setItem('wed-gate-done','dev');
+    localStorage.setItem('wed-gate-done','dev');
     st.textContent = '⚙️ Привіт, молодята! DEV-режим: усе відкрито, гостей можна перемикати';
     try{ sfxScore(880); }catch(_){}
     devBadge(); updateGateLocks();
@@ -10706,7 +10706,7 @@ document.getElementById('gate-guest').addEventListener('click', ()=>{
 });
 (function gateBoot(){
   if(DEV_MODE) devBadge();
-  const savedId = sessionStorage.getItem('wed-pass-auth');
+  const savedId = localStorage.getItem('wed-pass-auth') || sessionStorage.getItem('wed-pass-auth');
   if(savedId){ const g = RSVP_GUEST_LIST.find(x=>x.id===savedId); if(g) gateAuth(g, false); }
   // автовхід із посилання: ?p=ПАРОЛЬ (для старших і для розсилки — нічого вводити не треба)
   const urlPass = normPass(PARAMS.get('p')||'');
@@ -10716,12 +10716,12 @@ document.getElementById('gate-guest').addEventListener('click', ()=>{
   }
   const elder = PARAMS.get('v')==='invite' && isAuthed();   // запрошення одразу — лише з паролем у посиланні (?p=…)
   if(elder){                                      // версія для старших: одразу нарядне запрошення
-    sessionStorage.setItem('wed-gate-done','elder');
+    localStorage.setItem('wed-gate-done','elder');
     setTimeout(()=>{ try{ openViber(true); }catch(_){} }, 500);
     updateGateLocks(); return;
   }
   if(GUEST || AUTH_GUEST){ updateGateLocks(); return; }   // персональне посилання/уже впізнаний
-  if(!sessionStorage.getItem('wed-gate-done')){
+  if(!localStorage.getItem('wed-gate-done') && !sessionStorage.getItem('wed-gate-done')){
     document.getElementById('gate-screen').classList.remove('hidden');
   }
   updateGateLocks();
