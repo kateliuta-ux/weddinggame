@@ -1,9 +1,15 @@
-// мінімальний сервіс-воркер: network-first (щоб гра ЗАВЖДИ свіжа), кеш — лише запасний варіант офлайн
-const CACHE = 'wedgame-v1';
+// network-first (гра ЗАВЖДИ свіжа); кеш — лише офлайн-запас. Авто-оновлення: чистимо старі кеші, слухаємо skip.
+const CACHE = 'wedgame-v2';
 self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('activate', e => e.waitUntil((async()=>{
+  const keys = await caches.keys();
+  await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));   // прибрати старі версії
+  await clients.claim();
+})()));
+self.addEventListener('message', e => { if(e.data==='skip') self.skipWaiting(); });
 self.addEventListener('fetch', e => {
-  if(e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if(e.request.method !== 'GET' || url.origin !== location.origin) return;   // API/Firestore — не кешуємо
   e.respondWith(
     fetch(e.request).then(r => {
       const copy = r.clone();

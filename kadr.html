@@ -38,6 +38,9 @@
   <h1>📸 Твої кадри</h1>
   <div class="sub" id="task-sub">спільний альбом весілля</div>
   <div class="count" id="count">плівка на 27 кадрів</div>
+  <div id="testbar" style="display:none;margin:8px auto;max-width:440px;font-size:12.5px;color:var(--mut);background:#fff;border:2px dashed var(--line);border-radius:8px;padding:8px 12px;line-height:1.5">
+    🎞 <b style="color:var(--red)">поки тестовий режим</b> — плівку зарядимо на весіллі 6.9.2026.<br>можеш спробувати, як воно працює (кадри тимчасові)
+  </div>
 
   <div class="btns">
     <label class="btn">📷 Зняти / вибрати фото<input id="file" type="file" accept="image/*" capture="environment" hidden></label>
@@ -58,7 +61,10 @@ const FS='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/database
 const PARAMS=new URLSearchParams(location.search);
 const TASK=(PARAMS.get('t')||'весілля').slice(0,40);
 const CAP=27;
+const LIVE_TS=Date.UTC(2026,8,6,4,0,0);           // 6.9.2026 — «плівка заряджена»; до того тестовий режим
+const TEST = Date.now() < LIVE_TS;
 if(TASK!=='весілля') document.getElementById('task-sub').textContent='завдання: '+TASK;
+if(TEST) document.getElementById('testbar').style.display='block';
 
 const $=id=>document.getElementById(id);
 function st(t){ $('status').textContent=t; }

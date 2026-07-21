@@ -5695,6 +5695,11 @@ function playChip(key){
   el.currentTime = 0; el.play().catch(()=>{});
   chipKey = key;
 }
+function musicBlockedNow(){
+  return ['release-stub','gate-screen','email-screen','track-save','name-screen','dress-screen',
+          'sampler-screen','playlist-screen','party-screen','selfie-screen','selfie-offer','rating-screen','ach-screen']
+    .some(id=>{ const el=document.getElementById(id); return el && !el.classList.contains('hidden'); });
+}
 function stopChip(){
   // м'яка зупинка ПОТОЧНОГО треку: пер-трековий фейд → пауза
   // (майстер-гейн не чіпаємо, щоб не «прибивало» гучність наступного треку)
@@ -7955,11 +7960,7 @@ document.getElementById('viber-save').addEventListener('click', ()=>{
 
 /* тайтл-музика: браузер дозволяє звук лише після жесту — вмикаємо з першого дотику */
 document.addEventListener('pointerdown', ()=>{
-  if(game.state==='title' && !chipKey){
-    const overlayOpen = ['sampler-screen','playlist-screen','party-screen','selfie-screen','rating-screen','ach-screen']
-      .some(id=>{ const el=document.getElementById(id); return el && !el.classList.contains('hidden'); });
-    if(!overlayOpen) playChip('halia');
-  }
+  if(game.state==='title' && !chipKey && !musicBlockedNow()) playChip('halia');
 });
 
 /* імʼя гравця: питаємо один раз, гра звертається на імʼя */
@@ -11100,6 +11101,7 @@ requestAnimationFrame(loop);
 /* музика стартує з найпершого дотику до сторінки (раніше браузер не дозволяє) */
 function kickMusic(){
   try{ ensureAudio(); if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(_){}
+  if(musicBlockedNow()) return;                 // заглушка/ворота/оверлей — не чіпаємо музику, слухач лишаємо
   if(!musicMuted && !chipKey) playChip('halia');
   removeEventListener('pointerdown', kickMusic, true);
   removeEventListener('keydown', kickMusic, true);
@@ -11194,7 +11196,18 @@ document.getElementById('email-go').addEventListener('click', async ()=>{
 maybeAskIdentity();
 
 /* ================= PWA: додати на робочий стіл ================= */
-if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
+if('serviceWorker' in navigator){ try{
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    reg.update();                                            // одразу перевірити оновлення
+    setInterval(()=>{ try{ reg.update(); }catch(_){} }, 60*60*1000);   // і раз на годину
+    reg.addEventListener('updatefound', ()=>{ const nw=reg.installing; if(!nw) return;
+      nw.addEventListener('statechange', ()=>{ if(nw.state==='installed' && navigator.serviceWorker.controller){
+        // нова версія готова — застосуємо тихо при наступному відкритті/фокусі
+        if(!document.hidden) nw.postMessage('skip'); }); });
+  });
+  let _reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(_reloaded) return; _reloaded=true; location.reload(); });
+}catch(_){} }
 let installPrompt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
 document.getElementById('btn-install').addEventListener('click', async ()=>{
@@ -11234,7 +11247,7 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   function openStubSampler(){
     stub.classList.add('hidden');
     document.getElementById('gate-screen').classList.add('hidden');   // ворота теж ховаємо
-    try{ stopChip(); }catch(_){}
+    try{ stopChip(); Object.values(bgmEls).forEach(e=>{try{e.pause();}catch(_){}}); }catch(_){}
     elTitle.classList.add('hidden');
     document.getElementById('sampler-screen').classList.remove('hidden');
     window._fromStub = true;
