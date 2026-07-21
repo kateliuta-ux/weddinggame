@@ -645,6 +645,18 @@
   </div>
 
   <!-- ВОРОТА: пароль з візитівки або гра гостем (перше, що бачить будь-хто) -->
+  <div id="track-save" class="overlay hidden" style="background:rgba(10,9,16,.96);gap:11px;z-index:920">
+    <div style="font-size:16px;font-weight:bold;color:#f4cf5e;letter-spacing:1px">💾 Зберегти трек у плейлист</div>
+    <div style="font-size:13px;color:#e88aa0;text-align:center;max-width:84%">🎟 За найкращий трек — запросимо на весілля!</div>
+    <input id="ts-name" type="text" maxlength="28" placeholder="твоє імʼя (автор треку)" autocomplete="name" style="font-family:inherit;font-size:16px;padding:.5em;width:min(84%,300px);text-align:center;background:#f8f8f3;border:3px solid #000;color:#1a1a24">
+    <input id="ts-email" type="email" maxlength="60" placeholder="твоя@пошта.com" autocomplete="email" style="font-family:inherit;font-size:16px;padding:.5em;width:min(84%,300px);text-align:center;background:#f8f8f3;border:3px solid #000;color:#1a1a24">
+    <div style="font-size:11px;color:#8f8a7c;max-width:84%;text-align:center;line-height:1.4">імейл потрібен, щоб зберегти трек за тобою і сповістити, якщо переможеш. Нікому не видно — бачать лише Катя й Діма.</div>
+    <div id="ts-status" style="color:#f4cf5e;font-size:12px;min-height:14px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn katya" id="ts-go">Зберегти ✓</button>
+      <button class="btn" id="ts-cancel" style="background:#55515f">Скасувати</button>
+    </div>
+  </div>
   <div id="release-stub" class="overlay hidden" style="background:#0e0c14;gap:14px;z-index:900">
     <div style="font-size:13px;letter-spacing:3px;color:#e88aa0">♥ ♥ ♥</div>
     <div style="font-size:22px;font-weight:bold;color:#f4cf5e;letter-spacing:2px;text-align:center">КАТЯ ♥ ДІМА</div>
@@ -652,7 +664,7 @@
     <div style="font-size:20px;font-weight:bold;color:#e88aa0;letter-spacing:2px">1.8.2026 · 16:20</div>
     <div id="stub-count" style="font-family:monospace;font-size:15px;color:#f4f0e4;letter-spacing:2px;background:#1e1b28;border:2px solid #3a3646;padding:8px 16px"></div>
     <button class="btn" id="stub-sampler" style="background:#A8505F;margin-top:4px">🎹 А поки — зроби нам мелодію</button>
-    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер уже відкритий: складеш мелодію — вона гратиме на весіллі 🎶</div>
+    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер відкритий: запиши нам трек, лиши імейл — і він у весільному плейлисті. 🎟 за найкращий — запрошення на весілля!</div>
     <div style="font-size:12px;color:#bcb7a8;letter-spacing:2px">✶ ✦ ✶</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off"
@@ -9177,7 +9189,7 @@ async function digitalizeBuffer(buf){
   src.connect(crush); crush.connect(comp); comp.connect(off.destination); src.start();
   return off.startRendering();
 }
-async function saveVoiceTrack(author, blob, pattern, sampleB64){
+async function saveVoiceTrack(author, blob, pattern, sampleB64, email){
   if(TEST_MODE) return true;
   const b64 = await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result.split(',')[1]); fr.readAsDataURL(blob); });
   if(b64.length > 800000) return 'big';
@@ -9187,6 +9199,7 @@ async function saveVoiceTrack(author, blob, pattern, sampleB64){
       pattern:{stringValue:pattern||''},
       mime:{stringValue:blob.type||'audio/webm'}, at:{integerValue:String(Date.now())},
     };
+    if(email) fields.email = {stringValue:email};
     if(sampleB64) fields.sample = {stringValue:sampleB64};   // записаний звук-інструмент їде з піснею
     const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -9239,16 +9252,9 @@ async function playVoiceTrack(t, btn){
     plVoiceSrc.onended = ()=>{ plVoiceSrc=null; btn.style.opacity=1; };
   }catch(e){ btn.style.opacity=1; }
 }
-document.getElementById('s-mysave').addEventListener('click', async ()=>{
+document.getElementById('s-mysave').addEventListener('click', ()=>{
   if(!myTrackBlob) return;
-  let author = localStorage.getItem('wed-player-name') || '';
-  if(!author){ author=(prompt('Як тебе підписати в плейлисті?')||'').trim(); if(!author) return;
-    localStorage.setItem('wed-player-name', author); }
-  sStat('зберігаю пісню…');
-  const ok = await saveVoiceTrack(author, myTrackBlob, myTrackPattern, patUsesSmp(myTrackPattern) ? currentSampleB64() : null);
-  sStat(ok==='big' ? 'запис задовгий для збереження — запиши коротший (до ~30с)' :
-        ok ? '✓ пісня у весільному плейлисті! (автор: '+author+')' :
-        'не вдалося зберегти — спробуй пізніше (трек лишився тут)');
+  openTrackSave('voice');
 });
 const sStat = t => { document.getElementById('s-status').textContent = t; };
 /* WAV із PCM16 — маленький і читається decodeAudioData на всіх пристроях */
@@ -9416,13 +9422,44 @@ const FB = {
   apiKey: 'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA',
   projectId: 'wedding-6e47f',
 };   // конфіг Firebase — має бути до перших load*()
-async function saveTrack(author, pattern, sampleB64){
+
+/* вікно збереження треку: імʼя + ІМЕЙЛ (лишити в плейлисті й запросити переможця на весілля) */
+let _tsKind=null;
+function openTrackSave(kind){
+  _tsKind=kind;
+  document.getElementById('ts-name').value = localStorage.getItem('wed-player-name')||'';
+  document.getElementById('ts-email').value = localStorage.getItem('wed-email')||'';
+  document.getElementById('ts-status').textContent='';
+  document.getElementById('track-save').classList.remove('hidden');
+  setTimeout(()=>{ try{ document.getElementById('ts-name').focus(); }catch(_){} }, 80);
+}
+document.getElementById('ts-cancel').addEventListener('click', ()=> document.getElementById('track-save').classList.add('hidden'));
+document.getElementById('ts-go').addEventListener('click', async ()=>{
+  const st=document.getElementById('ts-status');
+  const name=(document.getElementById('ts-name').value||'').trim();
+  const email=(document.getElementById('ts-email').value||'').trim();
+  if(!name){ st.textContent='впиши імʼя 🙂'; return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ st.textContent='перевір імейл — він потрібен, щоб зберегти трек'; return; }
+  localStorage.setItem('wed-player-name', name); localStorage.setItem('wed-email', email);
+  st.textContent='зберігаю…';
+  let ok;
+  if(_tsKind==='voice') ok = await saveVoiceTrack(name, myTrackBlob, myTrackPattern, patUsesSmp(myTrackPattern)?currentSampleB64():null, email);
+  else { const pat=smpSerialize(); ok = await saveTrack(name, pat, patUsesSmp(pat)?currentSampleB64():null, email); }
+  if(ok==='big'){ st.textContent='запис задовгий — запиши коротший (до ~30с)'; return; }
+  if(ok){
+    document.getElementById('track-save').classList.add('hidden');
+    document.getElementById('s-status').textContent='✓ трек у весільному плейлисті! (автор: '+name+') 🎟 ти в конкурсі';
+  } else st.textContent='поки не вдалося зберегти — спробуй ще раз за хвилину';
+});
+
+async function saveTrack(author, pattern, sampleB64, email){
   if(TEST_MODE) return true;               // тест: не лишаємо мелодій у плейлисті
   try{
     const fields = {
       author:{stringValue:author}, pattern:{stringValue:pattern},
       at:{integerValue:String(Date.now())},
     };
+    if(email) fields.email = {stringValue:email};
     if(sampleB64) fields.sample = {stringValue:sampleB64};   // записаний звук їде разом із треком
     const r = await fetch(FS_BASE+'sampler-tracks?key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -9444,21 +9481,10 @@ async function loadTracks(){
     })).filter(t=> t.author!=='__selftest' && t.pattern).sort((a,b)=> b.at-a.at);
   }catch(e){ return null; }
 }
-document.getElementById('s-save').addEventListener('click', async ()=>{
-  const st = document.getElementById('s-status');
+document.getElementById('s-save').addEventListener('click', ()=>{
   const pattern = smpSerialize();
-  if(!pattern){ st.textContent = 'спершу накидай хоч кілька нот 🙂'; return; }
-  let author = localStorage.getItem('wed-player-name') || '';
-  if(!author){
-    author = (prompt('Як тебе підписати в плейлисті?')||'').trim();
-    if(!author) return;
-    localStorage.setItem('wed-player-name', author);
-  }
-  st.textContent = 'зберігаю…';
-  const ok = await saveTrack(author, pattern, patUsesSmp(pattern) ? currentSampleB64() : null);
-  st.textContent = ok
-    ? '✓ збережено! твоя мелодія — у весільному плейлисті (автор: '+author+')'
-    : 'поки не вдалося зберегти — плейлист відкриється незабаром. Мелодія лишилась тут.';
+  if(!pattern){ document.getElementById('s-status').textContent = 'спершу накидай хоч кілька нот 🙂'; return; }
+  openTrackSave('pattern');
 });
 /* прослуховування мелодії ПРЯМО в плейлисті (чуже — тільки слухати, не редагувати) */
 let plTimer=null, plRow=null;
