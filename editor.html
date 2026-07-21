@@ -44,15 +44,24 @@
   /* ── малювальня ── */
   #draw-wrap{ position:fixed; inset:0; background:#0c0a12; z-index:50; display:none; flex-direction:column }
   #draw-wrap.open{ display:flex }
-  #draw-top{ display:flex; gap:6px; padding:8px; flex-wrap:wrap; align-items:center; border-bottom:2px solid var(--line); background:var(--bg) }
+  #draw-top{ display:flex; gap:5px; padding:7px; flex-wrap:wrap; align-items:center; border-bottom:2px solid var(--line); background:var(--bg) }
   #draw-top .sp{ flex:1 }
+  #draw-top .dsep{ width:1px; align-self:stretch; background:var(--line); margin:0 2px }
+  #draw-top .tbtn{ min-width:34px; min-height:32px; font-size:15px; text-align:center; padding:4px 7px }
+  #draw-top .tool.on{ background:var(--rose); border-color:#f0b8c4; color:#fff }
+  #d-color{ width:30px; height:30px; padding:0; border:2px solid var(--line); background:none; cursor:pointer }
   #cv-holder{ flex:1; position:relative; overflow:hidden; touch-action:none; background:#161320 }
   #cv{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:#f6f2e6; touch-action:none;
-       box-shadow:0 0 0 2px var(--line), 0 12px 40px rgba(0,0,0,.6) }
+       box-shadow:0 0 0 2px var(--line), 0 12px 40px rgba(0,0,0,.6); cursor:crosshair }
   .sw{ width:26px; height:26px; border:2px solid #555; cursor:pointer; padding:0 }
   .sw.on{ border-color:#fff; outline:2px solid var(--gold) }
-  #size-lab{ font-size:10px; color:var(--dim) }
-  input[type=range]{ width:90px }
+  #size-lab{ font-size:16px; color:var(--dim) }
+  input[type=range]{ width:84px }
+  @media (max-width:560px){
+    #draw-top{ gap:4px; padding:5px }
+    #draw-top .tbtn{ min-width:30px; min-height:34px; font-size:16px; padding:3px 5px }
+    input[type=range]{ width:64px }
+  }
   /* ── гейт ── */
   #gate{ position:fixed; inset:0; background:var(--bg); z-index:99; display:flex; flex-direction:column; gap:12px;
     align-items:center; justify-content:center; padding:20px; text-align:center }
@@ -98,19 +107,30 @@
   <button class="tbtn" id="btn-export">💾 Зберегти файлом</button>
 </div>
 
-<!-- ── малювальня ── -->
+<!-- ── малювальня (графічний редактор) ── -->
 <div id="draw-wrap">
   <div id="draw-top">
-    <button class="tbtn" data-tool="pen">✏️ перо</button>
-    <button class="tbtn" data-tool="marker">🖊 маркер</button>
-    <button class="tbtn" data-tool="eraser">◽ гумка</button>
-    <button class="tbtn" data-tool="text">Аа</button>
+    <button class="tbtn tool on" data-tool="pen" title="перо (натиск планшета)">✏️</button>
+    <button class="tbtn tool" data-tool="marker" title="маркер">🖊</button>
+    <button class="tbtn tool" data-tool="eraser" title="гумка">◻︎</button>
+    <button class="tbtn tool" data-tool="line" title="лінія">╱</button>
+    <button class="tbtn tool" data-tool="rect" title="прямокутник">▭</button>
+    <button class="tbtn tool" data-tool="ellipse" title="коло">◯</button>
+    <button class="tbtn tool" data-tool="fill" title="заливка">🪣</button>
+    <button class="tbtn tool" data-tool="text" title="напис">Аа</button>
+    <button class="tbtn tool" data-tool="pick" title="піпетка">💧</button>
+    <span class="dsep"></span>
     <span id="draw-sws"></span>
-    <span id="size-lab">товщина</span><input type="range" id="size" min="1" max="24" value="4">
-    <button class="tbtn" id="d-undo">↩︎</button>
-    <button class="tbtn" id="d-photo">📷 фон-фото</button>
+    <input type="color" id="d-color" value="#1a1a24" title="свій колір">
+    <span class="dsep"></span>
+    <span id="size-lab">◍</span><input type="range" id="size" min="1" max="48" value="5">
+    <span class="dsep"></span>
+    <button class="tbtn" id="d-undo" title="крок назад">↩︎</button>
+    <button class="tbtn" id="d-redo" title="крок вперед">↪︎</button>
+    <button class="tbtn" id="d-photo" title="підкласти фото/скрін і малювати поверх">📷 фон</button>
+    <button class="tbtn" id="d-clear" title="очистити">🗑</button>
     <span class="sp"></span>
-    <button class="tbtn" id="d-cancel">✕ вийти</button>
+    <button class="tbtn" id="d-cancel">✕</button>
     <button class="tbtn" id="d-save" style="background:var(--rose);border-color:#d8899a;color:#fff">✔ зберегти</button>
   </div>
   <div id="cv-holder"><canvas id="cv"></canvas></div>
@@ -298,87 +318,117 @@ fileInp.addEventListener('change', ()=>{
   img.src=URL.createObjectURL(f);
 });
 
-/* ───────────────────────── малювальня (планшет, натиск) ───────────────────────── */
-const wrap=document.getElementById('draw-wrap'), cv=document.getElementById('cv'), cx=cv.getContext('2d');
+/* ───────────────────────── малювальня: графічний редактор (растр + знімки) ───────────────────────── */
+const wrap=document.getElementById('draw-wrap'), cv=document.getElementById('cv'), cx=cv.getContext('2d',{willReadFrequently:true});
 const holder=document.getElementById('cv-holder');
-let dScene=null, dItem=null, tool='pen', color='#1a1a24', size=4, strokes=[], bgImg=null, textPending=false;
-const SWATCHES=['#1a1a24','#c0303c','#f4cf5e','#3F7C77','#2a4a8a','#e05aa0','#ffffff'];
+let dScene=null, dItem=null, tool='pen', color='#1a1a24', size=5;
+let undoStack=[], redoStack=[];                      // знімки (ImageData) — надійний undo для будь-яких інструментів
+const colorInp=document.getElementById('d-color');
+const SWATCHES=['#1a1a24','#c0303c','#f4cf5e','#3F7C77','#2a4a8a','#e05aa0','#8fd07a','#ffffff'];
 { const sws=document.getElementById('draw-sws');
   SWATCHES.forEach((c,i)=>{ const b=document.createElement('button'); b.className='sw'+(i===0?' on':''); b.style.background=c;
-    b.addEventListener('click',()=>{ color=c; tool = tool==='eraser'?'pen':tool;
-      document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===b)); });
+    b.addEventListener('click',()=>{ color=c; colorInp.value=c; setSw(b); });
     sws.appendChild(b); }); }
-document.querySelectorAll('#draw-top [data-tool]').forEach(b=> b.addEventListener('click', ()=>{
+function setSw(el){ document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===el)); }
+colorInp.addEventListener('input',()=>{ color=colorInp.value; setSw(null); });
+document.querySelectorAll('#draw-top .tool').forEach(b=> b.addEventListener('click', ()=>{
   tool=b.dataset.tool;
-  if(tool==='text'){ textPending=true; toast('тапни на аркуші, де поставити напис'); }
+  document.querySelectorAll('#draw-top .tool').forEach(x=>x.classList.toggle('on',x===b));
+  cv.style.cursor = (tool==='pick') ? 'copy' : (tool==='text' ? 'text' : 'crosshair');
 }));
 document.getElementById('size').addEventListener('input', e=> size=+e.target.value);
-document.getElementById('d-undo').addEventListener('click', ()=>{ strokes.pop(); repaint(); });
+document.getElementById('d-undo').addEventListener('click', undo);
+document.getElementById('d-redo').addEventListener('click', redo);
+document.getElementById('d-clear').addEventListener('click', ()=>{ if(confirm('Очистити весь аркуш?')){ pushUndo(); cx.fillStyle='#f6f2e6'; cx.fillRect(0,0,cv.width,cv.height); } });
 document.getElementById('d-photo').addEventListener('click', ()=>{ photoToCanvas=true; fileInp.value=''; fileInp.click(); });
 document.getElementById('d-cancel').addEventListener('click', ()=>{ wrap.classList.remove('open'); });
 document.getElementById('d-save').addEventListener('click', ()=>{
-  const data = cv.toDataURL(bgImg?'image/jpeg':'image/png', 0.85);
+  const data = cv.toDataURL('image/png');
   if(dItem){ dItem.img=data; dItem.sent=false; }
   else db.items.push({id:uid(), scene:dScene, kind:'drawing', img:data, at:Date.now(), sent:false});
   persist(); wrap.classList.remove('open'); render(); toast('🖊 збережено');
 });
 
+function pushUndo(){ try{ undoStack.push(cx.getImageData(0,0,cv.width,cv.height)); if(undoStack.length>24) undoStack.shift(); redoStack.length=0; }catch(_){} }
+function undo(){ if(!undoStack.length) return; redoStack.push(cx.getImageData(0,0,cv.width,cv.height)); cx.putImageData(undoStack.pop(),0,0); }
+function redo(){ if(!redoStack.length) return; undoStack.push(cx.getImageData(0,0,cv.width,cv.height)); cx.putImageData(redoStack.pop(),0,0); }
+
 function sizeCanvas(w,h){
   const availW=holder.clientWidth-16, availH=holder.clientHeight-16;
-  const k=Math.min(availW/w, availH/h, 1.6);
+  const k=Math.min(availW/w, availH/h, 1.8);
   cv.style.width=Math.round(w*k)+'px'; cv.style.height=Math.round(h*k)+'px';
   cv.width=w; cv.height=h;
 }
 function openDraw(scene, item){
-  dScene=scene; dItem=item||null; strokes=[]; bgImg=null; textPending=false; tool='pen';
+  dScene=scene; dItem=item||null; undoStack=[]; redoStack=[];
   wrap.classList.add('open');
-  if(item && item.img){ const im=new Image(); im.onload=()=>{ bgImg=im; sizeCanvas(im.width,im.height); repaint(); }; im.src=item.img; }
-  else { sizeCanvas(1100,800); repaint(); }
+  const blank=()=>{ cx.fillStyle='#f6f2e6'; cx.fillRect(0,0,cv.width,cv.height); };
+  if(item && item.img){ const im=new Image(); im.onload=()=>{ sizeCanvas(im.width,im.height); cx.drawImage(im,0,0,cv.width,cv.height); }; im.src=item.img; }
+  else { sizeCanvas(1200,850); blank(); }
 }
-function setDrawBg(dataUrl){ const im=new Image(); im.onload=()=>{ bgImg=im; strokes=[]; sizeCanvas(im.width,im.height); repaint(); }; im.src=dataUrl; }
-function repaint(){
-  cx.fillStyle='#f6f2e6'; cx.fillRect(0,0,cv.width,cv.height);
-  if(bgImg) cx.drawImage(bgImg,0,0,cv.width,cv.height);
-  strokes.forEach(st=>{
-    if(st.type==='text'){
-      cx.fillStyle=st.color; cx.font='bold '+st.size+'px "Courier New",monospace'; cx.textAlign='left';
-      st.text.split('\n').forEach((ln,i)=> cx.fillText(ln, st.x, st.y+i*st.size*1.25));
-      return;
-    }
-    for(let i=1;i<st.pts.length;i++){
-      const a=st.pts[i-1], b=st.pts[i];
-      cx.strokeStyle = st.type==='eraser' ? (bgImg?'rgba(246,242,230,1)':'#f6f2e6') : st.color;
-      cx.globalAlpha = st.type==='marker' ? 0.45 : 1;
-      cx.lineWidth = st.size * (st.type==='eraser'?3:1) * (0.35 + 1.3*((a.p+b.p)/2));   // натиск пера!
-      cx.lineCap='round'; cx.lineJoin='round';
-      cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke();
-    }
-    cx.globalAlpha=1;
-  });
-}
+function setDrawBg(dataUrl){ const im=new Image(); im.onload=()=>{ pushUndo(); sizeCanvas(im.width,im.height); cx.fillStyle='#f6f2e6'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(im,0,0,cv.width,cv.height); }; im.src=dataUrl; }
+
 function evPos(e){
   const r=cv.getBoundingClientRect();
   return { x:(e.clientX-r.left)*cv.width/r.width, y:(e.clientY-r.top)*cv.height/r.height,
            p:(e.pressure && e.pressure>0)?e.pressure:0.5 };
 }
-let cur=null;
+function drawStroke(pts, t){                          // перо/маркер/гумка — плавна лінія з натиском
+  cx.save();
+  cx.lineCap='round'; cx.lineJoin='round';
+  cx.strokeStyle = (t==='eraser') ? '#f6f2e6' : color;
+  cx.globalAlpha = (t==='marker') ? 0.4 : 1;
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i];
+    cx.lineWidth = size * (t==='eraser'?2.4:1) * (t==='pen' ? (0.35+1.3*((a.p+b.p)/2)) : 1);
+    cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke(); }
+  cx.restore();
+}
+function drawShape(a,b,t){
+  cx.save(); cx.strokeStyle=color; cx.lineWidth=size; cx.lineCap='round'; cx.lineJoin='round';
+  cx.beginPath();
+  if(t==='line'){ cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); }
+  else if(t==='rect'){ cx.rect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(b.x-a.x),Math.abs(b.y-a.y)); }
+  else if(t==='ellipse'){ cx.ellipse((a.x+b.x)/2,(a.y+b.y)/2,Math.abs(b.x-a.x)/2,Math.abs(b.y-a.y)/2,0,0,7); }
+  cx.stroke(); cx.restore();
+}
+function floodFill(x,y,hex){
+  x|=0; y|=0; const w=cv.width,h=cv.height;
+  const img=cx.getImageData(0,0,w,h), d=img.data;
+  const idx=(x,y)=>(y*w+x)*4;
+  const s=idx(x,y); const tr=d[s],tg=d[s+1],tb=d[s+2],ta=d[s+3];
+  const m=hex.replace('#',''); const nr=parseInt(m.slice(0,2),16),ng=parseInt(m.slice(2,4),16),nb=parseInt(m.slice(4,6),16);
+  if(tr===nr&&tg===ng&&tb===nb&&ta===255) return;
+  const near=i=>Math.abs(d[i]-tr)+Math.abs(d[i+1]-tg)+Math.abs(d[i+2]-tb)+Math.abs(d[i+3]-ta)<64;
+  const st=[[x,y]];
+  while(st.length){ const [cxp,cyp]=st.pop(); const i=idx(cxp,cyp);
+    if(cxp<0||cyp<0||cxp>=w||cyp>=h||!near(i)) continue;
+    d[i]=nr;d[i+1]=ng;d[i+2]=nb;d[i+3]=255;
+    st.push([cxp+1,cyp],[cxp-1,cyp],[cxp,cyp+1],[cxp,cyp-1]);
+  }
+  cx.putImageData(img,0,0);
+}
+let cur=null, shapeStart=null;
 cv.addEventListener('pointerdown', e=>{
   e.preventDefault(); cv.setPointerCapture(e.pointerId);
   const pos=evPos(e);
-  if(textPending){
-    const txt=prompt('Текст напису:'); textPending=false;
-    if(txt){ strokes.push({type:'text', text:txt, x:pos.x, y:pos.y, color, size:Math.max(22,size*6)}); repaint(); }
-    return;
-  }
-  cur={type:tool, color, size, pts:[pos]}; strokes.push(cur);
+  if(tool==='pick'){ const p=cx.getImageData(pos.x|0,pos.y|0,1,1).data;
+    const hx='#'+[p[0],p[1],p[2]].map(v=>v.toString(16).padStart(2,'0')).join(''); color=hx; colorInp.value=hx; setSw(null); toast('колір узято'); return; }
+  if(tool==='text'){ const txt=prompt('Текст напису:'); if(txt){ pushUndo();
+      cx.fillStyle=color; cx.font='bold '+Math.max(20,size*5)+'px "Courier New",monospace'; cx.textAlign='left'; cx.textBaseline='top';
+      txt.split('\n').forEach((ln,i)=> cx.fillText(ln,pos.x,pos.y+i*size*6)); } return; }
+  if(tool==='fill'){ pushUndo(); floodFill(pos.x,pos.y,color); return; }
+  pushUndo();
+  if(tool==='line'||tool==='rect'||tool==='ellipse'){ shapeStart=pos; cur={base:cx.getImageData(0,0,cv.width,cv.height)}; return; }
+  cur={type:tool, pts:[pos]}; drawStroke([pos,pos], tool);
 });
 cv.addEventListener('pointermove', e=>{
   if(!cur) return; e.preventDefault();
+  const pos=evPos(e);
+  if(shapeStart){ cx.putImageData(cur.base,0,0); drawShape(shapeStart,pos,tool); return; }
   const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];   // планшет: усі проміжні точки
-  evs.forEach(ev=> cur.pts.push(evPos(ev)));
-  repaint();
+  evs.forEach(ev=>{ const p=evPos(ev); drawStroke([cur.pts[cur.pts.length-1],p], cur.type); cur.pts.push(p); });
 });
-['pointerup','pointercancel'].forEach(t=> cv.addEventListener(t, ()=>{ cur=null; }));
+['pointerup','pointercancel'].forEach(t=> cv.addEventListener(t, ()=>{ cur=null; shapeStart=null; }));
 
 
 /* ───────────────────────── ГОСТІ Й ПАРОЛІ (dev) ───────────────────────── */
