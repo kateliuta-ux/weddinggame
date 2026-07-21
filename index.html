@@ -4908,23 +4908,40 @@ function drawWedHearts(){
     ctx.fillRect(hx,hy+2,7,3); ctx.fillRect(hx+1,hy+5,5,2);
   }
 }
-/* ЮРБА ГОСТЕЙ: справжні селфі гостей як масовка на фоні сцен (порожньо → нічого) */
+/* ЮРБА ГОСТЕЙ: справжні селфі гостей як масовка — розмір ЯК У ГЕРОЇВ, з варіацією за статтю */
+function ghash(s){ let h=0; for(let i=0;i<(s||'').length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+const _MALE_A=['микита','ілля','кузьма','хома','сава','лука','данила','сила','фока','панас','кузьма','гнат'];
+function guestSex(name){                         // груба здогадка за укр. іменем: -а/-я → жінка, інакше чоловік
+  const f=((name||'').trim().split(/\s+/)[0]||'').toLowerCase();
+  if(_MALE_A.some(m=>f===m)) return 'm';
+  return /(а|я|ія|ія)$/.test(f) ? 'f' : 'm';
+}
+function guestScale(name){                        // чоловіки більші, жінки середні, ±дрібна варіація
+  const s=guestSex(name), jit=1+(((ghash(name)%7)-3)/100);
+  return (s==='m'?1.12:0.95)*jit;
+}
+function drawGuestFigure(img, x, feetY, r){       // повна фігурка (тіло+ноги+голова), стоїть ногами на feetY
+  const bw=Math.round(r*2.0), bh=Math.round(r*2.2), lh=Math.round(r*0.9);
+  const bx=x-Math.round(bw/2), by=feetY-lh-bh, headY=by-r+2;
+  ctx.fillStyle='#3a3550'; ctx.fillRect(bx+3,by+bh,3,lh); ctx.fillRect(bx+bw-6,by+bh,3,lh);      // ноги
+  ctx.fillStyle='#f4f0e4'; ctx.fillRect(bx,by,bw,bh);                                            // сорочка/сукня
+  ctx.fillStyle='#c0303c'; ctx.fillRect(bx,by,bw,2);                                             // червоний комір
+  for(let e=bx+2;e<bx+bw-2;e+=3) ctx.fillRect(e,by+4,1,2);                                       // орнамент
+  ctx.fillRect(bx,by,2,bh); ctx.fillRect(bx+bw-2,by,2,bh);                                       // вишиті боки
+  drawFaceCircle(img, x, headY, r, 1);                                                           // голова-селфі
+}
 function drawGuestCrowd(yBase, opts){
   opts = opts || {};
   const faces = GUEST_FACES.filter(f=>headReady(f.img));
   if(!faces.length) return;
-  const n = Math.min(faces.length, opts.max||16), r = (opts.size||10)/2, sp = W/(n+1);
+  const n = Math.min(faces.length, opts.max||10);
+  const base = (opts.size||20)/2, sp = W/(n+1);
   for(let i=0;i<n;i++){
-    const f = faces[i], x = Math.round(sp*(i+1) + Math.sin(i*1.7)*3), y = yBase + ((i%2)?0:-3);
+    const f = faces[i];
+    const r = Math.round(base * guestScale(f.name));
+    const x = Math.round(sp*(i+1) + Math.sin(i*1.7)*3), feetY = yBase + 8 + ((i%2)?0:-5);
     if(opts.skip && x>opts.skip[0] && x<opts.skip[1]) continue;   // не заходити на важливий елемент (дзвіницю)
-    // ТІЛО у вишиванці (дрес-код: біла сорочка + червона вишивка)
-    const bw = Math.round(r*2+3), bh = Math.round(r*1.9), bx = x-bw/2, by = Math.round(y+r-1);
-    ctx.fillStyle='#f4f0e4'; ctx.fillRect(bx, by, bw, bh);                    // біла сорочка
-    ctx.fillStyle='#c0303c'; ctx.fillRect(bx, by, bw, 2);                     // червоний комір
-    for(let e=bx+1; e<bx+bw-1; e+=3) ctx.fillRect(e, by+3, 1, 2);            // хрестики-орнамент
-    ctx.fillRect(bx, by, 2, bh); ctx.fillRect(bx+bw-2, by, 2, bh);           // вишиті боки
-    // ОБЛИЧЧЯ-кружечок — обрізка по контуру обличчя, як у Каті й Діми
-    drawFaceCircle(f.img, x, y, r, 1);
+    drawGuestFigure(f.img, x, feetY, r);
   }
 }
 function drawWed(){
@@ -5089,7 +5106,7 @@ function drawWedSofi(){
     }
   }
   // ЮРБА гостей — спереду на терасі, спостерігають (справжні селфі)
-  drawGuestCrowd(FLOOR_Y+42, {max:13, size:12});
+  drawGuestCrowd(FLOOR_Y+42, {max:10, size:20});
   drawWedHearts();
   ctx.fillStyle = '#2a3444'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   if(!drawArtReveal('date_0609', W/2, (PORTRAIT_MODE?52:22), PORTRAIT_MODE?200:130, PORTRAIT_MODE?42:26, Math.min(1, game.phaseT/110)))
@@ -5159,7 +5176,7 @@ function drawWedKhv(){
   for(let px=sx; px<sx+sw; px+=16) ctx.fillRect(px, syTop, 2, sh);
   ctx.fillStyle = '#9a6c4a'; ctx.fillRect(sx, syTop, sw, 4);     // край помосту
   // ЮРБА гостей — глядачі перед сценою
-  drawGuestCrowd(FLOOR_Y-2, {max:14, size:9});
+  drawGuestCrowd(FLOOR_Y-2, {max:10, size:18});
   // задник сцени: напис ЛЮТІ над молодятами
   ctx.fillStyle = 'rgba(244,232,200,.9)'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
   ctx.fillText('♥ ЛЮТІ ♥', sx+sw/2, syTop-64);
