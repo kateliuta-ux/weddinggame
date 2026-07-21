@@ -11207,6 +11207,7 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   // семплер доступний ще до релізу: відкрити, лишивши решту гри під заглушкою
   function openStubSampler(){
     stub.classList.add('hidden');
+    document.getElementById('gate-screen').classList.add('hidden');   // ворота теж ховаємо
     try{ stopChip(); }catch(_){}
     elTitle.classList.add('hidden');
     document.getElementById('sampler-screen').classList.remove('hidden');
