@@ -11201,6 +11201,36 @@ document.getElementById('email-go').addEventListener('click', async ()=>{
 });
 maybeAskIdentity();
 
+/* ── DEV-прев'ю: як виглядає сітком-заставка, коли БАГАТО гостей додали фото ──
+   лютевесілля.укр/?demofaces=16 → генерує макетні обличчя ЛОКАЛЬНО (у Firestore НЕ пишемо) і показує купу */
+function makeDemoFaces(n){
+  const skins=['#e8b892','#d69a6a','#f0c9a0','#c98f5e','#e5a878','#f5d6b0'];
+  const hairs=['#3a2a1a','#5a3a20','#2a2028','#7a5230','#b08040','#8a2f2f','#d9b56a','#e8dcc0'];
+  const bgs=['#7ea9c9','#c98fa0','#8fbf8a','#d9b56a','#b0a0d0','#e0906a','#88b0a0','#c0a0b0'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('canvas'); c.width=c.height=96; const x=c.getContext('2d');
+    const h=(i*2654435761)>>>0, pk=(a,k)=>a[((h>>(k*3))% a.length)];
+    x.fillStyle=pk(bgs,0); x.fillRect(0,0,96,96);
+    x.fillStyle='#f4f0e4'; x.fillRect(18,76,60,26);                 // плечі/сорочка
+    x.fillStyle=pk(skins,2); x.fillRect(30,30,36,44);              // голова
+    x.fillStyle=pk(hairs,4); x.fillRect(27,22,42,15); x.fillRect(27,22,7,36); x.fillRect(62,22,7,36); // волосся
+    x.fillStyle='#22202a'; x.fillRect(38,47,5,6); x.fillRect(53,47,5,6);   // очі
+    x.fillStyle='#8a3a3a'; x.fillRect(41,61,14,4);                 // усмішка
+    const im=new Image(); im.src=c.toDataURL('image/png');
+    SITCOM_EXTRA.push({img:im, name:'Гість '+(i+1)});
+  }
+}
+if(PARAMS.get('demofaces')){
+  const N=Math.max(1,Math.min(40,parseInt(PARAMS.get('demofaces'),10)||16));
+  setTimeout(()=>{ try{
+    const stub=document.getElementById('release-stub'); if(stub) stub.classList.add('hidden');
+    makeDemoFaces(N);
+    startGame('katya', true);
+    setPhase('sitcom');
+    game.phaseT = 80*(SITCOM_EXTRA.length + 24);   // одразу показати всю купу
+  }catch(e){ console.log('demofaces', e); } }, 500);
+}
+
 /* ================= PWA: додати на робочий стіл ================= */
 if('serviceWorker' in navigator){ try{
   navigator.serviceWorker.register('sw.js').then(reg=>{
