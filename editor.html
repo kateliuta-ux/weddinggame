@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>Редакторська — Катя & Діма</title>
+<style>
+  :root{
+    --bg:#14121c; --panel:#1e1b28; --ink:#f4f0e4; --dim:#bcb7a8;
+    --rose:#A8505F; --gold:#f4cf5e; --red:#c0303c; --sage:#3F7C77; --line:#3a3646;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0 }
+  html,body{ height:100% }
+  body{ background:var(--bg); color:var(--ink); font-family:"Courier New",monospace; -webkit-font-smoothing:none }
+  header{ padding:14px 16px 10px; border-bottom:3px solid var(--line); display:flex; flex-wrap:wrap; gap:8px; align-items:baseline }
+  header h1{ font-size:16px; letter-spacing:1px; color:var(--gold) }
+  header .sub{ font-size:11px; color:var(--dim) }
+  nav{ display:flex; gap:6px; padding:10px 12px; flex-wrap:wrap; border-bottom:3px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:5 }
+  nav button{ font-family:inherit; font-size:12px; padding:8px 12px; background:var(--panel); color:var(--ink);
+    border:2px solid var(--line); cursor:pointer }
+  nav button.on{ background:var(--rose); border-color:#d8899a; color:#fff }
+  main{ padding:12px; max-width:760px; margin:0 auto }
+  .hint{ font-size:11px; color:var(--dim); line-height:1.5; margin:8px 2px 14px }
+  .card{ background:var(--panel); border:2px solid var(--line); margin-bottom:12px; padding:10px 12px }
+  .card h3{ font-size:13px; color:var(--gold); margin-bottom:2px }
+  .card .desc{ font-size:11px; color:var(--dim); margin-bottom:8px }
+  .row{ display:flex; gap:6px; flex-wrap:wrap; align-items:center }
+  .pill{ font-family:inherit; font-size:11px; padding:5px 9px; border:2px solid var(--line); background:#262230; color:var(--dim); cursor:pointer }
+  .pill.on-ok{ background:#274b33; color:#9fe0ae; border-color:#3f7c52 }
+  .pill.on-fix{ background:#5a4420; color:var(--gold); border-color:#a08034 }
+  .pill.on-cut{ background:#5a2430; color:#f0a0ac; border-color:var(--red) }
+  .tools{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px }
+  .tbtn{ font-family:inherit; font-size:11px; padding:6px 10px; background:#2b2838; color:var(--ink); border:2px solid var(--line); cursor:pointer }
+  .tbtn:active{ transform:translateY(1px) }
+  textarea{ width:100%; min-height:64px; margin-top:8px; background:#0f0d16; color:var(--ink); border:2px solid var(--line);
+    font-family:inherit; font-size:13px; padding:8px; resize:vertical }
+  .thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
+  .thumb{ position:relative; border:2px solid var(--line); background:#000 }
+  .thumb img{ display:block; width:120px; height:90px; object-fit:cover; image-rendering:auto }
+  .thumb .x{ position:absolute; top:-2px; right:-2px; background:var(--red); color:#fff; border:none; font-family:inherit;
+    font-size:11px; width:20px; height:20px; cursor:pointer }
+  .thumb .tag{ position:absolute; left:0; bottom:0; right:0; background:rgba(0,0,0,.65); color:#eee; font-size:9px; padding:2px 4px }
+  /* ── малювальня ── */
+  #draw-wrap{ position:fixed; inset:0; background:#0c0a12; z-index:50; display:none; flex-direction:column }
+  #draw-wrap.open{ display:flex }
+  #draw-top{ display:flex; gap:6px; padding:8px; flex-wrap:wrap; align-items:center; border-bottom:2px solid var(--line); background:var(--bg) }
+  #draw-top .sp{ flex:1 }
+  #cv-holder{ flex:1; position:relative; overflow:hidden; touch-action:none; background:#161320 }
+  #cv{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:#f6f2e6; touch-action:none;
+       box-shadow:0 0 0 2px var(--line), 0 12px 40px rgba(0,0,0,.6) }
+  .sw{ width:26px; height:26px; border:2px solid #555; cursor:pointer; padding:0 }
+  .sw.on{ border-color:#fff; outline:2px solid var(--gold) }
+  #size-lab{ font-size:10px; color:var(--dim) }
+  input[type=range]{ width:90px }
+  /* ── гейт ── */
+  #gate{ position:fixed; inset:0; background:var(--bg); z-index:99; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; padding:20px; text-align:center }
+  #gate input{ font-family:inherit; font-size:16px; padding:.6em; width:min(80%,280px); text-align:center;
+    background:#f8f8f3; border:3px solid #000; color:#1a1a24; text-transform:uppercase }
+  #gate button{ font-family:inherit; font-size:14px; padding:.6em 1.4em; background:var(--rose); color:#fff; border:2px solid #d8899a; cursor:pointer }
+  .hidden{ display:none !important }
+  #toast{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#262230; color:var(--ink);
+    border:2px solid var(--gold); padding:8px 14px; font-size:12px; z-index:60; display:none; max-width:88% }
+  .send-bar{ position:sticky; bottom:0; background:var(--bg); border-top:3px solid var(--line); padding:10px 12px;
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:center }
+  .send-bar .tbtn{ font-size:12px; padding:9px 14px }
+  .send-bar .go{ background:var(--rose); border-color:#d8899a; color:#fff }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div style="font-size:15px;color:var(--gold);letter-spacing:1px">🎬 РЕДАКТОРСЬКА</div>
+  <div style="font-size:11px;color:var(--dim)">кімната для Каті й Діми — впиши режисерський пароль</div>
+  <input id="gate-pass" maxlength="12" placeholder="пароль" autocomplete="off">
+  <button id="gate-go">УВІЙТИ</button>
+  <div id="gate-err" style="color:#f0a0ac;font-size:11px;min-height:14px"></div>
+</div>
+
+<header>
+  <h1>🎬 РЕДАКТОРСЬКА</h1>
+  <span class="sub">пишіть і малюйте правки — Клод забере їх сам і внесе в гру</span>
+</header>
+
+<nav>
+  <button data-tab="mech" class="on">Механіки гри</button>
+  <button data-tab="novel">Історія без ігор</button>
+  <button data-tab="free">Вільний аркуш</button>
+  <button data-tab="sent">Мої правки</button>
+</nav>
+
+<main id="main"></main>
+
+<div class="send-bar">
+  <button class="tbtn go" id="btn-send">⤴ Надіслати правки Клоду</button>
+  <button class="tbtn" id="btn-export">💾 Зберегти файлом</button>
+</div>
+
+<!-- ── малювальня ── -->
+<div id="draw-wrap">
+  <div id="draw-top">
+    <button class="tbtn" data-tool="pen">✏️ перо</button>
+    <button class="tbtn" data-tool="marker">🖊 маркер</button>
+    <button class="tbtn" data-tool="eraser">◽ гумка</button>
+    <button class="tbtn" data-tool="text">Аа</button>
+    <span id="draw-sws"></span>
+    <span id="size-lab">товщина</span><input type="range" id="size" min="1" max="24" value="4">
+    <button class="tbtn" id="d-undo">↩︎</button>
+    <button class="tbtn" id="d-photo">📷 фон-фото</button>
+    <span class="sp"></span>
+    <button class="tbtn" id="d-cancel">✕ вийти</button>
+    <button class="tbtn" id="d-save" style="background:var(--rose);border-color:#d8899a;color:#fff">✔ зберегти</button>
+  </div>
+  <div id="cv-holder"><canvas id="cv"></canvas></div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="file-inp" accept="image/*" class="hidden">
+
+<script>
+'use strict';
+/* ───────────────────────── дані сцен ───────────────────────── */
+const GAME_SCENES = [
+  ['prolog','Запросини','вступний текст із короваєм'],
+  ['sitcom','Заставка з фото','полароїди кучкою, «як я зустрів вашу маму»'],
+  ['set','Зйомка ШТОРМНАДО','перший рівень: тримай Діму в кадрі, 5 дублів'],
+  ['montage','Монтаж','ПОВ Каті: склей кадри'],
+  ['band','Гурт / концерт SSB','ПОВ Діми: сцена, ноти, hit/miss'],
+  ['tinder','Тіндер','свайпи, метч'],
+  ['chat','Переписка','перше повідомлення, чат'],
+  ['date','Побачення','пікнік на Пейзажці, кокосове Андервуд'],
+  ['beer','Пиво','вгадай улюблене — 4 банки'],
+  ['walkline','Рівновага','після пікніка дійди до Діми рівненько'],
+  ['battle','Серце vs НЕСЕРЙОЗНІСТЬ','Undertale: ухиляйся, тоді вибір'],
+  ['kitana','Кітана','нявкання = швидкість бігу, Білогородка'],
+  ['svat','Свати','хата, рушники, хліб'],
+  ['secret','Штольня / таємниці','тетріс і дзеркальні секрети ПОВів'],
+  ['prop','Освідчення','каюта, «Катериною Лютою»'],
+  ['diia','Дія','вибір прізвища, айфонна анкета'],
+  ['vykup','Викуп нареченої','стрічка по центру, 3 питання'],
+  ['wed','Весілля','фінали: Бути Софі / Хвильовий'],
+  ['credits','Титри',''],
+  ['invite','Екран запрошення','персональне запрошення в кінці'],
+  ['menu','Головне меню','титулка, кнопки, музика'],
+  ['rsvp','RSVP-анкета','питання і підсумок'],
+];
+const NOVEL_SCENES = [
+  ['n-cap1','Ч.1 Вечорниці','Київ 2021, офіс, зйомка — як познайомились'],
+  ['n-tinder','Ч.2 Тіндер і війна','свайп через прірву, перше повідомлення'],
+  ['n-date','Ч.3 Побачення','Пейзажка, пиво, серце'],
+  ['n-kitana','Ч.4 Кітана','кішка з Білогородки'],
+  ['n-svat','Ч.5 Свати','хата, традиція'],
+  ['n-prop','Ч.6 Освідчення','каюта, «так» до крапки'],
+  ['n-diia','Ч.7 Дія','прізвище'],
+  ['n-vykup','Ч.8 Викуп','стрічка, дружки'],
+  ['n-wed','Ч.9 Весілля','два фінали'],
+  ['n-credits','Титри','подяки'],
+];
+
+/* ───────────────────────── збереження ───────────────────────── */
+const LS_KEY = 'wed-editor-v1';
+let db = { status:{}, notes:{}, items:[] };     // items: {id, scene, kind:'drawing'|'photo'|'story', img?, text?, at, sent}
+try{ const raw = localStorage.getItem(LS_KEY); if(raw) db = Object.assign(db, JSON.parse(raw)); }catch(_){}
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){ toast('⚠️ памʼять браузера переповнена — надішли або збережи правки і видали старі'); } }
+function toast(t, ms){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block';
+  clearTimeout(el._t); el._t=setTimeout(()=> el.style.display='none', ms||2600); }
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ───────────────────────── гейт ───────────────────────── */
+const PASS='K1TANA';
+function tryGate(){ const v=(document.getElementById('gate-pass').value||'').trim().toUpperCase();
+  if(v===PASS){ sessionStorage.setItem('wed-editor-auth','1'); document.getElementById('gate').classList.add('hidden'); }
+  else document.getElementById('gate-err').textContent='не той пароль 🙃'; }
+document.getElementById('gate-go').addEventListener('click', tryGate);
+document.getElementById('gate-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') tryGate(); });
+if(sessionStorage.getItem('wed-editor-auth')) document.getElementById('gate').classList.add('hidden');
+
+/* ───────────────────────── вкладки і картки ───────────────────────── */
+const main = document.getElementById('main');
+let tab='mech';
+document.querySelectorAll('nav button').forEach(b=> b.addEventListener('click', ()=>{
+  tab=b.dataset.tab;
+  document.querySelectorAll('nav button').forEach(x=> x.classList.toggle('on', x===b));
+  render();
+}));
+
+function sceneCard(id, title, desc, isNovel){
+  const card = document.createElement('div'); card.className='card'; card.dataset.scene=id;
+  card.innerHTML = '<h3>'+title+'</h3><div class="desc">'+desc+'</div>';
+  // статус
+  const row = document.createElement('div'); row.className='row';
+  [['ok','✓ ок'],['fix','✎ змінити'],['cut','✕ прибрати']].forEach(([st,lab])=>{
+    const p=document.createElement('button'); p.className='pill'; p.textContent=lab;
+    if(db.status[id]===st) p.classList.add('on-'+st);
+    p.addEventListener('click', ()=>{ db.status[id] = db.status[id]===st ? '' : st; persist(); render(); });
+    row.appendChild(p);
+  });
+  card.appendChild(row);
+  // нотатка
+  const ta=document.createElement('textarea');
+  ta.placeholder = isNovel ? 'сюжет: що змінити, які слова, який настрій…' : 'механіка/сцена: що змінити, як має працювати…';
+  ta.value = db.notes[id]||'';
+  ta.addEventListener('input', ()=>{ db.notes[id]=ta.value; persist(); });
+  card.appendChild(ta);
+  // інструменти
+  const tools=document.createElement('div'); tools.className='tools';
+  const mk=(lab,fn)=>{ const b=document.createElement('button'); b.className='tbtn'; b.textContent=lab; b.addEventListener('click',fn); tools.appendChild(b); };
+  mk('🖊 намалювати', ()=> openDraw(id, null));
+  mk('📷 додати фото/скрін', ()=> pickPhoto(id));
+  card.appendChild(tools);
+  // мініатюри
+  const items = db.items.filter(i=> i.scene===id && i.img);
+  if(items.length){
+    const th=document.createElement('div'); th.className='thumbs';
+    items.forEach(it=>{
+      const d=document.createElement('div'); d.className='thumb';
+      const im=document.createElement('img'); im.src=it.img; d.appendChild(im);
+      im.addEventListener('click', ()=> openDraw(id, it));          // тап по мініатюрі → домалювати
+      const tag=document.createElement('div'); tag.className='tag';
+      tag.textContent=(it.kind==='photo'?'📷':'🖊')+(it.sent?' · ✓ надіслано':''); d.appendChild(tag);
+      const x=document.createElement('button'); x.className='x'; x.textContent='✕';
+      x.addEventListener('click', ()=>{ if(confirm('Видалити цей малюнок?')){ db.items=db.items.filter(z=>z!==it); persist(); render(); } });
+      d.appendChild(x);
+      th.appendChild(d);
+    });
+    card.appendChild(th);
+  }
+  return card;
+}
+
+function render(){
+  main.innerHTML='';
+  if(tab==='mech' || tab==='novel'){
+    const list = tab==='mech' ? GAME_SCENES : NOVEL_SCENES;
+    const h=document.createElement('div'); h.className='hint';
+    h.innerHTML = tab==='mech'
+      ? 'Кожен рівень гри: познач статус, впиши що змінити, намалюй як має виглядати (планшет із натиском працює). '+
+        'Фото: зроби скріншот сцени в грі і додай — можна малювати прямо поверх нього.'
+      : '«Історія без ігор» — режим-кіно. Тут правиться сюжет і картинки: впиши як має звучати глава, '+
+        'додай/намалюй картинку на заміну.';
+    main.appendChild(h);
+    list.forEach(([id,t,d])=> main.appendChild(sceneCard(id,t,d,tab==='novel')));
+  }
+  if(tab==='free'){
+    const h=document.createElement('div'); h.className='hint';
+    h.textContent='Аркуші без привʼязки до сцени — для будь-чого: нові ідеї, шрифти, написи, персонажі.';
+    main.appendChild(h);
+    main.appendChild(sceneCard('free','Вільний аркуш','усе, що не влазить у сцени', false));
+  }
+  if(tab==='sent'){
+    const h=document.createElement('div'); h.className='hint';
+    const unsent = db.items.filter(i=>!i.sent).length + Object.values(db.notes).filter(Boolean).length;
+    h.innerHTML='Все, що ви намалювали й написали. «Надіслати правки Клоду» — і я заберу їх сам із бази гри. '+
+      '«Зберегти файлом» — резервна копія (можна кинути в Telegram).';
+    main.appendChild(h);
+    const all=[...db.items].reverse();
+    if(!all.length && !Object.keys(db.notes).some(k=>db.notes[k])){
+      const e=document.createElement('div'); e.className='card'; e.innerHTML='<div class="desc">поки порожньо — малюйте!</div>'; main.appendChild(e);
+    }
+    Object.keys(db.notes).forEach(k=>{
+      if(!db.notes[k]) return;
+      const t=[...GAME_SCENES,...NOVEL_SCENES,['free','Вільний аркуш']].find(s=>s[0]===k);
+      const c=document.createElement('div'); c.className='card';
+      c.innerHTML='<h3>📝 '+(t?t[1]:k)+'</h3><div class="desc" style="white-space:pre-wrap">'+db.notes[k].replace(/</g,'&lt;')+'</div>';
+      main.appendChild(c);
+    });
+    all.forEach(it=>{
+      const t=[...GAME_SCENES,...NOVEL_SCENES,['free','Вільний аркуш']].find(s=>s[0]===it.scene);
+      const c=document.createElement('div'); c.className='card';
+      c.innerHTML='<h3>'+(it.kind==='photo'?'📷':'🖊')+' '+(t?t[1]:it.scene)+(it.sent?' <span style="color:#9fe0ae;font-size:11px">✓ надіслано</span>':'')+'</h3>';
+      if(it.img){ const im=document.createElement('img'); im.src=it.img; im.style.cssText='max-width:100%;border:2px solid var(--line);margin-top:6px'; c.appendChild(im); }
+      main.appendChild(c);
+    });
+  }
+}
+
+/* ───────────────────────── фото ───────────────────────── */
+const fileInp = document.getElementById('file-inp');
+let photoTarget=null, photoToCanvas=false;
+function pickPhoto(scene){ photoTarget=scene; photoToCanvas=false; fileInp.value=''; fileInp.click(); }
+fileInp.addEventListener('change', ()=>{
+  const f=fileInp.files && fileInp.files[0]; if(!f) return;
+  const img=new Image();
+  img.onload = ()=>{
+    const c=document.createElement('canvas');
+    const k=Math.min(1, 1100/Math.max(img.width,img.height));
+    c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    const data=c.toDataURL('image/jpeg',0.82);
+    if(photoToCanvas){ setDrawBg(data); }
+    else { db.items.push({id:uid(), scene:photoTarget, kind:'photo', img:data, at:Date.now(), sent:false}); persist(); render();
+           toast('📷 додано — тапни мініатюру, щоб малювати поверх'); }
+    URL.revokeObjectURL(img.src);
+  };
+  img.src=URL.createObjectURL(f);
+});
+
+/* ───────────────────────── малювальня (планшет, натиск) ───────────────────────── */
+const wrap=document.getElementById('draw-wrap'), cv=document.getElementById('cv'), cx=cv.getContext('2d');
+const holder=document.getElementById('cv-holder');
+let dScene=null, dItem=null, tool='pen', color='#1a1a24', size=4, strokes=[], bgImg=null, textPending=false;
+const SWATCHES=['#1a1a24','#c0303c','#f4cf5e','#3F7C77','#2a4a8a','#e05aa0','#ffffff'];
+{ const sws=document.getElementById('draw-sws');
+  SWATCHES.forEach((c,i)=>{ const b=document.createElement('button'); b.className='sw'+(i===0?' on':''); b.style.background=c;
+    b.addEventListener('click',()=>{ color=c; tool = tool==='eraser'?'pen':tool;
+      document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===b)); });
+    sws.appendChild(b); }); }
+document.querySelectorAll('#draw-top [data-tool]').forEach(b=> b.addEventListener('click', ()=>{
+  tool=b.dataset.tool;
+  if(tool==='text'){ textPending=true; toast('тапни на аркуші, де поставити напис'); }
+}));
+document.getElementById('size').addEventListener('input', e=> size=+e.target.value);
+document.getElementById('d-undo').addEventListener('click', ()=>{ strokes.pop(); repaint(); });
+document.getElementById('d-photo').addEventListener('click', ()=>{ photoToCanvas=true; fileInp.value=''; fileInp.click(); });
+document.getElementById('d-cancel').addEventListener('click', ()=>{ wrap.classList.remove('open'); });
+document.getElementById('d-save').addEventListener('click', ()=>{
+  const data = cv.toDataURL(bgImg?'image/jpeg':'image/png', 0.85);
+  if(dItem){ dItem.img=data; dItem.sent=false; }
+  else db.items.push({id:uid(), scene:dScene, kind:'drawing', img:data, at:Date.now(), sent:false});
+  persist(); wrap.classList.remove('open'); render(); toast('🖊 збережено');
+});
+
+function sizeCanvas(w,h){
+  const availW=holder.clientWidth-16, availH=holder.clientHeight-16;
+  const k=Math.min(availW/w, availH/h, 1.6);
+  cv.style.width=Math.round(w*k)+'px'; cv.style.height=Math.round(h*k)+'px';
+  cv.width=w; cv.height=h;
+}
+function openDraw(scene, item){
+  dScene=scene; dItem=item||null; strokes=[]; bgImg=null; textPending=false; tool='pen';
+  wrap.classList.add('open');
+  if(item && item.img){ const im=new Image(); im.onload=()=>{ bgImg=im; sizeCanvas(im.width,im.height); repaint(); }; im.src=item.img; }
+  else { sizeCanvas(1100,800); repaint(); }
+}
+function setDrawBg(dataUrl){ const im=new Image(); im.onload=()=>{ bgImg=im; strokes=[]; sizeCanvas(im.width,im.height); repaint(); }; im.src=dataUrl; }
+function repaint(){
+  cx.fillStyle='#f6f2e6'; cx.fillRect(0,0,cv.width,cv.height);
+  if(bgImg) cx.drawImage(bgImg,0,0,cv.width,cv.height);
+  strokes.forEach(st=>{
+    if(st.type==='text'){
+      cx.fillStyle=st.color; cx.font='bold '+st.size+'px "Courier New",monospace'; cx.textAlign='left';
+      st.text.split('\n').forEach((ln,i)=> cx.fillText(ln, st.x, st.y+i*st.size*1.25));
+      return;
+    }
+    for(let i=1;i<st.pts.length;i++){
+      const a=st.pts[i-1], b=st.pts[i];
+      cx.strokeStyle = st.type==='eraser' ? (bgImg?'rgba(246,242,230,1)':'#f6f2e6') : st.color;
+      cx.globalAlpha = st.type==='marker' ? 0.45 : 1;
+      cx.lineWidth = st.size * (st.type==='eraser'?3:1) * (0.35 + 1.3*((a.p+b.p)/2));   // натиск пера!
+      cx.lineCap='round'; cx.lineJoin='round';
+      cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke();
+    }
+    cx.globalAlpha=1;
+  });
+}
+function evPos(e){
+  const r=cv.getBoundingClientRect();
+  return { x:(e.clientX-r.left)*cv.width/r.width, y:(e.clientY-r.top)*cv.height/r.height,
+           p:(e.pressure && e.pressure>0)?e.pressure:0.5 };
+}
+let cur=null;
+cv.addEventListener('pointerdown', e=>{
+  e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  const pos=evPos(e);
+  if(textPending){
+    const txt=prompt('Текст напису:'); textPending=false;
+    if(txt){ strokes.push({type:'text', text:txt, x:pos.x, y:pos.y, color, size:Math.max(22,size*6)}); repaint(); }
+    return;
+  }
+  cur={type:tool, color, size, pts:[pos]}; strokes.push(cur);
+});
+cv.addEventListener('pointermove', e=>{
+  if(!cur) return; e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];   // планшет: усі проміжні точки
+  evs.forEach(ev=> cur.pts.push(evPos(ev)));
+  repaint();
+});
+['pointerup','pointercancel'].forEach(t=> cv.addEventListener(t, ()=>{ cur=null; }));
+
+/* ───────────────────────── надсилання ───────────────────────── */
+const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
+const FS_BASE='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
+async function fsPush(doc){
+  const r=await fetch(FS_BASE+'edits?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fields:doc})});
+  return r.ok;
+}
+document.getElementById('btn-send').addEventListener('click', async ()=>{
+  const notes=Object.keys(db.notes).filter(k=>db.notes[k] && db.notes[k]!==db['_sentNotes_'+k]);
+  const items=db.items.filter(i=>!i.sent);
+  if(!notes.length && !items.length){ toast('нових правок нема — все вже надіслано ✓'); return; }
+  toast('надсилаю…', 60000);
+  let ok=0, fail=0;
+  for(const k of notes){
+    const st=db.status[k]||'';
+    if(await fsPush({ scene:{stringValue:k}, kind:{stringValue:'note'}, status:{stringValue:st},
+      text:{stringValue:db.notes[k]}, at:{integerValue:String(Date.now())} }))
+      { db['_sentNotes_'+k]=db.notes[k]; ok++; } else fail++;
+  }
+  for(const it of items){
+    if(await fsPush({ scene:{stringValue:it.scene}, kind:{stringValue:it.kind},
+      image:{stringValue:it.img||''}, at:{integerValue:String(it.at)} }))
+      { it.sent=true; ok++; } else fail++;
+  }
+  persist(); render();
+  toast(fail ? '⚠️ надіслано '+ok+', не пройшло '+fail+' (великий малюнок? збережи файлом)' : '✓ надіслано '+ok+' — Клод забере');
+});
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const blob=new Blob([JSON.stringify({exported:new Date().toISOString(), status:db.status, notes:db.notes, items:db.items}, null, 1)],
+    {type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='pravky-gry-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(a.href);
+});
+
+render();
+</script>
+</body>
+</html>
