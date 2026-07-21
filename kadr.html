@@ -68,6 +68,23 @@
   body.fullcam #fullbar{ display:flex }
   #fullbar .fb-cnt{ color:#ff9a2e; font:bold 22px "Courier New",monospace; min-width:66px }
   #fullbar .fb-exit{ color:#fff; font-size:22px; background:rgba(0,0,0,.45); border:2px solid rgba(255,255,255,.45); border-radius:50%; width:48px; height:48px; cursor:pointer }
+  /* горизонтальна рамка кадру 3:2 (те, що потрапить у знімок) */
+  .fullframe{ position:fixed; z-index:200; left:0; right:0; top:50%; transform:translateY(-50%); height:calc(100vw*2/3);
+    box-shadow:0 0 0 100vh rgba(0,0,0,.5); pointer-events:none; display:none;
+    border-top:1px solid rgba(255,255,255,.45); border-bottom:1px solid rgba(255,255,255,.45) }
+  body.fullcam .fullframe{ display:block }
+  /* верхня картка-завдання у стилі друкованих наклейок */
+  #fulltop{ position:fixed; z-index:202; top:0; left:0; right:0; display:none; flex-direction:column; gap:3px;
+    padding:calc(9px + env(safe-area-inset-top)) 16px 10px;
+    background:linear-gradient(180deg, rgba(250,246,236,.96) 60%, rgba(250,246,236,0)) }
+  body.fullcam #fulltop{ display:flex }
+  #fulltop .ftband{ height:12px; opacity:.9;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M3 3L11 11M11 3L3 11' stroke='%23c0303c' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
+    background-repeat:repeat-x; background-position:center }
+  #fulltop .ftrow{ display:flex; justify-content:space-between; align-items:baseline; font:12px/1 "Courier New",monospace }
+  #fulltop .ftnum{ color:#8a7f78; letter-spacing:1px }
+  #fulltop .ftframes{ color:var(--red) } #fulltop .ftframes b{ font-size:19px }
+  #fulltop .fttitle{ font-family:Georgia,serif; font-size:21px; font-weight:bold; color:var(--red); text-align:center }
   .flick{ position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:210 }
   .flick.go{ animation:fl .28s ease-out }
   @keyframes fl{ 0%{opacity:0} 12%{opacity:.92} 100%{opacity:0} }
@@ -161,6 +178,14 @@
     </div>
     <div class="cam-cap" id="camcap">лишилось <b id="left">27</b> кадрів · камеру не видно? тисни спуск — відкриється звична</div>
 
+    <!-- горизонтальна рамка кадру -->
+    <div class="fullframe"></div>
+    <!-- верхня картка-завдання (стиль друкованих наклейок) -->
+    <div id="fulltop">
+      <div class="ftband"></div>
+      <div class="ftrow"><span class="ftnum" id="ftnum">№</span><span class="ftframes"><b id="ftcnt">27</b> кадрів</span></div>
+      <div class="fttitle" id="fttitle">завдання</div>
+    </div>
     <!-- панель керування у повноекранному режимі -->
     <div id="fullbar">
       <button class="fb-exit" id="btn-exit">✕</button>
@@ -248,7 +273,7 @@ async function renderHub(){
 /* ── КАМЕРА ── */
 function refreshCounter(){
   const taken=taskCount(T), left=Math.max(0,CAP-taken);
-  ['cnum','left','fcnt','fcnt2'].forEach(id=>{ const e=$(id); if(e) e.textContent=left; });
+  ['cnum','left','fcnt','fcnt2','ftcnt'].forEach(id=>{ const e=$(id); if(e) e.textContent=left; });
   if(left<=0){
     ['shutter','shutter2'].forEach(id=>{ const e=$(id); if(e) e.classList.add('spent'); });
     $('camcap').innerHTML='катушку відзнято 🎞'; $('vf-t').textContent='плівка скінчилась';
@@ -295,7 +320,10 @@ async function renderCam(){
   $('cambody').style.setProperty('--acc', PAL[hash%PAL.length]);
   $('rec').textContent = TEST ? '● TEST' : '● '+new Date().toISOString().slice(0,10);
   if(DEV) $('devbar').style.display='block';
+  $('fttitle').textContent = m?m.title:T;            // завдання у верхній картці
+  $('ftnum').textContent = '№ '+T;
   startCamera('environment');                       // живий видошукач
+  document.body.classList.add('fullcam'); $('finder').classList.add('full');   // одразу на весь екран, горизонтально
   await loadAll();
   renderRefs(); refreshCounter(); renderRoll();
 }
@@ -385,7 +413,7 @@ if(T){
   $('btn-flip2').addEventListener('click', flip);
   // повний екран
   $('btn-full').addEventListener('click', ()=>{ document.body.classList.add('fullcam'); $('finder').classList.add('full'); });
-  $('btn-exit').addEventListener('click', ()=>{ document.body.classList.remove('fullcam'); $('finder').classList.remove('full'); });
+  $('btn-exit').addEventListener('click', ()=>{ stopCamera(); location.href='kadr'; });   // ✕ → усі камери
   // DEV: додати еталонне фото для повтору
   $('reffile') && $('reffile').addEventListener('change', async e=>{
     const f=e.target.files && e.target.files[0]; e.target.value=''; if(!f) return;
