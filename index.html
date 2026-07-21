@@ -4980,8 +4980,6 @@ function drawWedSofi(){
   ctx.fillRect(36, FLOOR_Y+2, 8, 10); ctx.fillRect(104, FLOOR_Y+2, 8, 10);
   ctx.fillRect(47, FLOOR_Y+4, 2, 2); ctx.fillRect(47, FLOOR_Y+8, 2, 2);
   ctx.fillRect(99, FLOOR_Y+4, 2, 2); ctx.fillRect(99, FLOOR_Y+8, 2, 2);
-  // ЮРБА гостей — стоять позаду, спостерігають обряд (оминаємо дзвіницю)
-  drawGuestCrowd(FLOOR_Y-6, {max:14, size:9, skip:[228,300]});
   // почет: дружки ліворуч від Каті, бояри праворуч від Діми
   drawAttendant(10, FLOOR_Y+4, BRIDES[0], 1.35); drawAttendant(32, FLOOR_Y+4, BRIDES[1], 1.35);
   drawAttendant(104, FLOOR_Y+4, GROOMS[0], 1.35); drawAttendant(126, FLOOR_Y+4, GROOMS[1], 1.35);
@@ -5081,6 +5079,8 @@ function drawWedSofi(){
       ctx.textAlign='left';
     }
   }
+  // ЮРБА гостей — спереду на терасі, спостерігають (справжні селфі)
+  drawGuestCrowd(FLOOR_Y+42, {max:13, size:12});
   drawWedHearts();
   ctx.fillStyle = '#2a3444'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   if(!drawArtReveal('date_0609', W/2, (PORTRAIT_MODE?52:22), PORTRAIT_MODE?200:130, PORTRAIT_MODE?42:26, Math.min(1, game.phaseT/110)))
