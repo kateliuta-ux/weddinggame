@@ -382,7 +382,9 @@ cv.addEventListener('pointermove', e=>{
 const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
 const FS_BASE='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
 async function fsPush(doc){
-  const r=await fetch(FS_BASE+'edits?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},
+  // живемо в колекції rsvps (правила пускають) — мітка redaktorska відрізняє правки від справжніх RSVP
+  doc.redaktorska={stringValue:'1'};
+  const r=await fetch(FS_BASE+'rsvps?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({fields:doc})});
   return r.ok;
 }
