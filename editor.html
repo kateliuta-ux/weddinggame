@@ -183,13 +183,25 @@ const NOVEL_SCENES = [
 /* ───────────────────────── збереження ───────────────────────── */
 const LS_KEY = 'wed-editor-v1';
 let db = { status:{}, notes:{}, items:[], customElements:[] };     // items: {id, scene, kind:'drawing'|'photo'|'story', img?, text?, at, sent}
-try{ const raw = localStorage.getItem(LS_KEY); if(raw) db = Object.assign(db, JSON.parse(raw)); if(!db.customElements) db.customElements=[]; }catch(_){}
-/* ЗЛИТТЯ: щоб дві вкладки/двоє людей одночасно нічого не затерли — об'єднуємо (union), не видаляючи чуже */
+try{ const raw = localStorage.getItem(LS_KEY); if(raw) db = Object.assign(db, JSON.parse(raw)); if(!db.customElements) db.customElements=[]; if(!db.t) db.t={}; }catch(_){}
+/* позначка часу правки поля — щоб при злитті перемагала НОВІША правка, а не «моя» (інакше стара копія затирає) */
+function touch(k){ db.t=db.t||{}; db.t[k]=Date.now(); }
+/* ЗЛИТТЯ двох вкладок/двох людей: по полях бере новіше за часом; списки — union по id. Нічого не губиться. */
 function mergeDb(mine, other){
   if(!other) return mine;
-  const out={ status:Object.assign({}, other.status||{}, mine.status||{}),   // свої свіжіші зверху
-              notes:Object.assign({}, other.notes||{}, mine.notes||{}),
-              items:[], customElements:[] };
+  const mt=mine.t||{}, ot=other.t||{}, out={ status:{}, notes:{}, items:[], customElements:[], t:{} };
+  ['notes','status'].forEach(sec=>{
+    const pfx = sec==='notes'?'n:':'s:';
+    const keys=new Set([...Object.keys(mine[sec]||{}), ...Object.keys(other[sec]||{})]);
+    keys.forEach(k=>{
+      const a=mt[pfx+k]||0, b=ot[pfx+k]||0;
+      out[sec][k] = (a>=b) ? (mine[sec]||{})[k] : (other[sec]||{})[k];
+      out.t[pfx+k]=Math.max(a,b);
+    });
+  });
+  // перенести решту позначок часу
+  Object.keys(mt).forEach(k=>{ if(out.t[k]==null) out.t[k]=mt[k]; });
+  Object.keys(ot).forEach(k=>{ if(out.t[k]==null || ot[k]>out.t[k]) out.t[k]=Math.max(out.t[k]||0, ot[k]); });
   const seen=new Set();
   [...(mine.items||[]),...(other.items||[])].forEach(it=>{ if(it&&!seen.has(it.id)){ seen.add(it.id); out.items.push(it); } });
   const se=new Set();
@@ -246,7 +258,7 @@ function sceneCard(id, title, desc, isNovel, placeholder, onDelete){
   [['ok','✓ ок'],['fix','✎ змінити'],['cut','✕ прибрати']].forEach(([st,lab])=>{
     const p=document.createElement('button'); p.className='pill'; p.textContent=lab;
     if(db.status[id]===st) p.classList.add('on-'+st);
-    p.addEventListener('click', ()=>{ db.status[id] = db.status[id]===st ? '' : st; persist(); render(); });
+    p.addEventListener('click', ()=>{ db.status[id] = db.status[id]===st ? '' : st; touch('s:'+id); persist(); render(); });
     row.appendChild(p);
   });
   card.appendChild(row);
@@ -254,7 +266,7 @@ function sceneCard(id, title, desc, isNovel, placeholder, onDelete){
   const ta=document.createElement('textarea');
   ta.placeholder = placeholder || (isNovel ? 'сюжет: що змінити, які слова, який настрій…' : 'механіка/сцена: що змінити, як має працювати…');
   ta.value = db.notes[id]||'';
-  ta.addEventListener('input', ()=>{ db.notes[id]=ta.value; persist(); });
+  ta.addEventListener('input', ()=>{ db.notes[id]=ta.value; touch('n:'+id); persist(); });
   card.appendChild(ta);
   // інструменти
   const tools=document.createElement('div'); tools.className='tools';
