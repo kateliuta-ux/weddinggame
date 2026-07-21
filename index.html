@@ -7986,10 +7986,10 @@ let pendingPov = null;
 let myGuest = null;                 // гість, обраний на старті → переноситься в кінцеву анкету
 /* сторону вже обрано (→ POV), тепер гравець називається */
 function startFromSide(pov){
-  // хто ти — вже відомо з пароля на візитівці, тож нічого не питаємо.
-  // Виняток — DEV-режим: щораз можна назватись іншим гостем (для тестування).
-  const saved = DEV_MODE ? '' : (localStorage.getItem('wed-player-name')||'').trim();
-  if(!DEV_MODE){
+  // хто ти — вже відомо з пароля на візитівці, тож нічого не питаємо ніколи.
+  // (Перемкнути гостя в DEV: введи інший пароль на воротах або ?p=…)
+  {
+    const saved = (localStorage.getItem('wed-player-name')||'').trim();
     playerName = saved;
     myGuest = AUTH_GUEST || (saved ? RSVP_GUEST_LIST.find(g=> g.name.toLowerCase() === saved.toLowerCase()) : null) || null;
     CENSORED = (myGuest && !!myGuest.censor) || (GUEST && GUEST.family) || PARAMS.get('v')==='family';
@@ -8006,7 +8006,7 @@ function startFromSide(pov){
 /* перше відкриття застосунку: одразу питаємо, хто ти з гостей (до будь-якої гри) */
 let identityGate = false;
 function maybeAskIdentity(){
-  if(!DEV_MODE) return;             // гостя впізнає пароль з візитівки — шукати себе у списку не треба
+  return;                            // ідентичність дає пароль — вікно вимкнено назавжди
   if((localStorage.getItem('wed-player-name')||'').trim()) return;
   setTimeout(()=>{
     if(game.state!=='title') return;
@@ -9730,7 +9730,7 @@ document.getElementById('selfie-gb').addEventListener('click', ()=>{
 document.getElementById('selfie-send').addEventListener('click', async ()=>{
   if(!selfieShot) return;
   const st = document.getElementById('selfie-status');
-  let name = localStorage.getItem('wed-player-name') || '';
+  let name = (AUTH_GUEST && AUTH_GUEST.name) || localStorage.getItem('wed-player-name') || '';
   if(!name){
     name = (prompt('Як тебе звати? (щоб знали, чиє фото)')||'').trim();
     if(!name) return;
@@ -10038,7 +10038,7 @@ document.getElementById('memory-file').addEventListener('change', e=>{
   im.onload = async ()=>{
     URL.revokeObjectURL(url);
     const data = pixelateToDataURL(im, 128);          // 8-біт, легке
-    let name = localStorage.getItem('wed-player-name') || '';
+    let name = (AUTH_GUEST && AUTH_GUEST.name) || localStorage.getItem('wed-player-name') || '';
     if(!name){
       name = (prompt("Як тебе підписати під фото? (це ж ти на фото з нами)")||'').trim();
       if(!name){ document.getElementById('memory-status').classList.add('hidden'); return; }
@@ -10812,7 +10812,7 @@ const elRsvpSummary = document.getElementById('rsvp-summary');
 
 function rsvpShow(){
   // «хто ти?» зі списку гостей (коли список є, а персонального коду нема)
-  const needIdentify = rsvp.idx===0 && !rsvp.pickedGuest && !rsvp.plusOne && !rsvp.pending && !(GUEST && GUEST.id) && RSVP_GUEST_LIST.length;
+  const needIdentify = rsvp.idx===0 && !AUTH_GUEST && !rsvp.pickedGuest && !rsvp.plusOne && !rsvp.pending && !(GUEST && GUEST.id) && RSVP_GUEST_LIST.length;
   if(needIdentify){
     // ПРИВАТНІСТЬ: жодного списку інших гостей. Просто представся — введи ім'я,
     // підказки випадають лише під те, що ти набираєш; далі — анкета.
@@ -10964,7 +10964,7 @@ function rsvpFinish(){
 }
 function openRsvp(){
   rsvp.idx = 0; rsvp.answers = []; rsvp.sent = false;
-  rsvp.pickedGuest = myGuest || null;        // гість обраний ще на старті — не питаємо «хто ти» вдруге
+  rsvp.pickedGuest = myGuest || AUTH_GUEST || null;   // пароль = ідентичність, «хто ти» не питаємо
   rsvp.plusOne = null; rsvp.plusMode = null; rsvp._plusHost = null; rsvp.pending = null;
   elEnd.classList.add('hidden');
   elRsvp.classList.remove('hidden');
