@@ -10621,6 +10621,13 @@ function devBadge(){
   d.title='режим розробника: тапни, щоб вийти';
   d.addEventListener('click', ()=>{ localStorage.removeItem('wed-dev'); location.reload(); });
   document.body.appendChild(d);
+  // кнопка «Редакторська» — лише в DEV: Катя й Діма вписують/малюють правки гри
+  const e = document.createElement('a');
+  e.id='dev-editor'; e.href='editor.html'; e.target='_blank'; e.textContent='🎬 Редакторська';
+  e.style.cssText='position:fixed;left:66px;bottom:8px;z-index:660;background:#A8505F;color:#fff;'+
+    'font:bold 10px monospace;padding:3px 7px;border:2px solid #000;letter-spacing:1px;text-decoration:none;cursor:pointer';
+  e.title='кімната правок: пишіть і малюйте зміни до гри (пароль K1TANA)';
+  document.body.appendChild(e);
 }
 function updateGateLocks(){
   const lock = !isAuthed();
