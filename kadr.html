@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Твої кадри · Катя ♥ Діма</title>
+<title>Кадри · Катя ♥ Діма</title>
 <style>
   :root{ --red:#c0303c; --ink:#2a2028; --mut:#8a7f78; --cream:#faf6ec; --line:#e3dccb }
   *{ box-sizing:border-box; margin:0; padding:0 }
@@ -11,23 +11,34 @@
   body{ background:var(--cream); color:var(--ink); font-family:Georgia,"Times New Roman",serif; -webkit-tap-highlight-color:transparent }
   .band{ height:16px; background:repeating-linear-gradient(90deg, var(--red) 0 4px, transparent 4px 9px, var(--red) 9px 13px, transparent 13px 18px);
          -webkit-mask:repeating-linear-gradient(90deg,#000 0 13px,transparent 13px 18px); opacity:.9 }
-  .wrap{ max-width:560px; margin:0 auto; padding:18px 16px 60px; text-align:center }
+  .wrap{ max-width:600px; margin:0 auto; padding:18px 16px 60px; text-align:center }
   .head{ font-size:12px; letter-spacing:3px; color:var(--mut); text-transform:uppercase; margin:16px 0 4px }
   .head .h{ color:var(--red) }
   h1{ font-size:30px; color:var(--red); letter-spacing:1px; margin:2px 0 2px }
   .sub{ color:var(--mut); font-size:14px; margin-bottom:4px }
   .count{ display:inline-block; margin:10px 0 4px; font-size:13px; color:var(--ink); background:#fff; border:2px solid var(--line); border-radius:20px; padding:5px 14px }
   .btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:14px 0 6px }
-  .btn{ font-family:inherit; font-size:16px; padding:13px 20px; border:2px solid #000; background:var(--red); color:#fff; border-radius:6px; cursor:pointer }
-  .btn.alt{ background:#fff; color:var(--ink); border-color:var(--line) }
-  .note{ font-size:12px; color:var(--mut); margin:8px auto; max-width:420px; line-height:1.5 }
+  .btn{ font-family:inherit; font-size:16px; padding:13px 20px; border:2px solid #000; background:var(--red); color:#fff; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-block }
+  .note{ font-size:12px; color:var(--mut); margin:8px auto; max-width:440px; line-height:1.5 }
   #status{ min-height:18px; font-size:13px; color:var(--red); margin:6px 0 }
   .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px }
   .ph{ position:relative; aspect-ratio:1; background:#efe9dc; border:3px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.12); overflow:hidden }
-  .ph img{ width:100%; height:100%; object-fit:cover; image-rendering:auto }
+  .ph img{ width:100%; height:100%; object-fit:cover }
   .ph::after{ content:''; position:absolute; inset:0; box-shadow:inset 0 0 24px rgba(0,0,0,.25); pointer-events:none }
   .empty{ color:var(--mut); font-size:13px; margin-top:14px }
   .soon{ margin-top:20px; font-size:12px; color:var(--mut) }
+  #testbar{ margin:8px auto; max-width:460px; font-size:12.5px; color:var(--mut); background:#fff; border:2px dashed var(--line); border-radius:8px; padding:8px 12px; line-height:1.5 }
+  #testbar b{ color:var(--red) }
+  /* хаб */
+  .tasks{ display:flex; flex-direction:column; gap:10px; margin-top:16px }
+  .task{ display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--line); border-radius:10px; padding:12px 14px; text-decoration:none; color:var(--ink); text-align:left }
+  .task .em{ font-size:24px }
+  .task .tt{ flex:1 }
+  .task .tt b{ color:var(--red); font-size:16px }
+  .task .tt span{ display:block; font-size:12px; color:var(--mut) }
+  .task .n{ font-size:12px; color:var(--mut); white-space:nowrap }
+  .add{ display:flex; gap:8px; margin-top:12px }
+  .add input{ flex:1; font-family:inherit; font-size:15px; padding:11px; background:#fff; border:2px solid var(--line); border-radius:8px; color:var(--ink) }
   a{ color:var(--red) }
 </style>
 </head>
@@ -35,23 +46,36 @@
 <div class="band"></div>
 <div class="wrap">
   <div class="head">КАТЯ <span class="h">♥</span> ДІМА · 6.9.2026</div>
-  <h1>📸 Твої кадри</h1>
-  <div class="sub" id="task-sub">спільний альбом весілля</div>
-  <div class="count" id="count">погана цифра · 2 Мп · 27 кадрів</div>
-  <div id="testbar" style="display:none;margin:8px auto;max-width:440px;font-size:12.5px;color:var(--mut);background:#fff;border:2px dashed var(--line);border-radius:8px;padding:8px 12px;line-height:1.5">
-    🎞 <b style="color:var(--red)">поки тестовий режим</b> — камеру ввімкнемо на весіллі 6.9.2026.<br>можеш спробувати, як воно працює (кадри тимчасові)
+
+  <!-- ХАБ (коли нема ?t=) -->
+  <div id="hub" style="display:none">
+    <h1>📸 Електронні камери</h1>
+    <div class="sub">обери завдання — або придумай своє</div>
+    <div id="testbar-hub" style="display:none"></div>
+    <div class="tasks" id="tasklist"></div>
+    <div class="add">
+      <input id="newtask" maxlength="32" placeholder="придумай своє завдання…">
+      <button class="btn" id="newgo">＋</button>
+    </div>
+    <div class="note">Кожне завдання — своя «камера» на 27 кадрів. Фото з телефона — у спільний альбом 🤍</div>
+    <div class="soon">поганенька цифрова мильниця прямо тут — скоро ✨</div>
   </div>
 
-  <div class="btns">
-    <label class="btn">📷 Зняти / вибрати фото<input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+  <!-- КАМЕРА (коли є ?t=) -->
+  <div id="cam" style="display:none">
+    <h1 id="cam-title">📸 Камера</h1>
+    <div class="sub" id="task-sub"></div>
+    <div class="count" id="count">погана цифра · 2 Мп · 27 кадрів</div>
+    <div id="testbar" style="display:none">🎞 <b>поки тестовий режим</b> — камеру ввімкнемо на весіллі 6.9.2026.<br>можеш спробувати, як воно працює (кадри тимчасові)</div>
+    <div class="btns">
+      <label class="btn">📷 Зняти / вибрати фото<input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+      <a class="btn" href="kadr" style="background:#fff;color:var(--ink);border-color:var(--line)">← усі камери</a>
+    </div>
+    <div id="status"></div>
+    <div class="note">Знято на одноразову камеру? Лиши її на столі — ми проявимо.<br>А сюди залий фото з телефона — воно піде в альбом цього завдання 🤍</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty">поки порожньо — будь першим кадром ✦</div>
   </div>
-  <div id="status"></div>
-  <div class="note">Знято на одноразову камеру? Лиши її на столі — ми проявимо.<br>А сюди можеш одразу залити фото з телефона — вони підуть у наш спільний альбом 🤍</div>
-
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty">поки порожньо — будь першим кадром ✦</div>
-
-  <div class="soon">поганенька цифрова мильниця прямо тут — скоро ✨</div>
 </div>
 
 <script>
@@ -59,54 +83,84 @@
 const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
 const FS='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
 const PARAMS=new URLSearchParams(location.search);
-const TASK=(PARAMS.get('t')||'весілля').slice(0,40);
 const CAP=27;
-const LIVE_TS=Date.UTC(2026,8,6,4,0,0);           // 6.9.2026 — «плівка заряджена»; до того тестовий режим
+const LIVE_TS=Date.UTC(2026,8,6,4,0,0);
 const TEST = Date.now() < LIVE_TS;
-if(TASK!=='весілля') document.getElementById('task-sub').textContent='завдання: '+TASK;
-if(TEST) document.getElementById('testbar').style.display='block';
-
 const $=id=>document.getElementById(id);
-function st(t){ $('status').textContent=t; }
 
-async function loadKadry(){
+const TASKS=[
+  ['pershyi-tanets','💃','перший танець'],
+  ['narechena','👰','наречена крупним планом'],
+  ['tost','🥂','пʼяний тост / вітання'],
+  ['dity','🧒','діти на весіллі'],
+  ['smishne','😂','щось смішне'],
+  ['zahalne','🎉','все підряд'],
+];
+const TITLES=Object.fromEntries(TASKS.map(t=>[t[0],t[2]]));
+
+const T=(PARAMS.get('t')||'').slice(0,40);
+let allDocs=[];
+
+async function loadAll(){
   try{
-    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=200');
-    if(!r.ok) return;
-    const j=await r.json();
-    const list=(j.documents||[]).map(d=>d.fields||{})
-      .filter(f=> f.kind && f.kind.stringValue==='kadr' && (f.task?f.task.stringValue:'весілля')===TASK && f.image && f.image.stringValue)
-      .sort((a,b)=> (+(b.at?.integerValue||0))-(+(a.at?.integerValue||0)));
-    const grid=$('grid'); grid.innerHTML='';
-    list.forEach(f=>{ const d=document.createElement('div'); d.className='ph';
-      const im=document.createElement('img'); im.src=f.image.stringValue; d.appendChild(im); grid.appendChild(d); });
-    $('empty').style.display=list.length?'none':'block';
-    $('count').textContent = list.length>=CAP ? 'катушку відзнято! ('+list.length+' кадрів)' : ('погана цифра · кадр '+list.length+' з '+CAP);
+    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300');
+    if(r.ok){ const j=await r.json();
+      allDocs=(j.documents||[]).map(d=>d.fields||{}).filter(f=>f.kind&&f.kind.stringValue==='kadr'&&f.image&&f.image.stringValue); }
   }catch(e){}
 }
+function taskCount(t){ return allDocs.filter(f=>(f.task?f.task.stringValue:'')===t).length; }
 
-// «погана рання цифра» ~2 Мп: мʼяка різкість, соковиті кольори, шум, віньєтка, помаранчевий штамп дати
+async function renderHub(){
+  $('hub').style.display='block';
+  if(TEST){ $('testbar-hub').innerHTML='<div id="testbar" style="display:block">🎞 <b>поки тестовий режим</b> — камери ввімкнемо на весіллі 6.9.2026</div>'; }
+  await loadAll();
+  // предвизначені + знайдені кастомні (з фото)
+  const known=new Set(TASKS.map(t=>t[0]));
+  const custom=[...new Set(allDocs.map(f=>f.task?f.task.stringValue:'').filter(t=>t && !known.has(t)))];
+  const list=$('tasklist'); list.innerHTML='';
+  const row=(t,em,title)=>{ const a=document.createElement('a'); a.className='task'; a.href='kadr?t='+encodeURIComponent(t);
+    a.innerHTML='<div class="em">'+em+'</div><div class="tt"><b>'+title+'</b><span>камера · до 27 кадрів</span></div><div class="n">'+taskCount(t)+' 📷</div>';
+    list.appendChild(a); };
+  TASKS.forEach(([t,em,title])=>row(t,em,title));
+  custom.forEach(t=>row(t,'✦',t));
+  $('newgo').onclick=()=>{ const v=($('newtask').value||'').trim().slice(0,32); if(v) location.href='kadr?t='+encodeURIComponent(v); };
+  $('newtask').addEventListener('keydown',e=>{ if(e.key==='Enter') $('newgo').click(); });
+}
+
+function loadCam(){
+  const list=allDocs.filter(f=>(f.task?f.task.stringValue:'')===T)
+    .sort((a,b)=>(+(b.at?.integerValue||0))-(+(a.at?.integerValue||0)));
+  const grid=$('grid'); grid.innerHTML='';
+  list.forEach(f=>{ const d=document.createElement('div'); d.className='ph';
+    const im=document.createElement('img'); im.src=f.image.stringValue; d.appendChild(im); grid.appendChild(d); });
+  $('empty').style.display=list.length?'none':'block';
+  $('count').textContent = list.length>=CAP ? 'катушку відзнято! ('+list.length+' кадрів)' : ('погана цифра · кадр '+list.length+' з '+CAP);
+}
+async function renderCam(){
+  $('cam').style.display='block';
+  $('cam-title').textContent='📸 '+(TITLES[T]||T);
+  $('task-sub').textContent='камера завдання · до 27 кадрів';
+  if(TEST) $('testbar').style.display='block';
+  await loadAll(); loadCam();
+}
+
+// «погана рання цифра» ~2 Мп
 function compress(file){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
       const long=1280, k=Math.min(1, long/Math.max(img.width,img.height));
       let w=Math.round(img.width*k), h=Math.round(img.height*k);
-      // 1) мʼякість: даунскейл→апскейл (низька роздільність, як старий digicam)
       const sm=document.createElement('canvas'); sm.width=Math.max(1,Math.round(w*0.55)); sm.height=Math.max(1,Math.round(h*0.55));
       sm.getContext('2d').drawImage(img,0,0,sm.width,sm.height);
       const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
       g.imageSmoothingQuality='low'; g.filter='saturate(1.32) contrast(1.14) brightness(1.03)';
       g.drawImage(sm,0,0,w,h); g.filter='none';
-      // 2) шум сенсора
       const id=g.getImageData(0,0,w,h), d=id.data;
       for(let i=0;i<d.length;i+=4){ const n=(Math.random()*24-12)|0; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
       g.putImageData(id,0,0);
-      // 3) віньєтка
       const gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.33,w/2,h/2,Math.max(w,h)*0.72);
-      gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.30)');
-      g.fillStyle=gr; g.fillRect(0,0,w,h);
-      // 4) помаранчевий штамп дати (як на нульових мильницях)
+      gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.30)'); g.fillStyle=gr; g.fillRect(0,0,w,h);
       const fs=Math.max(14,Math.round(h*0.045));
       g.font='bold '+fs+'px "Courier New",monospace'; g.textAlign='right'; g.textBaseline='bottom';
       g.shadowColor='rgba(255,120,0,.7)'; g.shadowBlur=fs*0.5; g.fillStyle='#ff9a2e';
@@ -117,21 +171,24 @@ function compress(file){
   });
 }
 
-$('file').addEventListener('change', async e=>{
-  const f=e.target.files && e.target.files[0]; if(!f) return;
-  st('готую фото…');
-  const data=await compress(f);
-  st('завантажую…');
-  try{
-    const body={fields:{ kind:{stringValue:'kadr'}, task:{stringValue:TASK},
-      image:{stringValue:data}, at:{integerValue:String(Date.now())} }};
-    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(r.ok){ st('✓ кадр у альбомі! 🤍'); loadKadry(); }
-    else st('не вдалося залити — спробуй ще раз за хвилину');
-  }catch(err){ st('немає звʼязку — спробуй пізніше'); }
-  e.target.value='';
-});
-loadKadry();
+if(T){
+  renderCam();
+  $('file').addEventListener('change', async e=>{
+    const f=e.target.files && e.target.files[0]; if(!f) return;
+    $('status').textContent='готую фото…';
+    const data=await compress(f);
+    $('status').textContent='завантажую…';
+    try{
+      const body={fields:{ kind:{stringValue:'kadr'}, task:{stringValue:T}, image:{stringValue:data}, at:{integerValue:String(Date.now())} }};
+      const r=await fetch(FS+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.ok){ $('status').textContent='✓ кадр у альбомі! 🤍'; await loadAll(); loadCam(); }
+      else $('status').textContent='не вдалося залити — спробуй ще раз';
+    }catch(err){ $('status').textContent='немає звʼязку — спробуй пізніше'; }
+    e.target.value='';
+  });
+}else{
+  renderHub();
+}
 </script>
 </body>
 </html>
