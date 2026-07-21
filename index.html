@@ -9180,7 +9180,8 @@ async function saveVoiceTrack(author, blob, pattern, sampleB64){
 }
 async function loadVoiceTracks(){
   try{
-    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=40');
+    const r = await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey+'&pageSize=200'+
+      ['author','audio','mime','pattern','sample','at'].map(f=>'&mask.fieldPaths='+f).join(''));   // маска: не тягнемо правки редакторської
     if(!r.ok) return [];
     const j = await r.json();
     return (j.documents||[]).map(d=>({
