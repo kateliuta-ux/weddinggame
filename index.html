@@ -751,8 +751,14 @@ ctx.imageSmoothingEnabled = false;
     st.style.maxHeight = '100dvh';
   }
 }
-// при повороті пристрою перезбираємо розкладку
-addEventListener('orientationchange', ()=> setTimeout(()=> location.reload(), 250));
+// при повороті пристрою перезбираємо розкладку — АЛЕ лише коли орієнтація СПРАВДІ змінилась
+// портрет↔ландшафт (інакше на телефоні reload спрацьовував від дрожу сенсора / появи клавіатури → «глючило»)
+addEventListener('orientationchange', ()=>{
+  setTimeout(()=>{
+    const nowPortrait = matchMedia('(orientation:portrait)').matches;
+    if(nowPortrait !== PORTRAIT_MODE) location.reload();   // категорія змінилась — потрібна нова розкладка
+  }, 300);
+});
 
 const COL = {
   ink:'#1a1a24', skin:'#e8b08a', skinSh:'#c98f6c',
@@ -11205,8 +11211,13 @@ if('serviceWorker' in navigator){ try{
         // нова версія готова — застосуємо тихо при наступному відкритті/фокусі
         if(!document.hidden) nw.postMessage('skip'); }); });
   });
+  // тихе оновлення: перезавантажуємось максимум ОДИН раз за сесію (щоб на телефоні не було циклу reload)
   let _reloaded=false;
-  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(_reloaded) return; _reloaded=true; location.reload(); });
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(_reloaded) return; _reloaded=true;
+    try{ if(sessionStorage.getItem('wed-sw-reloaded')) return; sessionStorage.setItem('wed-sw-reloaded','1'); }catch(_){}
+    location.reload();
+  });
 }catch(_){} }
 let installPrompt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
