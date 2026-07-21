@@ -22,40 +22,52 @@
   .btn{ font-family:inherit; font-size:15px; padding:12px 18px; border:2px solid #000; background:var(--red); color:#fff; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-block }
   a{ color:var(--red) }
 
-  /* ── КОРПУС ПЛІВКОВОГО ФОТОАПАРАТА ── */
-  .cam-body{ max-width:340px; margin:14px auto 6px; background:linear-gradient(180deg,#332c38,#241f2b);
-    border-radius:22px; padding:18px 18px 22px; box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.06);
-    border:1px solid #423a49; position:relative }
-  .cam-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px }
-  .flash{ width:34px; height:20px; border-radius:5px; background:#c9c0a0; box-shadow:inset 0 0 6px rgba(0,0,0,.4); border:1px solid #7a725a }
-  .flash.on{ background:#fff7d0; box-shadow:0 0 14px 3px #ffe98a }
-  .brand{ font-family:Georgia,serif; color:#e7dfcf; font-size:12px; letter-spacing:2px }
-  .brand b{ color:var(--red) }
-  .counter{ background:#141018; border:2px solid #4a4250; border-radius:8px; padding:5px 10px; min-width:74px;
-    font-family:"Courier New",monospace; text-align:center }
-  .counter .big{ color:#ff5a5f; font-size:26px; font-weight:bold; line-height:1; text-shadow:0 0 8px rgba(255,90,95,.6) }
-  .counter .cl{ color:#9a90a4; font-size:8.5px; letter-spacing:1px; text-transform:uppercase }
-  /* видошукач/лінза */
-  .lens-wrap{ position:relative; background:#15121b; border-radius:14px; overflow:hidden; aspect-ratio:4/3;
-    display:flex; align-items:center; justify-content:center; border:1px solid #443c4c }
-  .lens-wrap video, .lens-wrap img.live{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
-  .vf{ position:relative; z-index:2; color:#efe7d6; text-align:center; padding:14px }
-  .vf .em{ font-size:34px; filter:grayscale(.2) }
-  .vf .t{ font-size:12.5px; color:#cfc7bb; margin-top:6px; line-height:1.4 }
-  .frame-mark{ position:absolute; z-index:3; width:16px; height:16px; border:2px solid rgba(255,255,255,.55) }
-  .fm-tl{ top:10px; left:10px; border-right:none; border-bottom:none }
-  .fm-tr{ top:10px; right:10px; border-left:none; border-bottom:none }
-  .fm-bl{ bottom:10px; left:10px; border-right:none; border-top:none }
-  .fm-br{ bottom:10px; right:10px; border-left:none; border-top:none }
-  .rec{ position:absolute; z-index:3; top:8px; left:50%; transform:translateX(-50%); font:10px "Courier New",monospace; color:#ff9a2e }
-  .shutter-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px }
-  .shutter{ width:70px; height:70px; border-radius:50%; background:radial-gradient(circle at 40% 35%,#f4f4f4,#c9c9c9);
-    border:3px solid #8a8390; box-shadow:0 4px 0 #6a6470, 0 6px 12px rgba(0,0,0,.4); cursor:pointer;
-    display:flex; align-items:center; justify-content:center; font-size:24px; user-select:none }
-  .shutter:active{ transform:translateY(3px); box-shadow:0 1px 0 #6a6470, 0 3px 8px rgba(0,0,0,.4) }
-  .shutter.spent{ background:#5a5560; border-color:#4a4550; box-shadow:none; cursor:not-allowed; color:#9a90a4 }
-  .winder{ width:30px; height:30px; border-radius:50%; border:3px dashed #7a7280; }
-  .cam-cap{ font-size:11px; color:#b8afc0; margin-top:12px; letter-spacing:1px }
+  /* ── ГОРИЗОНТАЛЬНИЙ ПЛІВКОВИЙ ФОТОАПАРАТ (стиль NOMO CAM) ── */
+  .cam-body{ --acc:#c0303c; --shell:#2e2833;
+    position:relative; width:100%; max-width:480px; margin:16px auto 6px; aspect-ratio:16/10;
+    border-radius:20px 20px 16px 16px; padding:13px 15px; display:flex; flex-direction:column; gap:9px;
+    background:linear-gradient(180deg,#3c3542 0 33%, var(--shell) 33% 100%);
+    box-shadow:0 16px 36px rgba(0,0,0,.42), inset 0 2px 0 rgba(255,255,255,.08), inset 0 -4px 10px rgba(0,0,0,.45);
+    border:1px solid #48414f; overflow:hidden }
+  .cam-body::after{ content:''; position:absolute; left:0; right:0; top:33%; bottom:0; pointer-events:none;
+    background-image:radial-gradient(rgba(0,0,0,.22) 1px, transparent 1.5px); background-size:5px 5px; opacity:.55 }
+  /* верхня палуба: видошукач · спалах · лічильник · спуск */
+  .cam-deck{ display:flex; align-items:center; gap:9px; z-index:2 }
+  .vfinder{ width:44px; height:28px; border-radius:4px; background:#0e0b14; border:2px solid #55495f; position:relative;
+    display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 8px rgba(0,0,0,.7); flex:none }
+  .vfinder .em{ font-size:16px }
+  .rec{ position:absolute; top:-14px; left:0; font:8px "Courier New",monospace; color:#ff9a2e; white-space:nowrap }
+  .flash{ width:38px; height:15px; border-radius:4px; flex:none; background:linear-gradient(180deg,#ece5c8,#b7ad86);
+    border:1px solid #6e6650; box-shadow:inset 0 1px 2px rgba(255,255,255,.6) }
+  .flash.on{ background:#fff8d6; box-shadow:0 0 18px 5px #ffe98a }
+  .counter{ background:#120e18; border:2px solid #4a4250; border-radius:6px; padding:2px 9px; text-align:center; line-height:1; flex:none }
+  .counter .big{ color:#ff5a5f; font:bold 19px "Courier New",monospace; text-shadow:0 0 8px rgba(255,90,95,.6) }
+  .counter .cl{ color:#9a90a4; font:7px/1 sans-serif; letter-spacing:1px; text-transform:uppercase }
+  .spacer{ flex:1 }
+  .shutter{ width:50px; height:50px; border-radius:50%; flex:none; cursor:pointer; position:relative; user-select:none;
+    background:radial-gradient(circle at 38% 32%, #fff, #cdcdd2 60%, #9a9aa2);
+    border:3px solid var(--acc); box-shadow:0 4px 0 rgba(0,0,0,.35), 0 7px 13px rgba(0,0,0,.4);
+    display:flex; align-items:center; justify-content:center }
+  .shutter::before{ content:''; width:19px; height:19px; border-radius:50%; background:var(--acc); box-shadow:inset 0 2px 3px rgba(0,0,0,.4) }
+  .shutter:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.35) }
+  .shutter.spent{ filter:grayscale(1) brightness(.65); cursor:not-allowed }
+  /* передня грань: лінза + бренд + коліщатко */
+  .cam-front{ display:flex; align-items:center; gap:13px; z-index:2; flex:1 }
+  .lens{ width:78px; height:78px; flex:none; border-radius:50%; position:relative;
+    background:radial-gradient(circle at 42% 38%, #4c4756, #14111a 80%);
+    border:4px solid var(--acc); box-shadow:0 4px 10px rgba(0,0,0,.5), inset 0 0 0 7px #201c27 }
+  .lens::before{ content:''; position:absolute; inset:22%; border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, rgba(120,185,225,.6), rgba(20,16,26,.92) 72%); box-shadow:inset 0 0 12px rgba(0,0,0,.85) }
+  .lens::after{ content:''; position:absolute; top:26%; left:30%; width:15px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,.45); filter:blur(1px); transform:rotate(-25deg) }
+  .cam-label{ flex:1; text-align:left; color:#efe7d6; min-width:0 }
+  .cl-brand{ font:bold 19px Georgia,serif; letter-spacing:2px; color:#f4ede0 }
+  .cl-brand span{ color:var(--acc) }
+  .cl-task{ font-size:12px; color:#d3cbbf; margin-top:2px; line-height:1.3; overflow:hidden; text-overflow:ellipsis }
+  .cl-model{ font:9px/1 "Courier New",monospace; color:#948aa0; letter-spacing:2px; text-transform:uppercase; margin-top:5px }
+  .winder{ width:26px; height:26px; flex:none; border-radius:50%; border:3px solid #6e6678;
+    background:repeating-conic-gradient(#4c4654 0 12deg, #3a3542 12deg 24deg) }
+  .cam-cap{ font-size:11px; color:#b8afc0; margin-top:10px; letter-spacing:1px; text-align:center }
   .flick{ position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:99 }
   .flick.go{ animation:fl .28s ease-out }
   @keyframes fl{ 0%{opacity:0} 12%{opacity:.92} 100%{opacity:0} }
@@ -125,26 +137,26 @@
       <div class="refgrid" id="refgrid"></div>
     </div>
 
-    <!-- корпус фотоапарата -->
-    <div class="cam-body">
-      <div class="cam-top">
+    <!-- горизонтальний корпус фотоапарата (NOMO-стиль) -->
+    <div class="cam-body" id="cambody">
+      <div class="cam-deck">
+        <div class="vfinder"><span class="em" id="vf-em">📷</span><span class="rec" id="rec">● TEST</span></div>
         <div class="flash" id="flash"></div>
-        <div class="brand">К<b>♥</b>Д · 27</div>
-        <div class="counter"><div class="big" id="cnum">27</div><div class="cl">кадрів</div></div>
+        <div class="counter"><div class="big" id="cnum">27</div><div class="cl">кадр</div></div>
+        <div class="spacer"></div>
+        <label class="shutter" id="shutter" title="зняти кадр"><input id="file" type="file" accept="image/*" capture="environment" hidden></label>
       </div>
-      <div class="lens-wrap" id="lens">
-        <span class="frame-mark fm-tl"></span><span class="frame-mark fm-tr"></span>
-        <span class="frame-mark fm-bl"></span><span class="frame-mark fm-br"></span>
-        <div class="rec" id="rec">● TEST</div>
-        <div class="vf" id="vf"><div class="em" id="vf-em">📷</div><div class="t" id="vf-t">наведи й тисни кнопку</div></div>
-      </div>
-      <div class="shutter-row">
+      <div class="cam-front">
+        <div class="lens"></div>
+        <div class="cam-label">
+          <div class="cl-brand">К <span>♥</span> Д</div>
+          <div class="cl-task" id="vf-t">наведи й тисни спуск</div>
+          <div class="cl-model">film · 27 кадрів</div>
+        </div>
         <div class="winder"></div>
-        <label class="shutter" id="shutter">📸<input id="file" type="file" accept="image/*" capture="environment" hidden></label>
-        <div class="winder"></div>
       </div>
-      <div class="cam-cap" id="camcap">лишилось <b id="left">27</b> кадрів</div>
     </div>
+    <div class="cam-cap" id="camcap">лишилось <b id="left">27</b> кадрів</div>
 
     <div id="status"></div>
     <div class="note" id="cam-note">Знімай усе, що зачепило. <b>Проявлені фото зʼявляться тут після весілля</b> — як зі справжньою плівкою 🎞</div>
@@ -256,12 +268,18 @@ function renderRoll(){
         const im=document.createElement('img'); im.src=f.image.stringValue; d.appendChild(im); grid.appendChild(d); });
   }
 }
+const PAL=['#c0303c','#2f7d8a','#d98a2b','#5a6e3a','#8a4a7a','#2f5a8a','#3a8a6a','#a8603a','#7a5aa8','#b0475f','#4a7a9a','#9a6a2f'];
 async function renderCam(){
   $('cam').style.display='block';
   const m=META[T];
   $('cam-title').textContent=(m?m.em:'📸')+' '+(m?m.title:T);
   $('vf-em').textContent=m?m.em:'📷';
+  $('vf-t').textContent=m?m.title:T;                        // підпис завдання на камері
   $('task-sub').textContent='№ '+T+' · одноразова камера';
+  // свій колір-акцент на кожне завдання (свій фотік)
+  const idx=TASKS.findIndex(x=>x[0]===T);
+  const hash=idx>=0?idx:[...T].reduce((a,c)=>a+c.charCodeAt(0),0);
+  $('cambody').style.setProperty('--acc', PAL[hash%PAL.length]);
   $('rec').textContent = TEST ? '● TEST' : '● '+new Date().toISOString().slice(0,10);
   if(DEV) $('devbar').style.display='block';
   await loadAll();
