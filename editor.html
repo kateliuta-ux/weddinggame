@@ -184,7 +184,33 @@ const NOVEL_SCENES = [
 const LS_KEY = 'wed-editor-v1';
 let db = { status:{}, notes:{}, items:[], customElements:[] };     // items: {id, scene, kind:'drawing'|'photo'|'story', img?, text?, at, sent}
 try{ const raw = localStorage.getItem(LS_KEY); if(raw) db = Object.assign(db, JSON.parse(raw)); if(!db.customElements) db.customElements=[]; }catch(_){}
-function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){ toast('⚠️ памʼять браузера переповнена — надішли або збережи правки і видали старі'); } }
+/* ЗЛИТТЯ: щоб дві вкладки/двоє людей одночасно нічого не затерли — об'єднуємо (union), не видаляючи чуже */
+function mergeDb(mine, other){
+  if(!other) return mine;
+  const out={ status:Object.assign({}, other.status||{}, mine.status||{}),   // свої свіжіші зверху
+              notes:Object.assign({}, other.notes||{}, mine.notes||{}),
+              items:[], customElements:[] };
+  const seen=new Set();
+  [...(mine.items||[]),...(other.items||[])].forEach(it=>{ if(it&&!seen.has(it.id)){ seen.add(it.id); out.items.push(it); } });
+  const se=new Set();
+  [...(mine.customElements||[]),...(other.customElements||[])].forEach(e=>{ if(e&&!se.has(e.id)){ se.add(e.id); out.customElements.push(e); } });
+  return out;
+}
+function persist(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);           // влити те, що встигла записати інша вкладка/пристрій
+    if(raw){ db = mergeDb(db, JSON.parse(raw)); }
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+  }catch(e){ toast('⚠️ памʼять браузера переповнена — надішли або збережи правки і видали старі'); }
+}
+/* інша вкладка щось змінила → підтягуємо, але не перебиваємо активне введення */
+window.addEventListener('storage', e=>{
+  if(e.key!==LS_KEY || !e.newValue) return;
+  try{ db = mergeDb(db, JSON.parse(e.newValue));
+    const ae=document.activeElement;
+    if(!ae || !/TEXTAREA|INPUT/.test(ae.tagName)) render();
+  }catch(_){}
+});
 function toast(t, ms){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block';
   clearTimeout(el._t); el._t=setTimeout(()=> el.style.display='none', ms||2600); }
 const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -200,12 +226,16 @@ if(sessionStorage.getItem('wed-editor-auth')) document.getElementById('gate').cl
 
 /* ───────────────────────── вкладки і картки ───────────────────────── */
 const main = document.getElementById('main');
-let tab='mech';
+const VALID_TABS=['mech','novel','scenar','guests','elements','sent'];
+let tab = (new URLSearchParams(location.search).get('tab')||'mech');
+if(!VALID_TABS.includes(tab)) tab='mech';
+function setActiveNav(){ document.querySelectorAll('nav button').forEach(x=> x.classList.toggle('on', x.dataset.tab===tab)); }
 document.querySelectorAll('nav button').forEach(b=> b.addEventListener('click', ()=>{
-  tab=b.dataset.tab;
-  document.querySelectorAll('nav button').forEach(x=> x.classList.toggle('on', x===b));
+  tab=b.dataset.tab; setActiveNav();
+  try{ history.replaceState(null,'', 'editor?tab='+tab); }catch(_){}   // кожна вкладка — своє посилання
   render();
 }));
+setActiveNav();
 
 function sceneCard(id, title, desc, isNovel, placeholder, onDelete){
   const card = document.createElement('div'); card.className='card'; card.dataset.scene=id;
