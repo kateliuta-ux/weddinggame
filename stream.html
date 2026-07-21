@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Трансляція · Катя ♥ Діма</title>
+<meta name="description" content="Пряма трансляція весілля Каті та Діми, 6.9.2026.">
+<style>
+  :root{ --red:#c0303c; --ink:#2a2028; --mut:#8a7f78; --cream:#faf6ec; --line:#e3dccb }
+  *{ box-sizing:border-box; margin:0; padding:0 }
+  body{ background:var(--cream); color:var(--ink); font-family:Georgia,serif; min-height:100vh; -webkit-tap-highlight-color:transparent }
+  .band{ height:16px; background:repeating-linear-gradient(90deg,var(--red) 0 4px,transparent 4px 9px,var(--red) 9px 13px,transparent 13px 18px);
+    -webkit-mask:repeating-linear-gradient(90deg,#000 0 13px,transparent 13px 18px); opacity:.9 }
+  .wrap{ max-width:520px; margin:0 auto; padding:22px 18px 60px; text-align:center }
+  .head{ font-size:12px; letter-spacing:3px; color:var(--mut); text-transform:uppercase; margin:18px 0 6px }
+  .head .h{ color:var(--red) }
+  h1{ font-size:30px; color:var(--red); margin:6px 0 }
+  .sub{ color:var(--mut); font-size:14px; margin-bottom:20px }
+  .card{ background:#fff; border:2px solid var(--line); border-radius:16px; padding:26px 20px; margin-top:10px }
+  .big{ font-size:46px }
+  .msg{ font-size:15px; color:var(--ink); margin-top:12px; line-height:1.5 }
+  .cd{ font-family:"Courier New",monospace; font-size:20px; color:var(--red); margin-top:14px; letter-spacing:1px }
+  .watch{ display:inline-block; margin-top:16px; font-size:18px; font-family:Georgia,serif; padding:15px 30px;
+    background:var(--red); color:#fff; border:2px solid #000; border-radius:8px; text-decoration:none }
+  .note{ font-size:12.5px; color:var(--mut); margin-top:18px; line-height:1.5 }
+  .dev{ margin-top:26px; border-top:1px dashed var(--line); padding-top:16px }
+  .dev input{ width:100%; font-family:inherit; font-size:14px; padding:11px; border:2px solid var(--line); border-radius:8px; margin-bottom:8px }
+  .dev button{ font-family:inherit; font-size:14px; padding:10px 16px; background:#3a3550; color:#fff; border:none; border-radius:8px; cursor:pointer }
+  .dev .t{ font-size:11px; color:var(--mut); margin-bottom:8px }
+  #dstatus{ font-size:12px; color:var(--red); min-height:16px; margin-top:6px }
+  a{ color:var(--red) }
+</style>
+</head>
+<body>
+<div class="band"></div>
+<div class="wrap">
+  <div class="head">КАТЯ <span class="h">♥</span> ДІМА · 6.9.2026</div>
+  <h1>📺 Трансляція</h1>
+  <div class="sub">пряма трансляція нашого свята</div>
+
+  <div class="card" id="card">
+    <div class="big">🎞</div>
+    <div class="msg" id="msg">завантажую…</div>
+    <div class="cd" id="cd"></div>
+  </div>
+
+  <div class="note" id="note">Не змогли доїхати — будьте з нами онлайн 🤍<br>Це посилання не зміниться: збережіть його.</div>
+
+  <div class="dev" id="devbox" style="display:none">
+    <div class="t">DEV: встав сюди справжнє посилання на трансляцію (YouTube / Meet / інше) і збережи — гості одразу побачать кнопку.</div>
+    <input id="durl" placeholder="https://youtube.com/live/… або https://meet.google.com/…">
+    <button id="dsave">Зберегти посилання</button>
+    <div id="dstatus"></div>
+  </div>
+
+  <div style="margin-top:24px"><a href="/">← на головну</a></div>
+</div>
+
+<script>
+'use strict';
+const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
+const FS='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
+const $=id=>document.getElementById(id);
+const WED_TS=Date.UTC(2026,8,6,8,30,0);   // 6.9 11:30 Kyiv — збір
+const DEV=(()=>{ try{ return localStorage.getItem('wed-dev')==='1' || new URLSearchParams(location.search).get('dev'); }catch(_){ return false; } })();
+
+function fmtCountdown(){
+  const ms=WED_TS-Date.now(); if(ms<=0) return '';
+  const d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24, m=Math.floor(ms/6e4)%60;
+  return d+'д '+h+'год '+m+'хв до збору';
+}
+async function getUrl(){
+  try{
+    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300');
+    if(!r.ok) return null;
+    const j=await r.json();
+    const rows=(j.documents||[]).map(d=>d.fields||{})
+      .filter(f=>f.kind&&f.kind.stringValue==='streamurl'&&f.url&&f.url.stringValue)
+      .sort((a,b)=>(+(b.at?.integerValue||0))-(+(a.at?.integerValue||0)));
+    return rows.length? rows[0].url.stringValue : null;
+  }catch(e){ return null; }
+}
+function isSafe(u){ return /^https:\/\//i.test(u); }
+async function render(){
+  const url=await getUrl();
+  if(url && isSafe(url)){
+    $('card').innerHTML='<div class="big">🔴</div><div class="msg"><b>Трансляція готова</b></div>'+
+      '<a class="watch" href="'+url.replace(/"/g,'')+'" target="_blank" rel="noopener">▶ Дивитись трансляцію</a>';
+  } else {
+    $('msg').innerHTML='Посилання на трансляцію зʼявиться тут <b>ближче до весілля</b>.<br>Збережіть цю сторінку — воно оновиться саме тут.';
+    const c=fmtCountdown(); if(c) $('cd').textContent=c;
+  }
+  if(DEV){
+    $('devbox').style.display='block';
+    if(url) $('durl').value=url;
+    $('dsave').onclick=async ()=>{
+      const u=($('durl').value||'').trim();
+      if(!isSafe(u)){ $('dstatus').textContent='посилання має починатись з https://'; return; }
+      $('dstatus').textContent='зберігаю…';
+      try{
+        const body={fields:{ kind:{stringValue:'streamurl'}, url:{stringValue:u}, at:{integerValue:String(Date.now())} }};
+        const r=await fetch(FS+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        $('dstatus').textContent = r.ok ? '✓ збережено — гості бачать кнопку' : 'не вдалося зберегти';
+        if(r.ok) setTimeout(render,600);
+      }catch(e){ $('dstatus').textContent='немає звʼязку'; }
+    };
+  }
+}
+render();
+setInterval(()=>{ const c=fmtCountdown(); if(c && $('cd')) $('cd').textContent=c; }, 30000);
+</script>
+</body>
+</html>
