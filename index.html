@@ -4902,6 +4902,22 @@ function drawWedHearts(){
     ctx.fillRect(hx,hy+2,7,3); ctx.fillRect(hx+1,hy+5,5,2);
   }
 }
+/* ЮРБА ГОСТЕЙ: справжні селфі гостей як масовка на фоні сцен (порожньо → нічого) */
+function drawGuestCrowd(yBase, opts){
+  opts = opts || {};
+  const faces = GUEST_FACES.filter(f=>headReady(f.img));
+  if(!faces.length) return;
+  const n = Math.min(faces.length, opts.max||16), hs = opts.size||9, sp = W/(n+1);
+  const sh = ['#5a4a6a','#4a5a4a','#6a4a4a','#4a4a6a','#5a5a4a'];
+  for(let i=0;i<n;i++){
+    const f = faces[i], x = Math.round(sp*(i+1) + Math.sin(i*1.7)*3), y = yBase + ((i%2)?0:-3);
+    if(opts.skip && x>opts.skip[0] && x<opts.skip[1]) continue;   // не заходити на важливий елемент (напр. дзвіницю)
+    ctx.fillStyle = sh[i%sh.length]; ctx.fillRect(x-hs/2-1, y+hs-3, hs+2, hs);   // плечі
+    ctx.save(); ctx.beginPath(); ctx.rect(x-hs/2, y-hs/2, hs, hs); ctx.clip();
+    ctx.imageSmoothingEnabled=false; ctx.drawImage(f.img, x-hs/2, y-hs/2, hs, hs); ctx.restore();
+    ctx.strokeStyle='rgba(250,246,234,.6)'; ctx.lineWidth=1; ctx.strokeRect(x-hs/2+.5, y-hs/2+.5, hs-1, hs-1);
+  }
+}
 function drawWed(){
   if(game.wedLoc === 'khv') drawWedKhv(); else drawWedSofi();
   if(!game.watch && game.phaseT > 80){
@@ -4964,6 +4980,8 @@ function drawWedSofi(){
   ctx.fillRect(36, FLOOR_Y+2, 8, 10); ctx.fillRect(104, FLOOR_Y+2, 8, 10);
   ctx.fillRect(47, FLOOR_Y+4, 2, 2); ctx.fillRect(47, FLOOR_Y+8, 2, 2);
   ctx.fillRect(99, FLOOR_Y+4, 2, 2); ctx.fillRect(99, FLOOR_Y+8, 2, 2);
+  // ЮРБА гостей — стоять позаду, спостерігають обряд (оминаємо дзвіницю)
+  drawGuestCrowd(FLOOR_Y-6, {max:14, size:9, skip:[228,300]});
   // почет: дружки ліворуч від Каті, бояри праворуч від Діми
   drawAttendant(10, FLOOR_Y+4, BRIDES[0], 1.35); drawAttendant(32, FLOOR_Y+4, BRIDES[1], 1.35);
   drawAttendant(104, FLOOR_Y+4, GROOMS[0], 1.35); drawAttendant(126, FLOOR_Y+4, GROOMS[1], 1.35);
@@ -5131,6 +5149,8 @@ function drawWedKhv(){
   ctx.fillStyle = '#75503a';
   for(let px=sx; px<sx+sw; px+=16) ctx.fillRect(px, syTop, 2, sh);
   ctx.fillStyle = '#9a6c4a'; ctx.fillRect(sx, syTop, sw, 4);     // край помосту
+  // ЮРБА гостей — глядачі перед сценою
+  drawGuestCrowd(FLOOR_Y-2, {max:14, size:9});
   // задник сцени: напис ЛЮТІ над молодятами
   ctx.fillStyle = 'rgba(244,232,200,.9)'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
   ctx.fillText('♥ ЛЮТІ ♥', sx+sw/2, syTop-64);
@@ -9785,7 +9805,8 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
     });
     if(r.ok){
       localStorage.setItem('wed-selfie-sent', docId);
-      st.textContent = '✓ фото полетіло! скоро '+name+' зʼявиться у грі 🕹';
+      try{ const im=new Image(); im.src=selfieShot; GUEST_FACES.push({img:im, name}); }catch(_){}   // одразу себе в юрбі гри
+      st.textContent = '✓ фото полетіло! '+name+' уже в грі — тепер ти серед гостей на весіллі 🕹';
       document.getElementById('selfie-send').disabled = true;
       document.getElementById('selfie-snap').disabled = true;
     } else if(r.status===409){
@@ -11239,18 +11260,21 @@ function makeDemoFaces(n){
     x.fillStyle='#8a3a3a'; x.fillRect(41,61,14,4);                 // усмішка
     const im=new Image(); im.src=c.toDataURL('image/png');
     SITCOM_EXTRA.push({img:im, name:'Гість '+(i+1)});
+    try{ GUEST_FACES.push({img:im, name:'Гість '+(i+1)}); }catch(_){}   // і в юрбу сцен
   }
 }
 if(PARAMS.get('demofaces')){
   const N=Math.max(1,Math.min(40,parseInt(PARAMS.get('demofaces'),10)||16));
+  const SCENE=PARAMS.get('demoscene')||'sitcom';
   setTimeout(()=>{ try{
     const stub=document.getElementById('release-stub'); if(stub) stub.classList.add('hidden');
     makeDemoFaces(N);
     startGame('katya', true);
-    setPhase('sitcom');
-    const HOLD = ()=> sitcomFrames().length*80 - 10;   // уся купа показана, але БЕЗ авто-переходу далі
-    // ПРИМУСОВО тримати заставку sitcom (перебиваємо авто-перехід у режимі перегляду)
-    setInterval(()=>{ if(game.phase!=='sitcom') setPhase('sitcom'); game.phaseT = HOLD(); }, 50);
+    if(SCENE==='wed'){ game.wedLoc = (PARAMS.get('loc')==='khv')?'khv':'sofi'; }
+    setPhase(SCENE);
+    const HOLD = ()=> SCENE==='sitcom' ? sitcomFrames().length*80 - 10 : 300;
+    // ПРИМУСОВО тримати обрану сцену (перебиваємо авто-перехід у режимі перегляду)
+    setInterval(()=>{ if(game.phase!==SCENE){ if(SCENE==='wed') game.wedLoc=(PARAMS.get('loc')==='khv')?'khv':'sofi'; setPhase(SCENE); } game.phaseT = HOLD(); }, 50);
   }catch(e){ console.log('demofaces', e); } }, 500);
 }
 
