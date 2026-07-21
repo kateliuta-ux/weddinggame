@@ -651,6 +651,8 @@
     <div style="font-size:13px;color:#f4f0e4;letter-spacing:1px;text-align:center">гра-запрошення виходить</div>
     <div style="font-size:20px;font-weight:bold;color:#e88aa0;letter-spacing:2px">1.8.2026 · 16:20</div>
     <div id="stub-count" style="font-family:monospace;font-size:15px;color:#f4f0e4;letter-spacing:2px;background:#1e1b28;border:2px solid #3a3646;padding:8px 16px"></div>
+    <button class="btn" id="stub-sampler" style="background:#A8505F;margin-top:4px">🎹 А поки — зроби нам мелодію</button>
+    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер уже відкритий: складеш мелодію — вона гратиме на весіллі 🎶</div>
     <div style="font-size:12px;color:#bcb7a8;letter-spacing:2px">✶ ✦ ✶</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off"
@@ -9536,6 +9538,8 @@ document.getElementById('s-back').addEventListener('click', ()=>{
     samplerStory = false;
     document.getElementById('s-back').textContent = 'НАЗАД';
     setPhase('cap2');                     // рифф записано — історія їде далі
+  } else if(window._fromStub && window.reshowStub && window.reshowStub()){
+    window._fromStub = false;             // до релізу: із семплера — назад у заглушку, не в гру
   } else {
     elTitle.classList.remove('hidden');
   }
@@ -11188,6 +11192,7 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   const RELEASE_TS = Date.UTC(2026, 7, 1, 13, 20, 0);            // 16:20 Kyiv = 13:20 UTC (літній час)
   const stub = document.getElementById('release-stub');
   function released(){ return Date.now() >= RELEASE_TS; }
+  let iv=null;
   function show(){
     stub.classList.remove('hidden');
     const cd = document.getElementById('stub-count');
@@ -11197,8 +11202,18 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
       const d=Math.floor(ms/86400000), h=Math.floor(ms/3600000)%24, m=Math.floor(ms/60000)%60, sec=Math.floor(ms/1000)%60;
       cd.textContent = d+'д '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
     };
-    tick(); const iv=setInterval(tick, 1000);
+    tick(); clearInterval(iv); iv=setInterval(tick, 1000);
   }
+  // семплер доступний ще до релізу: відкрити, лишивши решту гри під заглушкою
+  function openStubSampler(){
+    stub.classList.add('hidden');
+    try{ stopChip(); }catch(_){}
+    elTitle.classList.add('hidden');
+    document.getElementById('sampler-screen').classList.remove('hidden');
+    window._fromStub = true;
+  }
+  window.reshowStub = ()=>{ if(!released() && !DEV_MODE){ show(); return true; } return false; };
+  document.getElementById('stub-sampler').addEventListener('click', openStubSampler);
   function tryDev(){
     const v = normPass(document.getElementById('stub-pass').value);
     if(v!==DEV_PASS){ document.getElementById('stub-err').textContent='🙃'; try{sfxScore(180);}catch(_){} return; }
@@ -11208,7 +11223,10 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   }
   document.getElementById('stub-go').addEventListener('click', tryDev);
   document.getElementById('stub-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') tryDev(); });
-  if(!released() && !DEV_MODE) show();                            // ?p=K1TANA вже увімкнув DEV вище — заглушки не буде
+  if(!released() && !DEV_MODE){                                   // ?p=K1TANA вже увімкнув DEV вище — заглушки не буде
+    if(PARAMS.get('sampler')!==null) openStubSampler();          // ?sampler — одразу в семплер
+    else show();
+  }
 })();
 </script>
 </body>
