@@ -24,8 +24,8 @@
   #status{ min-height:18px; font-size:13px; color:var(--red); margin:6px 0 }
   .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px }
   .ph{ position:relative; aspect-ratio:1; background:#efe9dc; border:3px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.12); overflow:hidden }
-  .ph img{ width:100%; height:100%; object-fit:cover; filter:sepia(.28) saturate(1.05) contrast(1.03) brightness(1.02) }
-  .ph::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 60% 30%, rgba(255,240,200,.18), transparent 55%); pointer-events:none }
+  .ph img{ width:100%; height:100%; object-fit:cover; image-rendering:auto }
+  .ph::after{ content:''; position:absolute; inset:0; box-shadow:inset 0 0 24px rgba(0,0,0,.25); pointer-events:none }
   .empty{ color:var(--mut); font-size:13px; margin-top:14px }
   .soon{ margin-top:20px; font-size:12px; color:var(--mut) }
   a{ color:var(--red) }
@@ -37,9 +37,9 @@
   <div class="head">КАТЯ <span class="h">♥</span> ДІМА · 6.9.2026</div>
   <h1>📸 Твої кадри</h1>
   <div class="sub" id="task-sub">спільний альбом весілля</div>
-  <div class="count" id="count">плівка на 27 кадрів</div>
+  <div class="count" id="count">погана цифра · 2 Мп · 27 кадрів</div>
   <div id="testbar" style="display:none;margin:8px auto;max-width:440px;font-size:12.5px;color:var(--mut);background:#fff;border:2px dashed var(--line);border-radius:8px;padding:8px 12px;line-height:1.5">
-    🎞 <b style="color:var(--red)">поки тестовий режим</b> — плівку зарядимо на весіллі 6.9.2026.<br>можеш спробувати, як воно працює (кадри тимчасові)
+    🎞 <b style="color:var(--red)">поки тестовий режим</b> — камеру ввімкнемо на весіллі 6.9.2026.<br>можеш спробувати, як воно працює (кадри тимчасові)
   </div>
 
   <div class="btns">
@@ -51,7 +51,7 @@
   <div class="grid" id="grid"></div>
   <div class="empty" id="empty">поки порожньо — будь першим кадром ✦</div>
 
-  <div class="soon">плівковий фотоапарат прямо тут — скоро ✨</div>
+  <div class="soon">поганенька цифрова мильниця прямо тут — скоро ✨</div>
 </div>
 
 <script>
@@ -81,18 +81,37 @@ async function loadKadry(){
     list.forEach(f=>{ const d=document.createElement('div'); d.className='ph';
       const im=document.createElement('img'); im.src=f.image.stringValue; d.appendChild(im); grid.appendChild(d); });
     $('empty').style.display=list.length?'none':'block';
-    $('count').textContent = list.length>=CAP ? 'плівку відзнято! ('+list.length+' кадрів)' : ('кадр '+list.length+' з '+CAP);
+    $('count').textContent = list.length>=CAP ? 'катушку відзнято! ('+list.length+' кадрів)' : ('погана цифра · кадр '+list.length+' з '+CAP);
   }catch(e){}
 }
 
+// «погана рання цифра» ~2 Мп: мʼяка різкість, соковиті кольори, шум, віньєтка, помаранчевий штамп дати
 function compress(file){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
-      const max=1000, k=Math.min(1, max/Math.max(img.width,img.height));
-      const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      res(c.toDataURL('image/jpeg',0.72));
+      const long=1280, k=Math.min(1, long/Math.max(img.width,img.height));
+      let w=Math.round(img.width*k), h=Math.round(img.height*k);
+      // 1) мʼякість: даунскейл→апскейл (низька роздільність, як старий digicam)
+      const sm=document.createElement('canvas'); sm.width=Math.max(1,Math.round(w*0.55)); sm.height=Math.max(1,Math.round(h*0.55));
+      sm.getContext('2d').drawImage(img,0,0,sm.width,sm.height);
+      const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+      g.imageSmoothingQuality='low'; g.filter='saturate(1.32) contrast(1.14) brightness(1.03)';
+      g.drawImage(sm,0,0,w,h); g.filter='none';
+      // 2) шум сенсора
+      const id=g.getImageData(0,0,w,h), d=id.data;
+      for(let i=0;i<d.length;i+=4){ const n=(Math.random()*24-12)|0; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
+      g.putImageData(id,0,0);
+      // 3) віньєтка
+      const gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.33,w/2,h/2,Math.max(w,h)*0.72);
+      gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.30)');
+      g.fillStyle=gr; g.fillRect(0,0,w,h);
+      // 4) помаранчевий штамп дати (як на нульових мильницях)
+      const fs=Math.max(14,Math.round(h*0.045));
+      g.font='bold '+fs+'px "Courier New",monospace'; g.textAlign='right'; g.textBaseline='bottom';
+      g.shadowColor='rgba(255,120,0,.7)'; g.shadowBlur=fs*0.5; g.fillStyle='#ff9a2e';
+      g.fillText("'06 09 2026", w-fs*0.6, h-fs*0.55); g.shadowBlur=0;
+      res(c.toDataURL('image/jpeg',0.58));
     };
     img.src=URL.createObjectURL(file);
   });
