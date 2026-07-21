@@ -666,15 +666,22 @@
   </div>
 
   <!-- ВОРОТА: пароль з візитівки або гра гостем (перше, що бачить будь-хто) -->
-  <div id="track-save" class="overlay hidden" style="background:rgba(10,9,16,.96);gap:11px;z-index:920">
-    <div style="font-size:16px;font-weight:bold;color:#f4cf5e;letter-spacing:1px">💾 Зберегти трек у плейлист</div>
-    <div style="font-size:13px;color:#e88aa0;text-align:center;max-width:84%">🎟 За найкращий трек — запросимо на весілля!</div>
+  <div id="track-save" class="overlay hidden" style="background:rgba(10,9,16,.96);gap:9px;z-index:920;overflow-y:auto;padding:5% 3%">
+    <div style="font-size:16px;font-weight:bold;color:#f4cf5e;letter-spacing:1px">💾 Залити трек у плейлист</div>
+    <div style="font-size:13px;color:#e88aa0;text-align:center;max-width:88%">🎟 Розіграш: найкращий трек — запрошення на наше весілля!</div>
+    <div style="font-size:12px;color:#f4f0e4;text-align:center;max-width:88%;line-height:1.5;background:#2a1e24;border:2px solid #A8505F;border-radius:8px;padding:8px 12px">
+      🌻 Щоб залити трек — підтримай наш збір на ЗСУ <b>від 100 грн</b>.<br>Один донат — один трек. Це наша умова замість «вхідного» на розіграш 💛
+    </div>
+    <button class="btn" id="ts-donate" style="background:#3f7c5a">🌻 Перейти до збору</button>
     <input id="ts-name" type="text" maxlength="28" placeholder="твоє імʼя (автор треку)" autocomplete="name" style="font-family:inherit;font-size:16px;padding:.5em;width:min(84%,300px);text-align:center;background:#f8f8f3;border:3px solid #000;color:#1a1a24">
     <input id="ts-email" type="email" maxlength="60" placeholder="твоя@пошта.com" autocomplete="email" style="font-family:inherit;font-size:16px;padding:.5em;width:min(84%,300px);text-align:center;background:#f8f8f3;border:3px solid #000;color:#1a1a24">
     <div style="font-size:11px;color:#8f8a7c;max-width:84%;text-align:center;line-height:1.4">імейл потрібен, щоб зберегти трек за тобою і сповістити, якщо переможеш. Нікому не видно — бачать лише Катя й Діма.</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#f4f0e4;max-width:84%;cursor:pointer;line-height:1.4">
+      <input type="checkbox" id="ts-donated" style="width:20px;height:20px;flex:none;accent-color:#3f7c5a"> я задонатив(ла) від 100 грн на збір 🤍
+    </label>
     <div id="ts-status" style="color:#f4cf5e;font-size:12px;min-height:14px"></div>
     <div style="display:flex;gap:10px">
-      <button class="btn katya" id="ts-go">Зберегти ✓</button>
+      <button class="btn katya" id="ts-go">Залити ✓</button>
       <button class="btn" id="ts-cancel" style="background:#55515f">Скасувати</button>
     </div>
   </div>
@@ -685,7 +692,7 @@
     <div style="font-size:20px;font-weight:bold;color:#e88aa0;letter-spacing:2px">1.8.2026 · 16:20</div>
     <div id="stub-count" style="font-family:monospace;font-size:15px;color:#f4f0e4;letter-spacing:2px;background:#1e1b28;border:2px solid #3a3646;padding:8px 16px"></div>
     <button class="btn" id="stub-sampler" style="background:#A8505F;margin-top:4px">🎹 А поки — зроби нам мелодію</button>
-    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер відкритий: запиши нам трек, лиши імейл — і він у весільному плейлисті. 🎟 за найкращий — запрошення на весілля!</div>
+    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер відкритий: запиши нам трек — і він у весільному плейлисті. 🎟 розіграш: найкращий трек = запрошення на весілля (донат на збір ЗСУ від 100 грн 🌻)</div>
     <div style="font-size:12px;color:#bcb7a8;letter-spacing:2px">✶ ✦ ✶</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off"
@@ -9485,12 +9492,14 @@ function openTrackSave(kind){
   setTimeout(()=>{ try{ document.getElementById('ts-name').focus(); }catch(_){} }, 80);
 }
 document.getElementById('ts-cancel').addEventListener('click', ()=> document.getElementById('track-save').classList.add('hidden'));
+document.getElementById('ts-donate').addEventListener('click', ()=>{ try{ window.open('/zbir','_blank'); }catch(_){ location.href='/zbir'; } });
 document.getElementById('ts-go').addEventListener('click', async ()=>{
   const st=document.getElementById('ts-status');
   const name=(document.getElementById('ts-name').value||'').trim();
   const email=(document.getElementById('ts-email').value||'').trim();
   if(!name){ st.textContent='впиши імʼя 🙂'; return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ st.textContent='перевір імейл — він потрібен, щоб зберегти трек'; return; }
+  if(!document.getElementById('ts-donated').checked){ st.textContent='спершу підтримай збір і постав галочку 🌻'; return; }
   localStorage.setItem('wed-player-name', name); localStorage.setItem('wed-email', email);
   st.textContent='зберігаю…';
   let ok;
