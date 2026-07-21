@@ -22,53 +22,53 @@
   .btn{ font-family:inherit; font-size:15px; padding:12px 18px; border:2px solid #000; background:var(--red); color:#fff; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-block }
   a{ color:var(--red) }
 
-  /* ── ГОРИЗОНТАЛЬНИЙ ПЛІВКОВИЙ ФОТОАПАРАТ (стиль NOMO CAM) ── */
+  /* ── ГОРИЗОНТАЛЬНА КАМЕРА-МИЛЬНИЦЯ З ЖИВИМ ВИДОШУКАЧЕМ (стиль NOMO) ── */
   .cam-body{ --acc:#c0303c; --shell:#2e2833;
-    position:relative; width:100%; max-width:480px; margin:16px auto 6px; aspect-ratio:16/10;
-    border-radius:20px 20px 16px 16px; padding:13px 15px; display:flex; flex-direction:column; gap:9px;
-    background:linear-gradient(180deg,#3c3542 0 33%, var(--shell) 33% 100%);
+    position:relative; width:100%; max-width:540px; margin:14px auto 6px; padding:12px;
+    border-radius:18px; background:linear-gradient(180deg,#3c3542 0 12%, var(--shell) 12% 100%);
     box-shadow:0 16px 36px rgba(0,0,0,.42), inset 0 2px 0 rgba(255,255,255,.08), inset 0 -4px 10px rgba(0,0,0,.45);
-    border:1px solid #48414f; overflow:hidden }
-  .cam-body::after{ content:''; position:absolute; left:0; right:0; top:33%; bottom:0; pointer-events:none;
-    background-image:radial-gradient(rgba(0,0,0,.22) 1px, transparent 1.5px); background-size:5px 5px; opacity:.55 }
-  /* верхня палуба: видошукач · спалах · лічильник · спуск */
-  .cam-deck{ display:flex; align-items:center; gap:9px; z-index:2 }
-  .vfinder{ width:44px; height:28px; border-radius:4px; background:#0e0b14; border:2px solid #55495f; position:relative;
-    display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 8px rgba(0,0,0,.7); flex:none }
-  .vfinder .em{ font-size:16px }
-  .rec{ position:absolute; top:-14px; left:0; font:8px "Courier New",monospace; color:#ff9a2e; white-space:nowrap }
-  .flash{ width:38px; height:15px; border-radius:4px; flex:none; background:linear-gradient(180deg,#ece5c8,#b7ad86);
-    border:1px solid #6e6650; box-shadow:inset 0 1px 2px rgba(255,255,255,.6) }
-  .flash.on{ background:#fff8d6; box-shadow:0 0 18px 5px #ffe98a }
+    border:1px solid #48414f }
+  .cam-deck{ display:flex; align-items:center; gap:8px; margin-bottom:9px; z-index:2; position:relative }
   .counter{ background:#120e18; border:2px solid #4a4250; border-radius:6px; padding:2px 9px; text-align:center; line-height:1; flex:none }
-  .counter .big{ color:#ff5a5f; font:bold 19px "Courier New",monospace; text-shadow:0 0 8px rgba(255,90,95,.6) }
+  .counter .big{ color:#ff5a5f; font:bold 18px "Courier New",monospace; text-shadow:0 0 8px rgba(255,90,95,.6) }
   .counter .cl{ color:#9a90a4; font:7px/1 sans-serif; letter-spacing:1px; text-transform:uppercase }
+  .flash{ width:32px; height:14px; border-radius:4px; flex:none; background:linear-gradient(180deg,#ece5c8,#b7ad86); border:1px solid #6e6650 }
+  .flash.on{ background:#fff8d6; box-shadow:0 0 18px 5px #ffe98a }
   .spacer{ flex:1 }
-  .shutter{ width:50px; height:50px; border-radius:50%; flex:none; cursor:pointer; position:relative; user-select:none;
-    background:radial-gradient(circle at 38% 32%, #fff, #cdcdd2 60%, #9a9aa2);
-    border:3px solid var(--acc); box-shadow:0 4px 0 rgba(0,0,0,.35), 0 7px 13px rgba(0,0,0,.4);
-    display:flex; align-items:center; justify-content:center }
-  .shutter::before{ content:''; width:19px; height:19px; border-radius:50%; background:var(--acc); box-shadow:inset 0 2px 3px rgba(0,0,0,.4) }
+  .dbtn{ font-family:inherit; font-size:16px; width:40px; height:34px; border-radius:7px; background:#241f2b; color:#efe7d6; border:2px solid #55495f; cursor:pointer; flex:none }
+  /* ЖИВИЙ ВИДОШУКАЧ — горизонтальний (3:2) */
+  .finder{ position:relative; width:100%; aspect-ratio:3/2; background:#0c0a12; border-radius:10px; overflow:hidden; border:2px solid #201c27; z-index:2 }
+  .finder video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#0c0a12 }
+  .finder .vf{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; color:#cfc7bb; text-align:center; padding:14px; z-index:2 }
+  .finder .vf .em{ font-size:34px } .finder .vf span{ font-size:12px; max-width:80% }
+  .fm{ position:absolute; z-index:3; width:18px; height:18px; border:2px solid rgba(255,255,255,.6) }
+  .fm-tl{ top:10px; left:10px; border-right:none; border-bottom:none } .fm-tr{ top:10px; right:10px; border-left:none; border-bottom:none }
+  .fm-bl{ bottom:10px; left:10px; border-right:none; border-top:none } .fm-br{ bottom:10px; right:10px; border-left:none; border-top:none }
+  .rec{ position:absolute; z-index:3; top:8px; left:10px; font:10px "Courier New",monospace; color:#ff9a2e }
+  .finder-cnt{ position:absolute; z-index:3; bottom:8px; right:12px; font:bold 15px "Courier New",monospace; color:#ff9a2e; text-shadow:0 0 6px rgba(0,0,0,.9) }
+  /* низ камери: бренд · спуск · перемикач */
+  .cam-under{ display:flex; align-items:center; gap:12px; margin-top:11px; z-index:2; position:relative }
+  .cam-label{ flex:1; text-align:left; min-width:0 }
+  .cl-brand{ font:bold 17px Georgia,serif; letter-spacing:1px; color:#f4ede0 } .cl-brand span{ color:var(--acc) }
+  .cl-task{ display:block; font-size:11px; color:#cfc7bb; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .shutter{ width:60px; height:60px; border-radius:50%; flex:none; cursor:pointer; position:relative;
+    background:radial-gradient(circle at 38% 32%, #fff, #cdcdd2 60%, #9a9aa2); border:3px solid var(--acc);
+    box-shadow:0 4px 0 rgba(0,0,0,.35), 0 7px 13px rgba(0,0,0,.4) }
+  .shutter::before{ content:''; position:absolute; inset:0; margin:auto; width:24px; height:24px; border-radius:50%; background:var(--acc); box-shadow:inset 0 2px 3px rgba(0,0,0,.4) }
   .shutter:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.35) }
-  .shutter.spent{ filter:grayscale(1) brightness(.65); cursor:not-allowed }
-  /* передня грань: лінза + бренд + коліщатко */
-  .cam-front{ display:flex; align-items:center; gap:13px; z-index:2; flex:1 }
-  .lens{ width:78px; height:78px; flex:none; border-radius:50%; position:relative;
-    background:radial-gradient(circle at 42% 38%, #4c4756, #14111a 80%);
-    border:4px solid var(--acc); box-shadow:0 4px 10px rgba(0,0,0,.5), inset 0 0 0 7px #201c27 }
-  .lens::before{ content:''; position:absolute; inset:22%; border-radius:50%;
-    background:radial-gradient(circle at 38% 32%, rgba(120,185,225,.6), rgba(20,16,26,.92) 72%); box-shadow:inset 0 0 12px rgba(0,0,0,.85) }
-  .lens::after{ content:''; position:absolute; top:26%; left:30%; width:15px; height:8px; border-radius:50%;
-    background:rgba(255,255,255,.45); filter:blur(1px); transform:rotate(-25deg) }
-  .cam-label{ flex:1; text-align:left; color:#efe7d6; min-width:0 }
-  .cl-brand{ font:bold 19px Georgia,serif; letter-spacing:2px; color:#f4ede0 }
-  .cl-brand span{ color:var(--acc) }
-  .cl-task{ font-size:12px; color:#d3cbbf; margin-top:2px; line-height:1.3; overflow:hidden; text-overflow:ellipsis }
-  .cl-model{ font:9px/1 "Courier New",monospace; color:#948aa0; letter-spacing:2px; text-transform:uppercase; margin-top:5px }
-  .winder{ width:26px; height:26px; flex:none; border-radius:50%; border:3px solid #6e6678;
-    background:repeating-conic-gradient(#4c4654 0 12deg, #3a3542 12deg 24deg) }
+  .shutter.spent{ filter:grayscale(1) brightness(.6); cursor:not-allowed }
+  .flip{ width:42px; height:42px; flex:none; border-radius:50%; font-size:18px; background:#241f2b; color:#efe7d6; border:2px solid #55495f; cursor:pointer }
   .cam-cap{ font-size:11px; color:#b8afc0; margin-top:10px; letter-spacing:1px; text-align:center }
-  .flick{ position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:99 }
+  /* ── ПОВНИЙ ЕКРАН ── */
+  body.fullcam{ overflow:hidden }
+  .finder.full{ position:fixed; inset:0; z-index:200; aspect-ratio:auto; width:100vw; height:100vh; border-radius:0; border:none }
+  #fullbar{ position:fixed; z-index:201; left:0; right:0; bottom:0; display:none; align-items:center; justify-content:space-between;
+    padding:18px 24px calc(18px + env(safe-area-inset-bottom)); gap:14px;
+    background:linear-gradient(0deg, rgba(0,0,0,.65), transparent) }
+  body.fullcam #fullbar{ display:flex }
+  #fullbar .fb-cnt{ color:#ff9a2e; font:bold 22px "Courier New",monospace; min-width:66px }
+  #fullbar .fb-exit{ color:#fff; font-size:22px; background:rgba(0,0,0,.45); border:2px solid rgba(255,255,255,.45); border-radius:50%; width:48px; height:48px; cursor:pointer }
+  .flick{ position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:210 }
   .flick.go{ animation:fl .28s ease-out }
   @keyframes fl{ 0%{opacity:0} 12%{opacity:.92} 100%{opacity:0} }
 
@@ -137,26 +137,37 @@
       <div class="refgrid" id="refgrid"></div>
     </div>
 
-    <!-- горизонтальний корпус фотоапарата (NOMO-стиль) -->
+    <!-- горизонтальна камера-мильниця з живим видошукачем (NOMO-стиль) -->
     <div class="cam-body" id="cambody">
       <div class="cam-deck">
-        <div class="vfinder"><span class="em" id="vf-em">📷</span><span class="rec" id="rec">● TEST</span></div>
-        <div class="flash" id="flash"></div>
         <div class="counter"><div class="big" id="cnum">27</div><div class="cl">кадр</div></div>
+        <div class="flash" id="flash"></div>
         <div class="spacer"></div>
-        <label class="shutter" id="shutter" title="зняти кадр"><input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+        <button class="dbtn" id="btn-full" title="на весь екран">⛶</button>
       </div>
-      <div class="cam-front">
-        <div class="lens"></div>
-        <div class="cam-label">
-          <div class="cl-brand">К <span>♥</span> Д</div>
-          <div class="cl-task" id="vf-t">наведи й тисни спуск</div>
-          <div class="cl-model">film · 27 кадрів</div>
-        </div>
-        <div class="winder"></div>
+      <div class="finder" id="finder">
+        <video id="vid" playsinline autoplay muted></video>
+        <div class="vf" id="vf"><span class="em" id="vf-em">📷</span><span id="vf-msg">вмикаю камеру…</span></div>
+        <span class="fm fm-tl"></span><span class="fm fm-tr"></span><span class="fm fm-bl"></span><span class="fm fm-br"></span>
+        <span class="rec" id="rec">● TEST</span>
+        <span class="finder-cnt" id="fcnt">27</span>
       </div>
+      <div class="cam-under">
+        <div class="cam-label"><span class="cl-brand">К <span>♥</span> Д</span><span class="cl-task" id="vf-t">film · 27 кадрів</span></div>
+        <button class="flip" id="btn-flip" title="перемкнути камеру">⟳</button>
+        <button class="shutter" id="shutter" title="зняти кадр"></button>
+      </div>
+      <input id="file" type="file" accept="image/*" capture="environment" hidden>
     </div>
-    <div class="cam-cap" id="camcap">лишилось <b id="left">27</b> кадрів</div>
+    <div class="cam-cap" id="camcap">лишилось <b id="left">27</b> кадрів · камеру не видно? тисни спуск — відкриється звична</div>
+
+    <!-- панель керування у повноекранному режимі -->
+    <div id="fullbar">
+      <button class="fb-exit" id="btn-exit">✕</button>
+      <div class="fb-cnt"><span id="fcnt2">27</span> кадр</div>
+      <button class="shutter" id="shutter2" title="зняти кадр"></button>
+      <button class="flip" id="btn-flip2" title="перемкнути">⟳</button>
+    </div>
 
     <div id="status"></div>
     <div class="note" id="cam-note">Знімай усе, що зачепило. <b>Проявлені фото зʼявляться тут після весілля</b> — як зі справжньою плівкою 🎞</div>
@@ -237,9 +248,11 @@ async function renderHub(){
 /* ── КАМЕРА ── */
 function refreshCounter(){
   const taken=taskCount(T), left=Math.max(0,CAP-taken);
-  $('cnum').textContent=left; $('left').textContent=left;
-  if(left<=0){ $('shutter').classList.add('spent'); $('shutter').textContent='—';
-    $('camcap').innerHTML='катушку відзнято 🎞'; $('vf-t').textContent='плівка скінчилась'; }
+  ['cnum','left','fcnt','fcnt2'].forEach(id=>{ const e=$(id); if(e) e.textContent=left; });
+  if(left<=0){
+    ['shutter','shutter2'].forEach(id=>{ const e=$(id); if(e) e.classList.add('spent'); });
+    $('camcap').innerHTML='катушку відзнято 🎞'; $('vf-t').textContent='плівка скінчилась';
+  }
 }
 function renderRefs(){
   if(!REF_TASKS.has(T) && refDocs(T).length===0){ return; }
@@ -282,57 +295,97 @@ async function renderCam(){
   $('cambody').style.setProperty('--acc', PAL[hash%PAL.length]);
   $('rec').textContent = TEST ? '● TEST' : '● '+new Date().toISOString().slice(0,10);
   if(DEV) $('devbar').style.display='block';
+  startCamera('environment');                       // живий видошукач
   await loadAll();
   renderRefs(); refreshCounter(); renderRoll();
 }
 
-// «погана рання цифра» ~2 Мп — ефект лишається; фото сховане до проявлення
-function compress(file){
-  return new Promise(res=>{
-    const img=new Image();
-    img.onload=()=>{
-      const long=1280, k=Math.min(1, long/Math.max(img.width,img.height));
-      let w=Math.round(img.width*k), h=Math.round(img.height*k);
-      const sm=document.createElement('canvas'); sm.width=Math.max(1,Math.round(w*0.55)); sm.height=Math.max(1,Math.round(h*0.55));
-      sm.getContext('2d').drawImage(img,0,0,sm.width,sm.height);
-      const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
-      g.imageSmoothingQuality='low'; g.filter='saturate(1.32) contrast(1.14) brightness(1.03)';
-      g.drawImage(sm,0,0,w,h); g.filter='none';
-      const id=g.getImageData(0,0,w,h), d=id.data;
-      for(let i=0;i<d.length;i+=4){ const n=(Math.random()*24-12)|0; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
-      g.putImageData(id,0,0);
-      const gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.33,w/2,h/2,Math.max(w,h)*0.72);
-      gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.30)'); g.fillStyle=gr; g.fillRect(0,0,w,h);
-      const fs=Math.max(14,Math.round(h*0.045));
-      g.font='bold '+fs+'px "Courier New",monospace'; g.textAlign='right'; g.textBaseline='bottom';
-      g.shadowColor='rgba(255,120,0,.7)'; g.shadowBlur=fs*0.5; g.fillStyle='#ff9a2e';
-      g.fillText("'06 09 2026", w-fs*0.6, h-fs*0.55); g.shadowBlur=0;
-      res(c.toDataURL('image/jpeg',0.58));
-    };
-    img.src=URL.createObjectURL(file);
-  });
+// ── плівковий ефект (зерно, віньєтка, дата-штамп) з будь-якого джерела ──
+function filmFromSource(src, iw, ih){
+  const long=1280, k=Math.min(1, long/Math.max(iw,ih));
+  let w=Math.round(iw*k), h=Math.round(ih*k);
+  const sm=document.createElement('canvas'); sm.width=Math.max(1,Math.round(w*0.55)); sm.height=Math.max(1,Math.round(h*0.55));
+  sm.getContext('2d').drawImage(src,0,0,sm.width,sm.height);
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+  g.imageSmoothingQuality='low'; g.filter='saturate(1.32) contrast(1.14) brightness(1.03)';
+  g.drawImage(sm,0,0,w,h); g.filter='none';
+  const id=g.getImageData(0,0,w,h), d=id.data;
+  for(let i=0;i<d.length;i+=4){ const n=(Math.random()*24-12)|0; d[i]+=n; d[i+1]+=n; d[i+2]+=n; }
+  g.putImageData(id,0,0);
+  const gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.33,w/2,h/2,Math.max(w,h)*0.72);
+  gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.30)'); g.fillStyle=gr; g.fillRect(0,0,w,h);
+  const fs=Math.max(14,Math.round(h*0.045));
+  g.font='bold '+fs+'px "Courier New",monospace'; g.textAlign='right'; g.textBaseline='bottom';
+  g.shadowColor='rgba(255,120,0,.7)'; g.shadowBlur=fs*0.5; g.fillStyle='#ff9a2e';
+  g.fillText("'06 09 2026", w-fs*0.6, h-fs*0.55); g.shadowBlur=0;
+  return c.toDataURL('image/jpeg',0.58);
 }
-function shoot(){ // спалах + звук клацання (візуально)
+function compress(file){ return new Promise(res=>{ const img=new Image(); img.onload=()=>res(filmFromSource(img,img.width,img.height)); img.src=URL.createObjectURL(file); }); }
+
+// ── ЖИВА КАМЕРА (getUserMedia) ──
+let camStream=null, camFacing='environment', camLive=false;
+async function startCamera(facing){
+  camFacing=facing||camFacing; stopCamera();
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camFail(); return; }
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:camFacing}, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
+    const v=$('vid'); v.srcObject=camStream; v.style.transform = camFacing==='user' ? 'scaleX(-1)' : 'none';
+    await v.play().catch(()=>{});
+    camLive=true; $('vf').style.display='none';
+  }catch(e){ camFail(); }
+}
+function camFail(){ camLive=false; $('vf').style.display='flex'; $('vf-msg').textContent='тисни спуск — відкриється камера телефона'; }
+function stopCamera(){ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } camLive=false; }
+function captureFromVideo(){
+  const v=$('vid'); if(!v.videoWidth) return null;
+  const vw=v.videoWidth, vh=v.videoHeight, AR=3/2;                 // завжди горизонтальний кадр 3:2
+  let cw=vw, ch=Math.round(vw/AR); if(ch>vh){ ch=vh; cw=Math.round(vh*AR); }
+  const sx=(vw-cw)/2, sy=(vh-ch)/2;
+  const crop=document.createElement('canvas'); crop.width=cw; crop.height=ch; const cg=crop.getContext('2d');
+  if(camFacing==='user'){ cg.translate(cw,0); cg.scale(-1,1); }    // фронталка — дзеркалимо назад
+  cg.drawImage(v, sx,sy,cw,ch, 0,0,cw,ch);
+  return filmFromSource(crop, cw, ch);
+}
+function shoot(){ // спалах + бліп
   $('flash').classList.add('on'); $('flick').classList.remove('go'); void $('flick').offsetWidth; $('flick').classList.add('go');
   setTimeout(()=>$('flash').classList.remove('on'),260);
+}
+async function saveKadr(data){
+  $('status').textContent='проявляю кадр…';
+  try{
+    const body={fields:{ kind:{stringValue:'kadr'}, task:{stringValue:T}, image:{stringValue:data}, at:{integerValue:String(Date.now())} }};
+    const r=await fetch(FS+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){ await loadAll(); refreshCounter(); renderRoll(); $('status').textContent='📸 клац! кадр знято — проявиться після весілля 🤍'; }
+    else $('status').textContent='не вдалося — спробуй ще раз';
+  }catch(err){ $('status').textContent='немає звʼязку — спробуй пізніше'; }
+}
+async function takeShot(){
+  if(taskCount(T)>=CAP){ $('status').textContent='катушку вже відзнято 🎞'; return; }
+  if(!camLive){ $('file').click(); return; }        // камери нема/заборонена → рідна камера телефона
+  shoot();
+  const data=captureFromVideo();
+  if(!data){ $('file').click(); return; }
+  await saveKadr(data);
 }
 
 if(T){
   renderCam();
+  // fallback: рідна камера телефона (якщо getUserMedia недоступний/заборонений)
   $('file').addEventListener('change', async e=>{
     const f=e.target.files && e.target.files[0]; e.target.value=''; if(!f) return;
     if(taskCount(T)>=CAP){ $('status').textContent='катушку вже відзнято 🎞'; return; }
-    shoot();
-    $('status').textContent='проявляю кадр…';
-    const data=await compress(f);
-    try{
-      const body={fields:{ kind:{stringValue:'kadr'}, task:{stringValue:T}, image:{stringValue:data}, at:{integerValue:String(Date.now())} }};
-      const r=await fetch(FS+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(r.ok){ await loadAll(); refreshCounter(); renderRoll();
-        $('status').textContent='📸 клац! кадр знято — проявиться після весілля 🤍'; }
-      else $('status').textContent='не вдалося — спробуй ще раз';
-    }catch(err){ $('status').textContent='немає звʼязку — спробуй пізніше'; }
+    shoot(); const data=await compress(f); await saveKadr(data);
   });
+  // спуск (звичайний і повноекранний)
+  $('shutter').addEventListener('click', takeShot);
+  $('shutter2').addEventListener('click', takeShot);
+  // перемкнути камеру (фронт/тил)
+  const flip=()=>startCamera(camFacing==='environment'?'user':'environment');
+  $('btn-flip').addEventListener('click', flip);
+  $('btn-flip2').addEventListener('click', flip);
+  // повний екран
+  $('btn-full').addEventListener('click', ()=>{ document.body.classList.add('fullcam'); $('finder').classList.add('full'); });
+  $('btn-exit').addEventListener('click', ()=>{ document.body.classList.remove('fullcam'); $('finder').classList.remove('full'); });
   // DEV: додати еталонне фото для повтору
   $('reffile') && $('reffile').addEventListener('change', async e=>{
     const f=e.target.files && e.target.files[0]; e.target.value=''; if(!f) return;
