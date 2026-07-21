@@ -9117,7 +9117,8 @@ async function saveGuestSample(b64){
   if(TEST_MODE || !b64) return;
   const nm = (localStorage.getItem('wed-player-name')||'').trim();
   if(!nm) return;
-  const id = 'smp-' + slugify(nm);
+  // ключ — стабільний id гостя (щоб однакові імена не перетирали одне одного)
+  const id = 'smp-' + ((AUTH_GUEST && AUTH_GUEST.id) || slugify(nm));
   try{
     await fetch(FS_BASE+'sampler-samples?documentId='+encodeURIComponent(id)+'&key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -9845,7 +9846,9 @@ document.getElementById('selfie-send').addEventListener('click', async ()=>{
   }
   // одне фото на гостя: стабільний documentId (за персональним кодом або імʼям).
   // Друга спроба → 409 ALREADY_EXISTS (правило allow update:false), і ми це ловимо.
-  const docId = (GUEST && GUEST.id && !selfieFor) ? GUEST.id : ('name-' + slugify(name));
+  // ключ селфі — СТАБІЛЬНИЙ id гостя (щоб двоє з однаковим іменем не зіткнулись); фото за дитину — за іменем
+  const stableId = (AUTH_GUEST && AUTH_GUEST.id) || (GUEST && GUEST.id) || null;
+  const docId = (stableId && !selfieFor) ? stableId : ('name-' + slugify(name));
   try{
     const r = await fetch(FS_BASE+'selfies?documentId='+encodeURIComponent(docId)+'&key='+FB.apiKey, {
       method:'POST', headers:{'Content-Type':'application/json'},
