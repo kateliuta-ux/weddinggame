@@ -1,0 +1,269 @@
+<!DOCTYPE html><html lang="uk"><head>
+<meta charset="utf-8">
+<title>Катя ♥ Діма — усе про наш сайт</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ground:#f7f1e4; --card:#fffdf8; --card2:#f3ebd9; --ink:#2a2028; --mut:#8a7f78;
+    --line:#e7ddc7; --red:#c0303c; --red-ink:#c0303c; --soft:#f6e7e3; --good:#3f7c5a; --shadow:0 2px 14px rgba(60,40,30,.08);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ground:#1e1a24; --card:#2a2431; --card2:#332c3b; --ink:#f2ece0; --mut:#a99fac;
+      --line:#3d3547; --red:#ec6a72; --red-ink:#ec6a72; --soft:#3a2731; --good:#7fc39c; --shadow:0 3px 18px rgba(0,0,0,.35); }
+  }
+  :root[data-theme="light"]{ --ground:#f7f1e4; --card:#fffdf8; --card2:#f3ebd9; --ink:#2a2028; --mut:#8a7f78;
+    --line:#e7ddc7; --red:#c0303c; --red-ink:#c0303c; --soft:#f6e7e3; --good:#3f7c5a; --shadow:0 2px 14px rgba(60,40,30,.08); }
+  :root[data-theme="dark"]{ --ground:#1e1a24; --card:#2a2431; --card2:#332c3b; --ink:#f2ece0; --mut:#a99fac;
+    --line:#3d3547; --red:#ec6a72; --red-ink:#ec6a72; --soft:#3a2731; --good:#7fc39c; --shadow:0 3px 18px rgba(0,0,0,.35); }
+
+  *{ box-sizing:border-box; margin:0; padding:0 }
+  body{ background:var(--ground); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:0 16px 64px }
+  .wrap{ max-width:620px; margin:0 auto }
+  .mono{ font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace }
+
+  /* cross-stitch band */
+  .stitch{ height:15px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15'%3E%3Cpath d='M3 3L12 12M12 3L3 12' stroke='%23c0303c' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat:repeat-x; background-position:center; opacity:.85 }
+
+  header{ text-align:center; padding:34px 0 8px }
+  .kd{ font-family:Georgia,"Times New Roman",serif; font-size:clamp(30px,8vw,44px); color:var(--red); letter-spacing:1px }
+  .kd .h{ display:inline-block; transform:translateY(2px) }
+  .date{ font-family:Georgia,serif; font-size:15px; color:var(--mut); letter-spacing:3px; margin-top:4px; text-transform:uppercase }
+  .lede{ font-size:14.5px; color:var(--mut); margin-top:12px }
+
+  .pw{ display:flex; align-items:center; gap:10px; justify-content:center; flex-wrap:wrap;
+    background:var(--soft); border:1px solid var(--line); border-radius:12px; padding:11px 16px; margin:18px auto 4px; max-width:440px }
+  .pw b{ color:var(--red) }
+  .pw .code{ font-family:ui-monospace,monospace; font-weight:700; font-size:17px; color:var(--red);
+    background:var(--card); border:1px solid var(--line); border-radius:7px; padding:3px 12px; letter-spacing:2px }
+
+  section{ margin-top:30px }
+  .sec-h{ display:flex; align-items:baseline; gap:10px; margin:0 4px 4px }
+  .sec-h h2{ font-family:Georgia,serif; font-size:19px; color:var(--ink); font-weight:600 }
+  .sec-h .n{ font-family:ui-monospace,monospace; font-size:12px; color:var(--red); font-weight:700 }
+  .sec-sub{ font-size:12.5px; color:var(--mut); margin:0 4px 12px }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:hidden }
+  .lnk{ display:flex; align-items:center; border-top:1px solid var(--line) }
+  .lnk:first-child{ border-top:none }
+  .lnk-main{ flex:1; min-width:0; display:flex; align-items:center; gap:13px; padding:13px 14px; text-decoration:none; color:var(--ink) }
+  .lnk-main:hover{ background:var(--soft) }
+  .lnk-main:focus-visible{ outline:2px solid var(--red); outline-offset:-2px }
+  .em{ font-size:20px; width:26px; text-align:center; flex:none }
+  .tx{ min-width:0 }
+  .tx b{ display:block; font-size:15px; font-weight:600 }
+  .tx .url{ display:block; font-family:ui-monospace,monospace; font-size:11.5px; color:var(--mut);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .go{ color:var(--red); font-size:15px; margin-left:6px; flex:none }
+  .copy{ flex:none; width:44px; align-self:stretch; border:none; border-left:1px solid var(--line);
+    background:transparent; color:var(--mut); font-size:15px; cursor:pointer }
+  .copy:hover{ background:var(--soft); color:var(--red) }
+  .copy:focus-visible{ outline:2px solid var(--red); outline-offset:-2px }
+  .copy.done{ color:var(--good) }
+
+  .note{ font-size:12.5px; color:var(--mut); margin:10px 4px 0; line-height:1.55 }
+  .note b{ color:var(--red-ink) }
+
+  details{ background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:hidden }
+  summary{ padding:14px 16px; cursor:pointer; font-size:14.5px; font-weight:600; list-style:none; display:flex; justify-content:space-between; align-items:center }
+  summary::-webkit-details-marker{ display:none }
+  summary .chev{ color:var(--red); transition:transform .2s }
+  details[open] summary .chev{ transform:rotate(90deg) }
+  .cams{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border-top:1px solid var(--line) }
+  .cam{ background:var(--card); padding:9px 11px; text-decoration:none; color:var(--ink) }
+  .cam:hover{ background:var(--soft) }
+  .cam b{ display:block; font-size:12.5px }
+  .cam span{ font-family:ui-monospace,monospace; font-size:10.5px; color:var(--mut) }
+  @media (max-width:420px){ .cams{ grid-template-columns:1fr } }
+
+  ol.steps{ counter-reset:s; list-style:none; display:flex; flex-direction:column; gap:10px }
+  ol.steps li{ counter-increment:s; position:relative; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:13px 14px 13px 48px; box-shadow:var(--shadow); font-size:14px }
+  ol.steps li::before{ content:counter(s); position:absolute; left:11px; top:11px; width:26px; height:26px;
+    background:var(--red); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace,monospace; font-weight:700; font-size:13px }
+  ol.steps li b{ color:var(--red-ink) }
+  ol.steps code{ font-family:ui-monospace,monospace; font-size:12px; background:var(--soft); padding:1px 6px; border-radius:5px; color:var(--red-ink) }
+
+  .files{ display:flex; flex-direction:column; gap:8px }
+  .file{ display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:12px 14px; box-shadow:var(--shadow) }
+  .file .em{ font-size:19px }
+  .file b{ font-size:14px; display:block }
+  .file span{ font-family:ui-monospace,monospace; font-size:11px; color:var(--mut) }
+
+  footer{ text-align:center; color:var(--mut); font-size:12px; margin-top:34px; line-height:1.6 }
+  .toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--ink); color:var(--ground); font-size:13px; padding:9px 16px; border-radius:20px; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:9 }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) }
+
+  #gate{position:fixed;inset:0;z-index:100;background:var(--ground);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
+  #gate.hidden{display:none}
+  #gate h1{font-family:Georgia,serif;color:var(--red);font-size:26px}
+  #gate p{color:var(--mut);font-size:13px;max-width:320px}
+  #gate input{font-family:ui-monospace,monospace;font-size:17px;padding:12px;width:min(80%,280px);text-align:center;letter-spacing:2px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+  #gate input:focus{outline:none;border-color:var(--red)}
+  #gate button{font-family:inherit;font-size:15px;padding:12px 28px;background:var(--red);color:#fff;border:none;border-radius:10px;cursor:pointer}
+  #gerr{color:var(--red);font-size:12px;min-height:16px}
+</style>
+</head><body>
+
+<div id="gate">
+  <div style="font-size:34px">💍</div>
+  <h1>Катя ♥ Діма</h1>
+  <p>Особиста шпаргалка для нас. Введи наш пароль.</p>
+  <input id="gpw" type="password" inputmode="text" autocomplete="off" placeholder="пароль" autocapitalize="none">
+  <button id="ggo">Увійти</button>
+  <div id="gerr"></div>
+</div>
+<div class="stitch" role="presentation"></div>
+<div class="wrap">
+
+  <header>
+    <div class="kd">Катя <span class="h">♥</span> Діма</div>
+    <div class="date">6 вересня 2026 · Київ</div>
+    <p class="lede">Уся наша кухня в одному місці: що куди веде і як це правити.<br>Відкривайте разом 🤍</p>
+    <div class="pw">🔑 Пароль для всього «для нас»: <span class="code">k1tana</span> <span style="color:var(--mut);font-size:12px">(з цифрою 1, регістр не важливий)</span></div>
+  </header>
+
+  <section>
+    <div class="sec-h"><h2>Гостям</h2></div>
+    <p class="sec-sub">Це посилання ви розсилаєте гостям.</p>
+    <div class="card">
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр"><span class="em">🎮</span><span class="tx"><b>Гра-запрошення</b><span class="url">лютевесілля.укр</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/kadr"><span class="em">📷</span><span class="tx"><b>Камери — усі завдання</b><span class="url">лютевесілля.укр/kadr</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/kadr" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/stream"><span class="em">📺</span><span class="tx"><b>Трансляція</b><span class="url">лютевесілля.укр/stream</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/stream" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/zbir"><span class="em">🌻</span><span class="tx"><b>Збір на підтримку ЗСУ</b><span class="url">лютевесілля.укр/zbir</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/zbir" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/?sampler"><span class="em">🎹</span><span class="tx"><b>Семплер (зроби нам мелодію)</b><span class="url">лютевесілля.укр/?sampler</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/?sampler" aria-label="копіювати">⧉</button></div>
+    </div>
+    <p class="note">Гостям за локацією: «Бути Софі» → <b class="mono">/?s=sofi</b> · «Хвильовий» → <b class="mono">/?s=khv</b> (підказує зал у запрошенні).</p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>19 онлайн-камер</h2></div>
+    <p class="sec-sub">Кожне завдання — своя камера. Код збігається з № на друкованій наклейці. Плівка «проявиться» вранці 7.9 — до того фото сховані.</p>
+    <details>
+      <summary><span>Розгорнути всі 19 посилань</span><span class="chev">▸</span></summary>
+      <div class="cams" id="cams"></div>
+    </details>
+  </section>
+
+  <div class="stitch" role="presentation" style="margin:34px 0 4px"></div>
+
+  <section>
+    <div class="sec-h"><h2>Правити гру — для нас</h2></div>
+    <p class="sec-sub">Кожна вкладка Редакторської має СВОЄ посилання — працюйте з Дімою одночасно, нічого не губиться.</p>
+    <div class="card">
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/dev"><span class="em">🎛️</span><span class="tx"><b>Панель усього</b><span class="url">лютевесілля.укр/dev</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/dev" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/editor?tab=scenar"><span class="em">✍️</span><span class="tx"><b>Редакторська · Сценарій і тексти</b><span class="url">лютевесілля.укр/editor?tab=scenar</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/editor?tab=scenar" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/editor?tab=elements"><span class="em">🎨</span><span class="tx"><b>Редакторська · Що малювати</b><span class="url">лютевесілля.укр/editor?tab=elements</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/editor?tab=elements" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/editor?tab=mech"><span class="em">🕹️</span><span class="tx"><b>Редакторська · Механіки гри</b><span class="url">лютевесілля.укр/editor?tab=mech</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/editor?tab=mech" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/editor?tab=novel"><span class="em">📖</span><span class="tx"><b>Редакторська · Історія без ігор</b><span class="url">лютевесілля.укр/editor?tab=novel</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/editor?tab=novel" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/editor?tab=guests"><span class="em">👥</span><span class="tx"><b>Редакторська · Гості й паролі</b><span class="url">лютевесілля.укр/editor?tab=guests</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/editor?tab=guests" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/signs"><span class="em">🪧</span><span class="tx"><b>Таблички A4 (тексти + друк)</b><span class="url">лютевесілля.укр/signs</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/signs" aria-label="копіювати">⧉</button></div>
+    </div>
+    <p class="note">Порада: беріть <b>різні</b> вкладки (Катя — сценарій, Діма — малювати). Наприкінці кожен тисне <b>«⤴ Надіслати правки Клоду»</b> — і я все внесу.</p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Впишіть самі</h2></div>
+    <p class="sec-sub">Зайдіть на сторінку в DEV — там поле, куди вставляєте посилання. Оновлюється без переробки.</p>
+    <div class="card">
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/stream"><span class="em">📺</span><span class="tx"><b>Посилання трансляції</b><span class="url">/stream → вставити YouTube Live / Meet</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/stream" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/zbir"><span class="em">🌻</span><span class="tx"><b>Посилання збору на ЗСУ</b><span class="url">/zbir → вставити банку / фонд</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/zbir" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/kadr?t=6305"><span class="em">📸</span><span class="tx"><b>Ваші фото «повтори наш кадр»</b><span class="url">/kadr?t=6305 → «＋ еталонне фото»</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/kadr?t=6305" aria-label="копіювати">⧉</button></div>
+    </div>
+    <p class="note">Трансляцію найзручніше — <b>YouTube Live</b> (глядачам не треба акаунтів, без ліміту людей).</p>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Подивитись, як вийшло</h2></div>
+    <div class="card">
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/?demofaces=13&demoscene=wed&loc=sofi"><span class="em">🧑‍🤝‍🧑</span><span class="tx"><b>Юрба гостей на весіллі (Софі)</b><span class="url">/?demofaces=13&demoscene=wed&loc=sofi</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/?demofaces=13&demoscene=wed&loc=sofi" aria-label="копіювати">⧉</button></div>
+      <div class="lnk"><a class="lnk-main" href="https://лютевесілля.укр/?demofaces=16"><span class="em">🎞️</span><span class="tx"><b>Заставка «всі гості з фото»</b><span class="url">/?demofaces=16</span></span><span class="go">↗</span></a><button class="copy" data-u="https://лютевесілля.укр/?demofaces=16" aria-label="копіювати">⧉</button></div>
+    </div>
+    <p class="note">Це макетні обличчя лише для вигляду — у базу нічого не пишеться.</p>
+  </section>
+
+  <div class="stitch" role="presentation" style="margin:34px 0 4px"></div>
+
+  <section>
+    <div class="sec-h"><h2>Друк і руками</h2></div>
+    <p class="sec-sub">Готові файли — на Робочому столі, у теці <span class="mono">CLAUDE_FOLDER</span>.</p>
+    <div class="files">
+      <div class="file"><span class="em">🏷️</span><div><b>Наклейки для 24print</b><span>ДРУК_наклейки_КатяДіма.zip — картки+QR і обгортки на Fuji</span></div></div>
+      <div class="file"><span class="em">🪧</span><div><b>Таблички A4 · 10 шт</b><span>signs (камери, лотерея, збір ЗСУ, розклад, посадка…)</span></div></div>
+      <div class="file"><span class="em">🧵</span><div><b>Скатертина · 2 варіанти імен</b><span>skatertyna_shablony.pdf — контур під розпис від руки</span></div></div>
+      <div class="file"><span class="em">📜</span><div><b>Пано «ЛЮТЕПЛО»</b><span>pano_LYUTEPLO.pdf — схема з прихованим написом + контури</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Як правити ввечері</h2></div>
+    <p class="sec-sub">Покроково — щоб нічого не загубилось.</p>
+    <ol class="steps">
+      <li>Обоє заходьте на <code>/dev</code> і вводите пароль <b>k1tana</b> — це панель з усіма кнопками.</li>
+      <li>Кожен відкриває <b>свою</b> вкладку Редакторської: Катя — <code>?tab=scenar</code>, Діма — <code>?tab=elements</code>.</li>
+      <li>Пишіть текстом і малюйте (можна з графічного планшета) усе, що хочете змінити. Зберігається саме собою.</li>
+      <li>Коли готово — кожен тисне <b>«⤴ Надіслати правки Клоду»</b>. Я заберу і внесу в гру.</li>
+      <li>Впишіть <b>посилання трансляції</b> (/stream) і <b>збору</b> (/zbir) у їхні DEV-поля.</li>
+      <li>Додайте <b>ваші фото</b> для завдання «повтори наш кадр» на <code>/kadr?t=6305</code>.</li>
+    </ol>
+  </section>
+
+  <footer>
+    Це особиста сторінка нашого весілля 🤍<br>
+    Якщо щось не відкривається — просто напишіть мені, і я поправлю.
+  </footer>
+</div>
+
+<div class="toast" id="toast">скопійовано ✓</div>
+
+<script>
+
+  (function(){
+    var PASS='k1tana';
+    function norm(s){return (s||'').toLowerCase().replace(/[^a-zа-я0-9]/gi,'');}
+    var g=document.getElementById('gate');
+    function open(){ g.classList.add('hidden'); try{localStorage.setItem('wed-dev','1');}catch(e){} }
+    function tryGo(){ if(norm(document.getElementById('gpw').value)===PASS) open(); else document.getElementById('gerr').textContent='🙃 не той пароль'; }
+    document.getElementById('ggo').addEventListener('click',tryGo);
+    document.getElementById('gpw').addEventListener('keydown',function(e){if(e.key==='Enter')tryGo();});
+    try{ if(localStorage.getItem('wed-dev')==='1') open(); }catch(e){}
+  })();
+
+  // 19 камер
+  var TASKS=[["3201","💑","портрети молодят"],["1926","🤳","фото з нами"],["4898","🙋","хтось незнайомий"],
+    ["4867","🚪","вихід із вбиральні"],["5185","😐","відмазка"],["2320","🎤","що на сцені"],
+    ["6305","👥","одне фото на всіх"],["4714","🙂","тільки портрети"],["8585","🖼️","лише фотозона"],
+    ["1533","🕺","танцпол цілий вечір"],["8411","🥹","сльози й обійми"],["8775","😜","гримаси гостей"],
+    ["5243","🥂","хроніка тостів"],["2750","😍","закохані погляди"],["4423","👻","фотограф-привид"],
+    ["6923","😄","колекція посмішок"],["9552","🌙","нічна зміна"],["3969","🤗","обійми без лічби"],
+    ["1708","🎭","поза сценою"]];
+  var cams=document.getElementById("cams");
+  TASKS.forEach(function(t){
+    var a=document.createElement("a"); a.className="cam";
+    a.href="https://лютевесілля.укр/kadr?t="+t[0];
+    a.innerHTML="<b>"+t[1]+" "+t[2]+"</b><span>/kadr?t="+t[0]+"</span>";
+    cams.appendChild(a);
+  });
+  // копіювання
+  var toast=document.getElementById("toast"), tmr;
+  document.querySelectorAll(".copy").forEach(function(b){
+    b.addEventListener("click", function(){
+      var u=b.getAttribute("data-u");
+      var done=function(){ b.classList.add("done"); b.textContent="✓";
+        toast.classList.add("show"); clearTimeout(tmr);
+        tmr=setTimeout(function(){ toast.classList.remove("show"); b.classList.remove("done"); b.textContent="⧉"; }, 1400); };
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(done, done); }
+      else{ var ta=document.createElement("textarea"); ta.value=u; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand("copy"); }catch(e){} ta.remove(); done(); }
+    });
+  });
+</script>
+
+</body></html>
