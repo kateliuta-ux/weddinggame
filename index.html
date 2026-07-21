@@ -11227,7 +11227,9 @@ if(PARAMS.get('demofaces')){
     makeDemoFaces(N);
     startGame('katya', true);
     setPhase('sitcom');
-    game.phaseT = 80*(SITCOM_EXTRA.length + 24);   // одразу показати всю купу
+    const HOLD = ()=> sitcomFrames().length*80 - 10;   // уся купа показана, але БЕЗ авто-переходу далі
+    game.phaseT = HOLD();
+    setInterval(()=>{ if(game.phase==='sitcom') game.phaseT = HOLD(); }, 60);   // тримати заставку замороженою
   }catch(e){ console.log('demofaces', e); } }, 500);
 }
 
