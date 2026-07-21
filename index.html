@@ -209,9 +209,8 @@
   #kbd-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:clamp(10px,2cqw,13px);letter-spacing:1px;text-shadow:1px 1px 0 #000}
 
   /* ---------- семплер ---------- */
-  #sampler-screen{background:#14121c;gap:2%;padding:4% 2%;overflow-y:auto;justify-content:flex-start}
-  #sampler-screen > :first-child{margin-top:auto}
-  #sampler-screen > :last-child{margin-bottom:auto}
+  #sampler-screen{background:#14121c;gap:2%;padding:3% 2% 6%;overflow-y:auto;justify-content:flex-start}
+  /* без вертикального центрування — інакше при високому контенті кнопки внизу недосяжні */
   .s-head{color:#fff;font-weight:bold;font-size:clamp(11px,2.6cqw,18px);letter-spacing:1px;text-align:center}
   .s-head span{display:block;color:#bcb7a8;font-weight:normal;font-size:clamp(10px,2cqw,13px);margin-top:2px}
   #s-grid{
@@ -448,8 +447,8 @@
 
   <div id="sampler-screen" class="overlay hidden">
     <div class="s-head">🎹 СЕМПЛЕР <span>накидай мелодію — і збережи її у весільний плейлист</span></div>
-    <div style="font-size:12px;color:#f4f0e4;text-align:center;max-width:min(90%,440px);line-height:1.5;background:#2a1e24;border:2px solid #A8505F;border-radius:8px;padding:7px 12px;margin:2px 0">
-      🎟 <b>Розіграш:</b> найкращий трек — запрошення на наше весілля.<br>Умова участі — донат на збір ЗСУ <b>від 100 грн</b> 🌻 (один донат = один трек)
+    <div style="font-size:clamp(10px,2.2cqw,12px);color:#f4cf5e;text-align:center;max-width:min(96%,480px);line-height:1.3;padding:1px 6px">
+      🎟 найкращий трек — запрошення на весілля · донат на збір ЗСУ від 100 грн 🌻
     </div>
     <div id="s-grid"></div>
     <div class="s-controls">
