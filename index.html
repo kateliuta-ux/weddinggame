@@ -11209,7 +11209,7 @@ if('serviceWorker' in navigator){ try{
     reg.addEventListener('updatefound', ()=>{ const nw=reg.installing; if(!nw) return;
       nw.addEventListener('statechange', ()=>{ if(nw.state==='installed' && navigator.serviceWorker.controller){
         // нова версія готова — застосуємо тихо при наступному відкритті/фокусі
-        if(!document.hidden) nw.postMessage('skip'); }); });
+        if(!document.hidden) nw.postMessage('skip'); } }); });
   });
   // тихе оновлення: перезавантажуємось максимум ОДИН раз за сесію (щоб на телефоні не було циклу reload)
   let _reloaded=false;

@@ -1,5 +1,5 @@
 // network-first (гра ЗАВЖДИ свіжа); кеш — лише офлайн-запас. Авто-оновлення: чистимо старі кеші, слухаємо skip.
-const CACHE = 'wedgame-v3';
+const CACHE = 'wedgame-v4';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async()=>{
   const keys = await caches.keys();
