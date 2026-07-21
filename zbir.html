@@ -58,6 +58,7 @@
 'use strict';
 const FB={ apiKey:'AIzaSyAtHp8tsubQ_v4iSi2zkfCZTgKKMjm2VGA', projectId:'wedding-6e47f' };
 const FS='https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/';
+const ZBIR_DEFAULT='https://send.monobank.ua/jar/5TEeFknTmt';   // банка на весілля (вбудована — працює одразу; DEV-поле може перекрити)
 const $=id=>document.getElementById(id);
 const DEV=(()=>{ try{ return localStorage.getItem('wed-dev')==='1' || new URLSearchParams(location.search).get('dev'); }catch(_){ return false; } })();
 
@@ -74,7 +75,7 @@ async function getUrl(){
 }
 const isSafe = u => /^https:\/\//i.test(u);
 async function render(){
-  const url=await getUrl();
+  const url=(await getUrl()) || ZBIR_DEFAULT;
   if(url && isSafe(url)){
     $('card').innerHTML='<div class="big">🌻</div><div class="msg"><b>Долучитись до збору</b></div>'+
       '<a class="give" href="'+url.replace(/"/g,'')+'" target="_blank" rel="noopener">💛 Задонатити</a>';

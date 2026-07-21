@@ -9492,7 +9492,7 @@ function openTrackSave(kind){
   setTimeout(()=>{ try{ document.getElementById('ts-name').focus(); }catch(_){} }, 80);
 }
 document.getElementById('ts-cancel').addEventListener('click', ()=> document.getElementById('track-save').classList.add('hidden'));
-document.getElementById('ts-donate').addEventListener('click', ()=>{ try{ window.open('/zbir','_blank'); }catch(_){ location.href='/zbir'; } });
+document.getElementById('ts-donate').addEventListener('click', ()=>{ try{ window.open('https://send.monobank.ua/jar/5TEeFknTmt','_blank'); }catch(_){ location.href='https://send.monobank.ua/jar/5TEeFknTmt'; } });
 document.getElementById('ts-go').addEventListener('click', async ()=>{
   const st=document.getElementById('ts-status');
   const name=(document.getElementById('ts-name').value||'').trim();
