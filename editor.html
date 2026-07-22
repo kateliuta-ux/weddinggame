@@ -116,6 +116,7 @@
   <button data-tab="scenar">Сценарій і тексти</button>
   <button data-tab="guests">Гості й паролі</button>
   <button data-tab="elements">Що малювати</button>
+  <button data-tab="refphoto">Фото для повтору</button>
   <button data-tab="sent">Мої правки</button>
 </nav>
 
@@ -257,7 +258,7 @@ if(sessionStorage.getItem('wed-editor-auth')) document.getElementById('gate').cl
 
 /* ───────────────────────── вкладки і картки ───────────────────────── */
 const main = document.getElementById('main');
-const VALID_TABS=['mech','novel','scenar','guests','elements','sent'];
+const VALID_TABS=['mech','novel','scenar','guests','elements','refphoto','sent'];
 let tab = (new URLSearchParams(location.search).get('tab')||'mech');
 if(!VALID_TABS.includes(tab)) tab='mech';
 function setActiveNav(){ document.querySelectorAll('nav button').forEach(x=> x.classList.toggle('on', x.dataset.tab===tab)); }
@@ -451,6 +452,7 @@ function render(){
   }
   if(tab==='guests'){ renderGuests(); }
   if(tab==='elements'){ renderElements(); }
+  if(tab==='refphoto'){ renderRefPhotos(); }
   if(tab==='sent'){
     const h=document.createElement('div'); h.className='hint';
     const unsent = db.items.filter(i=>!i.sent).length + Object.values(db.notes).filter(Boolean).length;
@@ -885,6 +887,95 @@ async function fsPush(doc){
   const r=await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({fields:doc})});
   return r.ok;
+}
+/* ── ФОТО ДЛЯ ПОВТОРУ (приклади-привиди для камер /kadr) ── */
+const KADR_TASKS=[
+  ['6305','👥','одне фото на всіх'],['3201','💑','портрети молодят'],['1926','🤳','фото з нами'],
+  ['4898','🙋','хтось незнайомий'],['4867','🚪','вихід із вбиральні'],['5185','😐','відмазка'],
+  ['2320','🎤','що на сцені'],['4714','🙂','тільки портрети'],['8585','🖼','лише фотозона'],
+  ['1533','🕺','танцпол цілий вечір'],['8411','🥹','сльози й обійми'],['8775','😜','гримаси гостей'],
+  ['5243','🥂','хроніка тостів'],['2750','😍','закохані погляди'],['4423','👻','фотограф-привид'],
+  ['6923','😄','колекція посмішок'],['9552','🌙','нічна зміна'],['3969','🤗','обійми без лічби'],
+  ['1708','🎭','поза сценою'],
+];
+let refSelTask = KADR_TASKS[0][0];
+function compressRef(file){
+  return new Promise(res=>{
+    const done=(src,iw,ih)=>{ const long=1000, k=Math.min(1,long/Math.max(iw,ih));
+      const w=Math.max(1,Math.round(iw*k)), h=Math.max(1,Math.round(ih*k));
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(src,0,0,w,h); res(c.toDataURL('image/jpeg',0.62)); };
+    const viaImg=()=>{ const im=new Image(); im.onload=()=>done(im,im.width,im.height); im.src=URL.createObjectURL(file); };
+    if(window.createImageBitmap){ createImageBitmap(file,{imageOrientation:'from-image'})
+      .then(bm=>{ done(bm,bm.width,bm.height); if(bm.close)bm.close(); }).catch(viaImg); } else viaImg();
+  });
+}
+function hashImg(s){ let h=5381; for(let i=0;i<s.length;i++){ h=((h*33)^s.charCodeAt(i))>>>0; } return 'h'+h.toString(36)+'-'+s.length; }
+async function loadRefPhotos(task){
+  try{
+    // усі документи цього завдання (і приклади, і «надгробки»-приховування)
+    const body={ structuredQuery:{ from:[{collectionId:'voice-tracks'}],
+      where:{ fieldFilter:{field:{fieldPath:'task'},op:'EQUAL',value:{stringValue:task}} } } };
+    const r=await fetch(FS_BASE.slice(0,-1)+':runQuery?key='+FB.apiKey,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok) return [];
+    const j=await r.json();
+    const docs=(j||[]).filter(x=>x.document&&x.document.fields).map(x=>({name:x.document.name, f:x.document.fields}));
+    const hidden=new Set(docs.filter(d=>d.f.kind&&d.f.kind.stringValue==='refhide'&&d.f.hash).map(d=>d.f.hash.stringValue));
+    return docs.filter(d=>d.f.kind&&d.f.kind.stringValue==='refphoto'&&d.f.image&&d.f.image.stringValue.length>=200)
+      .map(d=>({name:d.name, img:d.f.image.stringValue}))
+      .filter(d=>!hidden.has(hashImg(d.img)));
+  }catch(e){ return []; }
+}
+async function hideRefPhoto(task, img){   // «видалення» через надгробок (delete у базі заборонено)
+  return fsPushRaw({ kind:{stringValue:'refhide'}, task:{stringValue:task},
+    hash:{stringValue:hashImg(img)}, at:{integerValue:String(Date.now())} });
+}
+async function addRefPhoto(task, dataUrl){
+  return fsPushRaw({ kind:{stringValue:'refphoto'}, task:{stringValue:task},
+    image:{stringValue:dataUrl}, at:{integerValue:String(Date.now())} });
+}
+async function fsPushRaw(fields){   // як fsPush, але БЕЗ мітки redaktorska (щоб /kadr бачив приклад)
+  const r=await fetch(FS_BASE+'voice-tracks?key='+FB.apiKey,{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})});
+  return r.ok;
+}
+function renderRefPhotos(){
+  const h=document.createElement('div'); h.className='hint';
+  h.innerHTML='Приклади, які гості <b>повторюватимуть</b> у камерах /kadr. Обери завдання, додай одне-кілька наших фото — у камері воно ляже <b>напівпрозорим привидом</b>, і гість скомпонує свій кадр під нього. Найкраще підходить «одне фото на всіх» 👥.';
+  main.appendChild(h);
+  // вибір завдання
+  const bar=document.createElement('div'); bar.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px';
+  const sel=document.createElement('select'); sel.style.cssText='flex:1;min-width:180px;font:inherit;font-size:15px;padding:10px;background:#fff;border:2px solid var(--line);border-radius:8px;color:var(--ink)';
+  KADR_TASKS.forEach(([c,em,t])=>{ const o=document.createElement('option'); o.value=c; o.textContent=em+' '+t+' (№'+c+')'; if(c===refSelTask)o.selected=true; sel.appendChild(o); });
+  sel.addEventListener('change',()=>{ refSelTask=sel.value; render(); });
+  bar.appendChild(sel);
+  const add=document.createElement('label'); add.className='tbtn go'; add.textContent='＋ додати наше фото';
+  add.style.cssText='cursor:pointer;white-space:nowrap';
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.style.display='none';
+  add.appendChild(inp); bar.appendChild(add); main.appendChild(bar);
+  // сітка існуючих прикладів
+  const grid=document.createElement('div'); grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px';
+  grid.innerHTML='<div style="color:var(--mut);font-size:13px">завантажую приклади…</div>';
+  main.appendChild(grid);
+  loadRefPhotos(refSelTask).then(list=>{
+    grid.innerHTML='';
+    if(!list.length){ grid.innerHTML='<div style="color:var(--mut);font-size:13px;grid-column:1/-1">Для цього завдання прикладів ще нема. Додай наше фото 👆</div>'; return; }
+    list.forEach(it=>{ const cell=document.createElement('div'); cell.style.cssText='position:relative;border:2px solid var(--line);border-radius:8px;overflow:hidden;background:#000;aspect-ratio:3/2';
+      const im=document.createElement('img'); im.src=it.img; im.style.cssText='width:100%;height:100%;object-fit:cover';
+      const del=document.createElement('button'); del.textContent='🗑'; del.title='видалити приклад';
+      del.style.cssText='position:absolute;top:5px;right:5px;background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:6px;width:30px;height:30px;cursor:pointer';
+      del.addEventListener('click', async ()=>{ if(!confirm('Прибрати цей приклад? Гості більше не бачитимуть його в камері.')) return; del.textContent='…';
+        if(await hideRefPhoto(refSelTask, it.img)){ toast('приклад прибрано ✓'); render(); } else { toast('не вдалося прибрати'); del.textContent='🗑'; } });
+      cell.appendChild(im); cell.appendChild(del); grid.appendChild(cell); });
+  });
+  inp.addEventListener('change', async ()=>{
+    const files=[...(inp.files||[])]; inp.value=''; if(!files.length) return;
+    toast('додаю фото…', 60000); let ok=0, fail=0;
+    for(const f of files){ try{ const url=await compressRef(f); if(await addRefPhoto(refSelTask,url)) ok++; else fail++; }catch(e){ fail++; } }
+    toast(fail? ('додано '+ok+', не пройшло '+fail) : ('✓ додано '+ok+' — гості вже бачитимуть у камері'));
+    render();
+  });
 }
 document.getElementById('btn-send').addEventListener('click', async ()=>{
   const notes=Object.keys(db.notes).filter(k=>db.notes[k] && db.notes[k]!==db['_sentNotes_'+k]);

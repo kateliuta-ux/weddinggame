@@ -262,12 +262,16 @@ let allDocs=[];
 async function loadAll(){
   try{
     // читаємо ВСІ сторінки; маска — лише поля камер (не тягнемо аудіо пісень)
-    const docs=await fsGetAll(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300&mask.fieldPaths=kind&mask.fieldPaths=task&mask.fieldPaths=image&mask.fieldPaths=at');
+    const docs=await fsGetAll(FS+'voice-tracks?key='+FB.apiKey+'&pageSize=300&mask.fieldPaths=kind&mask.fieldPaths=task&mask.fieldPaths=image&mask.fieldPaths=at&mask.fieldPaths=hash');
     if(docs) allDocs=docs.map(d=>d.fields||{}).filter(f=>f.kind&&f.kind.stringValue);
   }catch(e){}
 }
 const kadrDocs = ()=> allDocs.filter(f=>f.kind.stringValue==='kadr'&&f.image);
-const refDocs  = t => allDocs.filter(f=>f.kind.stringValue==='refphoto'&&f.image&&(f.task?f.task.stringValue:'')===t);
+// хеш зображення — щоб «ховати» приклади (база лише create+read, справжнього delete нема)
+function hashImg(s){ let h=5381; for(let i=0;i<s.length;i++){ h=((h*33)^s.charCodeAt(i))>>>0; } return 'h'+h.toString(36)+'-'+s.length; }
+const hiddenRefs = ()=> new Set(allDocs.filter(f=>f.kind.stringValue==='refhide'&&f.hash).map(f=>f.hash.stringValue));
+const refDocs  = t => { const hid=hiddenRefs();
+  return allDocs.filter(f=>f.kind.stringValue==='refphoto'&&f.image&&f.image.stringValue.length>=200&&(f.task?f.task.stringValue:'')===t&&!hid.has(hashImg(f.image.stringValue))); };
 function taskCount(t){ return kadrDocs().filter(f=>(f.task?f.task.stringValue:'')===t).length; }
 
 /* ── ХАБ ── */
