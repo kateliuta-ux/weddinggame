@@ -26,9 +26,10 @@
   #camstage{ --acc:#c0303c; position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; display:none }
   #camstage.on{ display:block }
   #camrot{ position:absolute; inset:0; overflow:hidden; background:#0c0a12 }
-  /* відео заповнює екран у природній орієнтації; поворот кадру — лише вручну (кнопка ⟲, запамʼятовується),
-     бо блокування автоповороту телефона інакше плутає орієнтацію. Розмір і transform задає JS (applyRot). */
-  #camrot video{ position:absolute; top:50%; left:50%; width:100%; height:100%; object-fit:cover; background:#0c0a12; transform:translate(-50%,-50%) }
+  /* видошукач малюється в CANVAS тим самим drawImage, що й зйомка → «що бачиш, те й знімаєш».
+     <video> лишається джерелом, але сховане (декодує кадри). Поворот — вручну (кнопка ⟲), запамʼятовується. */
+  #camrot video{ position:absolute; width:2px; height:2px; opacity:0; pointer-events:none; top:0; left:0 }
+  #camrot #camcv{ position:absolute; inset:0; width:100%; height:100%; display:block; background:#0c0a12 }
   /* привид — напівпрозорий приклад поверх відео, щоб скомпонувати свій кадр під нього */
   #ghost{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; opacity:.42; pointer-events:none; mix-blend-mode:normal }
   /* панель вибору прикладу (для завдань «повтори наш кадр») */
@@ -171,6 +172,7 @@
     <div id="camstage">
       <div id="camrot">
         <video id="vid" playsinline autoplay muted></video>
+        <canvas id="camcv"></canvas>
         <img id="ghost" alt="" style="display:none">
         <div class="vf" id="vf"><span class="em" id="vf-em">📷</span><span id="vf-msg">вмикаю камеру…</span></div>
         <span class="fm fm-tl"></span><span class="fm fm-tr"></span><span class="fm fm-bl"></span><span class="fm fm-br"></span>
@@ -457,47 +459,48 @@ function compress(file){
 }
 
 // ── ЖИВА КАМЕРА (getUserMedia) ──
-let camStream=null, camFacing='environment', camLive=false;
-let camRot = (()=>{ try{ return (+localStorage.getItem('kadr-rot')||0)%360; }catch(_){ return 0; } })();  // ручний поворот кадру
-function applyRot(){
-  const v=$('vid'); const rot=((camRot%360)+360)%360; const rotated=(rot===90||rot===270);
-  v.style.width  = rotated?'100vh':'100%';
-  v.style.height = rotated?'100vw':'100%';
-  v.style.transform = 'translate(-50%,-50%) rotate('+rot+'deg)'+(camFacing==='user'?' scaleX(-1)':'');
+// Ключове: видошукач малюємо в <canvas> тим самим drawImage, що й зйомка → прев'ю = фото ЗАВЖДИ.
+// (Раніше <video> показував браузер уже повернутим, а drawImage брав сирий буфер — тому фото лягало боком.)
+let camStream=null, camFacing='environment', camLive=false, rafPreview=0;
+let camRot = (()=>{ try{ return (+localStorage.getItem('kadr-rot')||0)%360; }catch(_){ return 0; } })();  // ручний поворот, запамʼятовується
+function capAR(){ const sw=window.innerWidth||360, sh=window.innerHeight||640;
+  return Math.max(1.3, Math.min(2.2, Math.max(sw,sh)/Math.min(sw,sh))); }   // ландшафтне співвідношення екрана
+function coverDraw(ctx, v, W, H, rot, mirror){                              // заповнити WxH (cover) з поворотом і дзеркалом
+  const vw=v.videoWidth, vh=v.videoHeight; if(!vw) return;
+  const rotated=(rot===90||rot===270), srcW=rotated?vh:vw, srcH=rotated?vw:vh;
+  const scale=Math.max(W/srcW, H/srcH);
+  ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(rot*Math.PI/180); if(mirror) ctx.scale(-1,1);
+  ctx.drawImage(v, -vw*scale/2, -vh*scale/2, vw*scale, vh*scale); ctx.restore();
 }
-function cycleRot(){
-  camRot=(camRot+90)%360; try{ localStorage.setItem('kadr-rot', String(camRot)); }catch(_){}
-  applyRot();
+function drawPreview(){
+  rafPreview=requestAnimationFrame(drawPreview);
+  const cv=$('camcv'), v=$('vid'); if(!cv||!camLive||!v.videoWidth) return;
+  const dpr=Math.min(window.devicePixelRatio||1, 2);
+  const bw=Math.max(2,Math.round((cv.clientWidth||window.innerWidth)*dpr));
+  const bh=Math.max(2,Math.round((cv.clientHeight||window.innerHeight)*dpr));
+  if(cv.width!==bw) cv.width=bw; if(cv.height!==bh) cv.height=bh;
+  coverDraw(cv.getContext('2d'), v, bw, bh, ((camRot%360)+360)%360, camFacing==='user');
 }
+function startPreview(){ if(!rafPreview) drawPreview(); }
+function cycleRot(){ camRot=(camRot+90)%360; try{ localStorage.setItem('kadr-rot', String(camRot)); }catch(_){} }  // прев'ю оновиться сам у циклі
 async function startCamera(facing){
   camFacing=facing||camFacing; stopCamera();
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camFail(); return; }
   try{
     camStream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:camFacing}, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
-    const v=$('vid'); v.srcObject=camStream; applyRot();
+    const v=$('vid'); v.srcObject=camStream;
     await v.play().catch(()=>{});
-    camLive=true; $('vf').style.display='none';
+    camLive=true; $('vf').style.display='none'; startPreview();
   }catch(e){ camFail(); }
 }
 function camFail(){ camLive=false; $('vf').style.display='flex'; $('vf-msg').textContent='тисни спуск — відкриється камера телефона'; }
 function stopCamera(){ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } camLive=false; }
 function captureFromVideo(){
   const v=$('vid'); if(!v.videoWidth) return null;
-  const vw=v.videoWidth, vh=v.videoHeight;
-  const rot=((camRot%360)+360)%360, rotated=(rot===90||rot===270);
-  // 1) кадр у тій самій орієнтації, як видно у видошукачі (той самий ручний поворот + дзеркало фронталки)
-  const fw=rotated?vh:vw, fh=rotated?vw:vh;
-  const frame=document.createElement('canvas'); frame.width=fw; frame.height=fh; const fg=frame.getContext('2d');
-  fg.translate(fw/2, fh/2); fg.rotate(rot*Math.PI/180); if(camFacing==='user') fg.scale(-1,1);
-  fg.drawImage(v, -vw/2, -vh/2);
-  // 2) center-crop до «плівкового» ландшафту — так само, як бачить око
-  const sw=window.innerWidth||360, sh=window.innerHeight||640;
-  let AR=Math.max(sw,sh)/Math.min(sw,sh); AR=Math.max(1.4, Math.min(1.85, AR));
-  let cw=fw, ch=Math.round(fw/AR); if(ch>fh){ ch=fh; cw=Math.round(fh*AR); }
-  const sx=Math.floor((fw-cw)/2), sy=Math.floor((fh-ch)/2);
-  const crop=document.createElement('canvas'); crop.width=cw; crop.height=ch;
-  crop.getContext('2d').drawImage(frame, sx,sy,cw,ch, 0,0,cw,ch);
-  return filmFromSource(crop, cw, ch);
+  const AR=capAR(), W=1280, H=Math.round(W/AR);
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  coverDraw(c.getContext('2d'), v, W, H, ((camRot%360)+360)%360, camFacing==='user');  // ІДЕНТИЧНО до прев'ю
+  return filmFromSource(c, W, H);
 }
 function shoot(){ // спалах + бліп
   $('flick').classList.remove('go'); void $('flick').offsetWidth; $('flick').classList.add('go');
