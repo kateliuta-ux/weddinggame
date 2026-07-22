@@ -29,6 +29,18 @@
   /* відео заповнює екран у природній орієнтації; поворот кадру — лише вручну (кнопка ⟲, запамʼятовується),
      бо блокування автоповороту телефона інакше плутає орієнтацію. Розмір і transform задає JS (applyRot). */
   #camrot video{ position:absolute; top:50%; left:50%; width:100%; height:100%; object-fit:cover; background:#0c0a12; transform:translate(-50%,-50%) }
+  /* привид — напівпрозорий приклад поверх відео, щоб скомпонувати свій кадр під нього */
+  #ghost{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; opacity:.42; pointer-events:none; mix-blend-mode:normal }
+  /* панель вибору прикладу (для завдань «повтори наш кадр») */
+  #ghostbar{ position:absolute; z-index:5; left:0; right:0; bottom:96px; padding:8px 12px;
+    background:linear-gradient(0deg, rgba(20,17,26,.72), rgba(20,17,26,.35), transparent) }
+  #ghostbar .gb-lab{ color:#f4ece0; font-size:11.5px; margin-bottom:6px; text-shadow:0 1px 2px #000 }
+  #ghostthumbs{ display:flex; gap:7px; overflow-x:auto; padding-bottom:4px }
+  #ghostthumbs img{ height:52px; width:78px; object-fit:cover; border-radius:5px; border:2px solid rgba(255,255,255,.5); flex:0 0 auto; cursor:pointer }
+  #ghostthumbs img.sel{ border-color:#ffd23f; box-shadow:0 0 0 2px #ffd23f }
+  #ghostbar .gb-op{ display:flex; align-items:center; gap:8px; margin-top:6px; color:#e7ddc9; font-size:11px }
+  #ghostbar .gb-op input[type=range]{ flex:1; accent-color:#ffd23f }
+  #ghostbar #ghostoff{ background:rgba(0,0,0,.5); color:#fff; border:2px solid rgba(255,255,255,.4); border-radius:6px; width:30px; height:26px; cursor:pointer }
   #camrot .vf{ position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; color:#cfc7bb; text-align:center; padding:24px }
   #camrot .vf .em{ font-size:42px } #camrot .vf span{ font-size:14px; max-width:70% }
   .fm{ position:absolute; z-index:3; width:22px; height:22px; border:2px solid rgba(255,255,255,.5) }
@@ -42,7 +54,8 @@
     background-repeat:repeat-x; background-position:center }
   #fulltop .ftrow{ display:flex; justify-content:space-between; align-items:center; font:12px/1 "Courier New",monospace }
   #fulltop .ftnum{ color:#8a7f78; letter-spacing:1px } #fulltop .rec{ color:#c0392b } #fulltop .ftframes{ color:var(--red) } #fulltop .ftframes b{ font-size:19px }
-  #fulltop .fttitle{ font-family:Georgia,serif; font-size:22px; font-weight:bold; color:var(--red); text-align:center }
+  #fulltop .fttitle{ font-family:Georgia,serif; font-size:21px; font-weight:bold; color:var(--red); text-align:center; line-height:1.1 }
+  #fulltop .ftdesc{ font-family:Georgia,serif; font-size:12.5px; color:#5a4f48; text-align:center; line-height:1.35; margin-top:2px; max-width:92%; margin-left:auto; margin-right:auto }
   /* нижня панель: вихід · перемикач · спуск */
   #fullbar{ position:absolute; z-index:4; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:space-around;
     padding:14px 30px calc(14px + env(safe-area-inset-bottom)); background:linear-gradient(0deg, rgba(0,0,0,.6), transparent) }
@@ -106,6 +119,7 @@
   .task .tt{ flex:1 }
   .task .tt b{ color:var(--red); font-size:16px }
   .task .tt span{ display:block; font-size:12px; color:var(--mut) }
+  .task .tt .td{ color:#5a5148; font-size:12.5px; margin:2px 0 3px; line-height:1.35 }
   .task .n{ font-size:12px; color:var(--mut); white-space:nowrap }
   .add{ display:flex; gap:8px; margin-top:12px }
   .add input{ flex:1; font-family:inherit; font-size:15px; padding:11px; background:#fff; border:2px solid var(--line); border-radius:8px; color:var(--ink) }
@@ -157,6 +171,7 @@
     <div id="camstage">
       <div id="camrot">
         <video id="vid" playsinline autoplay muted></video>
+        <img id="ghost" alt="" style="display:none">
         <div class="vf" id="vf"><span class="em" id="vf-em">📷</span><span id="vf-msg">вмикаю камеру…</span></div>
         <span class="fm fm-tl"></span><span class="fm fm-tr"></span><span class="fm fm-bl"></span><span class="fm fm-br"></span>
         <!-- верхня картка-завдання (стиль друкованих наклейок) -->
@@ -164,9 +179,16 @@
           <div class="ftband"></div>
           <div class="ftrow"><span class="ftnum" id="ftnum">№</span><span class="rec" id="rec">● TEST</span><span class="ftframes"><b id="ftcnt">27</b> кадрів</span></div>
           <div class="fttitle" id="fttitle">завдання</div>
+          <div class="ftdesc" id="ftdesc"></div>
         </div>
         <!-- катушка в куточку: тап → переглянути відзняті кадри (негатив) -->
         <button id="btn-roll" title="переглянути кадри">🎞<span id="rollnum">0</span></button>
+        <!-- ПОВТОРИ НАШЕ ФОТО: вибір прикладу-привида + прозорість -->
+        <div id="ghostbar" style="display:none">
+          <div class="gb-lab">повтори наш кадр 📸 — обери приклад, він ляже привидом:</div>
+          <div id="ghostthumbs"></div>
+          <div class="gb-op"><span>прозорість</span><input id="ghostop" type="range" min="10" max="80" value="42"><button id="ghostoff" title="прибрати приклад">✕</button></div>
+        </div>
         <!-- нижня панель: вихід · перемикач · спуск -->
         <div id="fullbar">
           <button class="fb-exit" id="btn-exit" title="усі камери">✕</button>
@@ -208,17 +230,29 @@ const LOCKED = Date.now() < REVEAL_TS;         // до проявлення га
 const DEV = (()=>{ try{ return localStorage.getItem('wed-dev')==='1' || PARAMS.get('dev'); }catch(_){ return false; } })();
 const $=id=>document.getElementById(id);
 
-// 19 завдань — коди збігаються з друкованими картками
+// 19 завдань — коди збігаються з друкованими картками (код, емодзі, назва, опис)
 const TASKS=[
-  ['3201','💑','портрети молодят'],['1926','🤳','фото з нами'],['4898','🙋','хтось незнайомий'],
-  ['4867','🚪','вихід із вбиральні'],['5185','😐','відмазка'],['2320','🎤','що на сцені'],
-  ['6305','👥','одне фото на всіх'],['4714','🙂','тільки портрети'],['8585','🖼','лише фотозона'],
-  ['1533','🕺','танцпол цілий вечір'],['8411','🥹','сльози й обійми'],['8775','😜','гримаси гостей'],
-  ['5243','🥂','хроніка тостів'],['2750','😍','закохані погляди'],['4423','👻','фотограф-привид'],
-  ['6923','😄','колекція посмішок'],['9552','🌙','нічна зміна'],['3969','🤗','обійми без лічби'],
-  ['1708','🎭','поза сценою'],
+  ['3201','💑','портрети молодят','Портрет молодят зблизька — спіймай Катю і Діму разом у центрі кадру.'],
+  ['1926','🤳','фото з нами','Кадр разом із нами: підійди й потрап у той самий фрейм.'],
+  ['4898','🙋','хтось незнайомий','Познайомся й сфоткай гостя, якого раніше не знав(-ла).'],
+  ['4867','🚪','вихід із вбиральні','Репортаж «обличчя на виході»: хтось повертається з вбиральні 🚪'],
+  ['5185','😐','відмазка','Спіймай чиюсь відмазку — коли хтось каже «я лише на хвилинку».'],
+  ['2320','🎤','що на сцені','Усе найцікавіше, що коїться на сцені.'],
+  ['6305','👥','одне фото на всіх','Збери компанію в один кадр — повтори композицію з нашого прикладу.'],
+  ['4714','🙂','тільки портрети','Лише портрети: одне обличчя — один кадр.'],
+  ['8585','🖼','лише фотозона','Знімай тільки у фотозоні.'],
+  ['1533','🕺','танцпол цілий вечір','Танцпол від перших рухів до фіналу вечора.'],
+  ['8411','🥹','сльози й обійми','Найзворушливіше: сльози, обійми, мурашки.'],
+  ['8775','😜','гримаси гостей','Найсмішніші гримаси, які встигнеш зловити.'],
+  ['5243','🥂','хроніка тостів','Кожен тост — окремий кадр.'],
+  ['2750','😍','закохані погляди','Закохані погляди (не тільки наші 😉).'],
+  ['4423','👻','фотограф-привид','Знімай так, щоб тебе ніхто не помітив.'],
+  ['6923','😄','колекція посмішок','Збери колекцію усмішок — що більше, то краще.'],
+  ['9552','🌙','нічна зміна','Пізній вечір і ніч — інша магія кадру.'],
+  ['3969','🤗','обійми без лічби','Обіймайся і знімай — без ліку.'],
+  ['1708','🎭','поза сценою','Те, що діється за лаштунками, поза сценою.'],
 ];
-const META=Object.fromEntries(TASKS.map(t=>[t[0],{em:t[1],title:t[2]}]));
+const META=Object.fromEntries(TASKS.map(t=>[t[0],{em:t[1],title:t[2],desc:t[3]||''}]));
 // завдання, де треба ПОВТОРИТИ наше фото → показуємо еталони
 const REF_TASKS=new Set(['6305']);
 
@@ -243,13 +277,16 @@ async function renderHub(){
   await loadAll();
   const known=new Set(TASKS.map(t=>t[0]));
   const custom=[...new Set(kadrDocs().map(f=>f.task?f.task.stringValue:'').filter(t=>t && !known.has(t)))];
+  const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const list=$('tasklist'); list.innerHTML='';
-  const row=(t,em,title)=>{ const a=document.createElement('a'); a.className='task'; a.href='kadr?t='+encodeURIComponent(t);
+  const row=(t,em,title,desc)=>{ const a=document.createElement('a'); a.className='task'; a.href='kadr?t='+encodeURIComponent(t);
     const left=Math.max(0,CAP-taskCount(t));
-    a.innerHTML='<div class="em">'+em+'</div><div class="tt"><b>'+title+'</b><span>камера · лишилось '+left+' кадрів</span></div><div class="n">📷</div>';
+    a.innerHTML='<div class="em">'+em+'</div><div class="tt"><b>'+esc(title)+'</b>'+
+      (desc?'<span class="td">'+esc(desc)+'</span>':'')+
+      '<span>камера · лишилось '+left+' кадрів</span></div><div class="n">📷</div>';
     list.appendChild(a); };
-  TASKS.forEach(([t,em,title])=>row(t,em,title));
-  custom.forEach(t=>row(t,'✦',t));
+  TASKS.forEach(([t,em,title,desc])=>row(t,em,title,desc));
+  custom.forEach(t=>row(t,'✦',t,''));
   $('newgo').onclick=()=>{ const v=($('newtask').value||'').trim().slice(0,32); if(v) location.href='kadr?t='+encodeURIComponent(v); };
   $('newtask').addEventListener('keydown',e=>{ if(e.key==='Enter') $('newgo').click(); });
   $('btn-gallery').onclick=renderGallery;
@@ -321,11 +358,29 @@ async function renderCam(){
   $('rec').textContent = TEST ? '● TEST' : '● '+new Date().toISOString().slice(0,10);
   if(DEV) $('devbar').style.display='block';
   $('fttitle').textContent = m?m.title:T;            // завдання у верхній картці
+  $('ftdesc').textContent = m?m.desc:'';             // опис — щоб було зрозуміло, що знімати
   $('ftnum').textContent = '№ '+T;
   startCamera('environment');                       // живий видошукач
   $('camstage').classList.add('on');   // камера одразу на весь екран (ландшафт)
   await loadAll();
-  renderRefs(); refreshCounter(); renderRoll();
+  renderRefs(); refreshCounter(); renderRoll(); renderGhostPicker();
+}
+// ── «повтори наш кадр»: приклади-привиди поверх відео ──
+function setGhost(src){
+  const g=$('ghost');
+  if(!src){ g.style.display='none'; g.removeAttribute('src'); [...document.querySelectorAll('#ghostthumbs img')].forEach(i=>i.classList.remove('sel')); return; }
+  g.src=src; g.style.opacity=(+$('ghostop').value/100); g.style.display='block';
+}
+function renderGhostPicker(){
+  const rs=refDocs(T);
+  const bar=$('ghostbar'), tw=$('ghostthumbs');
+  if(!rs.length){ bar.style.display='none'; setGhost(null); return; }
+  bar.style.display='block'; tw.innerHTML='';
+  rs.forEach(f=>{ const im=document.createElement('img'); im.src=f.image.stringValue; im.loading='lazy';
+    im.onclick=()=>{ [...tw.children].forEach(x=>x.classList.remove('sel')); im.classList.add('sel'); setGhost(f.image.stringValue); };
+    tw.appendChild(im); });
+  $('ghostop').oninput=()=>{ if($('ghost').style.display!=='none') $('ghost').style.opacity=(+$('ghostop').value/100); };
+  $('ghostoff').onclick=()=>setGhost(null);
 }
 
 // ── плівковий ефект (мʼяка зернистість, тепла корекція, гало, віньєтка, пил, дата-штамп) ──
