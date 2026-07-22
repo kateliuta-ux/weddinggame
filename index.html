@@ -246,6 +246,40 @@
   #end-screen .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(150,110,120,.3), 0 0 0 2px #ecd3c4}
   #end-screen #btn-rsvp{background:#e8a7b6!important;color:#5a2838!important;box-shadow:0 3px 0 rgba(150,80,100,.35),0 0 0 2px #d98ea0}
 
+  /* ===== заглушка-запрошення (до релізу) — святкова, у стилі запрошення ===== */
+  #release-stub{background:
+      radial-gradient(120% 80% at 50% 0%, #fff9f0 0%, #f7ecdd 55%, #efe0cd 100%)!important;
+    padding:5% 6%!important; overflow:hidden}
+  #release-stub::before{content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 0 3px #cbb26a, inset 0 0 0 6px #fff9f0, inset 0 0 0 9px #d8a0ac, inset 0 0 46px rgba(181,138,46,.18)}
+  .stub-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:11px;
+    max-width:440px;width:92%;padding:26px 20px 22px;text-align:center;
+    background:linear-gradient(#fffdf9,#fdf6ea);
+    box-shadow:0 0 0 2px #cbb26a, 0 0 0 6px #fff, 0 0 0 8px #e3c6cd, 0 10px 30px rgba(120,70,50,.18)}
+  .stub-band{height:12px;width:min(320px,86%);
+    background:repeating-linear-gradient(45deg,#a8233c 0 4px,transparent 4px 8px),
+               repeating-linear-gradient(-45deg,#a8233c 0 4px,transparent 4px 8px);
+    background-size:8px 8px;opacity:.72}
+  .stub-doves{font-size:26px;letter-spacing:8px;animation:stub-float 3.4s ease-in-out infinite}
+  @keyframes stub-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .stub-kicker{font-family:Georgia,serif;font-style:italic;font-size:13px;color:#9a7a52;letter-spacing:1px}
+  .stub-names{font-family:"Snell Roundhand","Savoye LET","Segoe Script","Brush Script MT",cursive;
+    color:#b0596f;font-style:italic;font-size:clamp(30px,9cqw,52px);line-height:1;letter-spacing:1px;
+    text-shadow:1px 2px 0 rgba(255,255,255,.85)}
+  .stub-date{font-family:Georgia,serif;font-weight:bold;color:#a8233c;font-size:clamp(16px,4cqw,26px);
+    letter-spacing:2px;position:relative;padding-bottom:10px}
+  .stub-date::after{content:"❧  ✦  ❧";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+    font-size:12px;color:#cbb26a;letter-spacing:3px}
+  #stub-count{font-family:Georgia,serif;font-size:15px;color:#7a5a2e;letter-spacing:3px;
+    background:#fff6e6;border:2px solid #cbb26a;border-radius:8px;padding:8px 16px;box-shadow:0 2px 0 rgba(181,138,46,.25)}
+  .stub-note{font-family:Georgia,serif;font-size:12.5px;color:#7a5f52;max-width:88%;line-height:1.6}
+  .stub-note b{color:#a8233c}
+  #release-stub .dev-row{display:flex;gap:8px;align-items:center;margin-top:8px;opacity:.72}
+  #release-stub #stub-pass{font-family:Georgia,serif;font-size:12.5px;padding:.5em;width:150px;text-align:center;
+    background:#fffdf9;border:2px solid #cbb26a;border-radius:6px;color:#6a4a2a}
+  #release-stub #stub-go{background:#cbb26a;box-shadow:0 2px 0 rgba(120,90,30,.4)}
+  #release-stub #stub-err{color:#a8233c;font-family:Georgia,serif;font-size:11px;min-height:14px}
+
   /* ===== кічове запрошення «для тьоті у Viber» ===== */
   #viber-invite{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
     overflow:hidden;padding:16px;
@@ -684,20 +718,23 @@
       <button class="btn" id="ts-cancel" style="background:#55515f">Скасувати</button>
     </div>
   </div>
-  <div id="release-stub" class="overlay hidden" style="background:#0e0c14;gap:14px;z-index:900">
-    <div style="font-size:13px;letter-spacing:3px;color:#e88aa0">♥ ♥ ♥</div>
-    <div style="font-size:22px;font-weight:bold;color:#f4cf5e;letter-spacing:2px;text-align:center">КАТЯ ♥ ДІМА</div>
-    <div style="font-size:13px;color:#f4f0e4;letter-spacing:1px;text-align:center">гра-запрошення виходить</div>
-    <div style="font-size:20px;font-weight:bold;color:#e88aa0;letter-spacing:2px">1.8.2026 · 16:20</div>
-    <div id="stub-count" style="font-family:monospace;font-size:15px;color:#f4f0e4;letter-spacing:2px;background:#1e1b28;border:2px solid #3a3646;padding:8px 16px"></div>
-    <div style="font-size:12.5px;color:#bcb7a8;max-width:84%;text-align:center;line-height:1.55;margin-top:4px">Гра, семплер і все-все відкриється <b style="color:#f4cf5e">1 серпня</b> 🤍<br>Ще трішки — доробляємо для вас.</div>
-    <div style="font-size:12px;color:#bcb7a8;letter-spacing:2px">✶ ✦ ✶</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-      <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off"
-        style="font-family:inherit;font-size:13px;padding:.5em;width:170px;text-align:center;background:#f8f8f3;border:3px solid #000;color:#1a1a24">
-      <button class="btn small" id="stub-go" style="background:#1E4E8A">⚙️</button>
+  <div id="release-stub" class="overlay hidden" style="z-index:900">
+    <div class="stub-card">
+      <div class="stub-doves">🕊 ✦ 🕊</div>
+      <div class="stub-band"></div>
+      <div class="stub-kicker">запрошуємо вас на наше весілля</div>
+      <div class="stub-names">Катя&nbsp;♥&nbsp;Діма</div>
+      <div class="stub-kicker" style="margin-top:-2px">гра-запрошення відкриється</div>
+      <div class="stub-date">1 серпня 2026 · 16:20</div>
+      <div id="stub-count"></div>
+      <div class="stub-note">Гра, семплер і все-все чекає на вас <b>1 серпня</b> 🤍<br>Ще трішки — доробляємо це свято для вас.</div>
+      <div class="stub-band"></div>
+      <div class="dev-row">
+        <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off">
+        <button class="btn small" id="stub-go" style="background:#cbb26a">⚙️</button>
+      </div>
+      <div id="stub-err"></div>
     </div>
-    <div id="stub-err" style="color:#f0a0ac;font-size:11px;min-height:14px"></div>
   </div>
   <div id="gate-screen" class="overlay hidden" style="background:rgba(10,9,16,.97);gap:13px;z-index:640">
     <div class="s-head">💌 Катя ♥ Діма · 6 вересня 2026<span>запрошення-гра · введи пароль зі своєї візитівки — і гра впізнає тебе</span></div>
