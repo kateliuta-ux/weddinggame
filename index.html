@@ -690,8 +690,7 @@
     <div style="font-size:13px;color:#f4f0e4;letter-spacing:1px;text-align:center">гра-запрошення виходить</div>
     <div style="font-size:20px;font-weight:bold;color:#e88aa0;letter-spacing:2px">1.8.2026 · 16:20</div>
     <div id="stub-count" style="font-family:monospace;font-size:15px;color:#f4f0e4;letter-spacing:2px;background:#1e1b28;border:2px solid #3a3646;padding:8px 16px"></div>
-    <button class="btn" id="stub-sampler" style="background:#A8505F;margin-top:4px">🎹 А поки — зроби нам мелодію</button>
-    <div style="font-size:11px;color:#8f8a7c;max-width:82%;text-align:center">семплер відкритий: запиши нам трек — і він у весільному плейлисті. 🎟 розіграш: найкращий трек = запрошення на весілля (донат на збір ЗСУ від 100 грн 🌻)</div>
+    <div style="font-size:12.5px;color:#bcb7a8;max-width:84%;text-align:center;line-height:1.55;margin-top:4px">Гра, семплер і все-все відкриється <b style="color:#f4cf5e">1 серпня</b> 🤍<br>Ще трішки — доробляємо для вас.</div>
     <div style="font-size:12px;color:#bcb7a8;letter-spacing:2px">✶ ✦ ✶</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input id="stub-pass" type="text" maxlength="24" placeholder="для розробників…" autocomplete="off"
@@ -11445,7 +11444,7 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
     window._fromStub = true;
   }
   window.reshowStub = ()=>{ if(!released() && !DEV_MODE){ show(); return true; } return false; };
-  document.getElementById('stub-sampler').addEventListener('click', openStubSampler);
+  // семплер на заглушці прибрано — доступ лише після релізу 1.8 (доробляємо)
   function tryDev(){
     const v = normPass(document.getElementById('stub-pass').value);
     if(v!==DEV_PASS){ document.getElementById('stub-err').textContent='🙃'; try{sfxScore(180);}catch(_){} return; }
@@ -11455,10 +11454,7 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   }
   document.getElementById('stub-go').addEventListener('click', tryDev);
   document.getElementById('stub-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') tryDev(); });
-  if(!released() && !DEV_MODE){                                   // ?p=K1TANA вже увімкнув DEV вище — заглушки не буде
-    if(PARAMS.get('sampler')!==null) openStubSampler();          // ?sampler — одразу в семплер
-    else show();
-  }
+  if(!released() && !DEV_MODE){ show(); }                        // до релізу — ЛИШЕ заглушка (семплер закрито)
 })();
 </script>
 </body>
