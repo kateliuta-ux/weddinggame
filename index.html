@@ -200,6 +200,12 @@
     background:rgba(0,0,0,.55);padding:.15em .45em;
     border:2px solid rgba(255,255,255,.35);user-select:none;
   }
+  #home-btn{
+    position:absolute;top:calc(2.5% + 2.7em);left:2.5%;cursor:pointer;z-index:55;
+    color:#fff;font-size:clamp(14px,3.4cqw,22px);line-height:1;
+    background:rgba(0,0,0,.55);padding:.15em .5em;
+    border:2px solid rgba(255,255,255,.35);user-select:none;
+  }
   #skip-btn{
     position:absolute;top:2.5%;left:calc(2.5% + 3em);cursor:pointer;
     color:#f4cf5e;font-size:clamp(11px,2.6cqw,16px);font-weight:bold;
@@ -410,6 +416,7 @@
   <div id="watch-hint" class="hidden">🍿 РЕЖИМ ПЕРЕГЛЯДУ</div>
   <button id="watch-play" class="hidden">▶ ГРАТИ САМ</button>
   <div id="pause-btn" class="hidden">⏸</div>
+  <div id="home-btn" class="hidden" title="вийти в головне меню">⌂</div>
   <div id="skip-btn" class="hidden">⏭ сцену</div>
   <div id="pause-menu" class="hidden" style="position:absolute;inset:0;z-index:60;background:rgba(12,10,20,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
     <div style="color:#f4cf5e;font-weight:bold;font-size:22px;letter-spacing:2px">ПАУЗА</div>
@@ -6518,6 +6525,7 @@ function startNovel(){
   stopChip(); playChip('planeta');
   elTitle.classList.add('hidden');
   document.getElementById('pause-btn').classList.remove('hidden');   // вихід у меню з історії
+  document.getElementById('home-btn').classList.remove('hidden');    // ⌂ прямий вихід у меню
   document.getElementById('watch-pov-menu').classList.add('hidden');
   elHud.classList.add('hidden');
 }
@@ -7468,7 +7476,7 @@ document.addEventListener('pointerdown', e=>{
   const t = e.target;
   if(t===cv) return;                                      // канва має власний обробник
   if(t.closest && (t.closest('.overlay')||t.closest('button')||t.closest('#hud')||t.closest('#dialog')
-     ||t.closest('#pause-btn')||t.closest('#mute-btn')||t.closest('#lang-btn')||t.closest('#skip-btn')
+     ||t.closest('#pause-btn')||t.closest('#home-btn')||t.closest('#mute-btn')||t.closest('#lang-btn')||t.closest('#skip-btn')
      ||t.closest('#watch-play')||t.closest('#touch-pad'))) return;
   input.actionEdge = true;
 });
@@ -7587,7 +7595,9 @@ function updateHudAndControls(){
   // під час діалогу кнопки ховаються, щоб не перекривати вікно
   document.getElementById('controls').classList.toggle('hidden', game.watch || !isTouch || !padPhase || !!game.dialog);
   document.getElementById('pad-down').classList.toggle('hidden', game.phase!=='tetris');
-  document.getElementById('pause-btn').classList.toggle('hidden', game.paused || (game.state!=='play' && game.state!=='novel'));
+  const hideTopBtns = game.paused || (game.state!=='play' && game.state!=='novel');
+  document.getElementById('pause-btn').classList.toggle('hidden', hideTopBtns);
+  document.getElementById('home-btn').classList.toggle('hidden', hideTopBtns);   // вихід у меню будь-якої миті
   const sb=document.getElementById('skip-btn');
   if(sb) sb.classList.toggle('hidden', game.paused || game.watch || game.state!=='play' || !skipTargetExists());
   document.getElementById('kbd-hint').classList.toggle('hidden', game.watch || isTouch || !walkPhase);
@@ -8490,8 +8500,17 @@ function pauseToMenu(){
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('controls').classList.add('hidden');
   document.getElementById('pause-btn').classList.add('hidden');
+  document.getElementById('home-btn').classList.add('hidden');
   resetTitleMenus(); elTitle.classList.remove('hidden');
 }
+document.getElementById('home-btn').addEventListener('pointerdown', e=>{
+  e.preventDefault(); e.stopPropagation();
+  if(game.state!=='play' && game.state!=='novel') return;
+  const wasPaused=game.paused; game.paused=true;                     // застигаємо, поки питаємо
+  const go = confirm('Вийти в головне меню? Поточний прогрес не збережеться.');
+  game.paused=wasPaused;
+  if(go) pauseToMenu();
+});
 document.getElementById('pause-resume').addEventListener('click', resumePause);
 document.getElementById('pause-skip').addEventListener('click', ()=>{ if(skipScene()) resumePause(); });
 document.getElementById('pause-face').addEventListener('click', ()=> document.getElementById('face-file').click());
