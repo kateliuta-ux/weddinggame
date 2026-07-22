@@ -53,6 +53,12 @@
   .shutter::before{ content:''; position:absolute; inset:0; margin:auto; width:28px; height:28px; border-radius:50%; background:var(--acc) }
   .shutter:active{ transform:scale(.94) }
   .shutter.spent{ filter:grayscale(1) brightness(.55); cursor:not-allowed }
+  /* катушка в куточку — вхід у галерею відзнятих кадрів */
+  #btn-roll{ position:absolute; z-index:5; top:76px; right:14px; display:flex; flex-direction:column; align-items:center; gap:1px;
+    background:rgba(20,17,26,.62); color:#f4ece0; border:2px solid rgba(255,255,255,.45); border-radius:12px;
+    padding:7px 9px 5px; font-size:20px; line-height:1; cursor:pointer; backdrop-filter:blur(2px) }
+  #btn-roll #rollnum{ font:bold 11px "Courier New",monospace; color:#ffd23f; letter-spacing:1px }
+  #btn-roll:active{ transform:scale(.94) }
   .flick{ position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:210 }
   .flick.go{ animation:fl .28s ease-out }
   @keyframes fl{ 0%{opacity:0} 12%{opacity:.92} 100%{opacity:0} }
@@ -159,6 +165,8 @@
           <div class="ftrow"><span class="ftnum" id="ftnum">№</span><span class="rec" id="rec">● TEST</span><span class="ftframes"><b id="ftcnt">27</b> кадрів</span></div>
           <div class="fttitle" id="fttitle">завдання</div>
         </div>
+        <!-- катушка в куточку: тап → переглянути відзняті кадри (негатив) -->
+        <button id="btn-roll" title="переглянути кадри">🎞<span id="rollnum">0</span></button>
         <!-- нижня панель: вихід · перемикач · спуск -->
         <div id="fullbar">
           <button class="fb-exit" id="btn-exit" title="усі камери">✕</button>
@@ -252,6 +260,7 @@ async function renderHub(){
 function refreshCounter(){
   const taken=taskCount(T), left=Math.max(0,CAP-taken);
   ['cnum','left','fcnt','fcnt2','ftcnt'].forEach(id=>{ const e=$(id); if(e) e.textContent=left; });
+  const rn=$('rollnum'); if(rn) rn.textContent=kadrDocs().length;   // усього кадрів на катушці
   if(left<=0){
     ['shutter','shutter2'].forEach(id=>{ const e=$(id); if(e) e.classList.add('spent'); });
     const vfm=$('vf-msg'); if(vfm) vfm.textContent='катушку відзнято 🎞'; const vff=$('vf'); if(vff) vff.style.display='flex';
@@ -463,6 +472,8 @@ if(T){
   $('shutter').addEventListener('click', takeShot);                                        // спуск
   $('btn-flip').addEventListener('click', ()=>startCamera(camFacing==='environment'?'user':'environment'));  // фронт/тил
   $('btn-rot') && $('btn-rot').addEventListener('click', cycleRot);                          // ⟲ повернути кадр (якщо ліг боком)
+  $('btn-roll').addEventListener('click', renderGallery);                                     // 🎞 катушка → галерея кадрів
+  $('gal-x').addEventListener('click', ()=>$('galstage').classList.remove('on'));             // ✕ у галереї → назад до камери
   $('btn-exit').addEventListener('click', ()=>{ stopCamera(); location.href='kadr'; });     // ✕ → усі камери
   // DEV: додати еталонне фото для повтору
   $('reffile') && $('reffile').addEventListener('change', async e=>{
