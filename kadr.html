@@ -25,10 +25,10 @@
   /* ── ГОРИЗОНТАЛЬНА КАМЕРА НА ВЕСЬ ЕКРАН (у портреті сама повертається в ландшафт) ── */
   #camstage{ --acc:#c0303c; position:fixed; inset:0; z-index:200; background:#000; overflow:hidden; display:none }
   #camstage.on{ display:block }
-  #camrot{ position:absolute; top:50%; left:50%; transform-origin:center center; overflow:hidden; background:#0c0a12 }
-  @media (orientation:portrait){ #camrot{ width:100vh; height:100vw; transform:translate(-50%,-50%) rotate(90deg) } }
-  @media (orientation:landscape){ #camrot{ width:100vw; height:100vh; transform:translate(-50%,-50%) } }
-  #camrot video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#0c0a12 }
+  #camrot{ position:absolute; inset:0; overflow:hidden; background:#0c0a12 }
+  /* відео заповнює екран у природній орієнтації; поворот кадру — лише вручну (кнопка ⟲, запамʼятовується),
+     бо блокування автоповороту телефона інакше плутає орієнтацію. Розмір і transform задає JS (applyRot). */
+  #camrot video{ position:absolute; top:50%; left:50%; width:100%; height:100%; object-fit:cover; background:#0c0a12; transform:translate(-50%,-50%) }
   #camrot .vf{ position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; color:#cfc7bb; text-align:center; padding:24px }
   #camrot .vf .em{ font-size:42px } #camrot .vf span{ font-size:14px; max-width:70% }
   .fm{ position:absolute; z-index:3; width:22px; height:22px; border:2px solid rgba(255,255,255,.5) }
@@ -162,6 +162,7 @@
         <!-- нижня панель: вихід · перемикач · спуск -->
         <div id="fullbar">
           <button class="fb-exit" id="btn-exit" title="усі камери">✕</button>
+          <button class="flip" id="btn-rot" title="повернути кадр">⟲</button>
           <button class="flip" id="btn-flip" title="перемкнути камеру">⟳</button>
           <button class="shutter" id="shutter" title="зняти кадр"></button>
         </div>
@@ -170,7 +171,7 @@
     <input id="file" type="file" accept="image/*" capture="environment" hidden>
 
     <div id="status"></div>
-    <div class="note" id="cam-note">Знімай усе, що зачепило. Кадри одразу видно внизу <b>негативом</b> — як непроявлену плівку. Проявимо в позитив <b>7 вересня</b> 🎞</div>
+    <div class="note" id="cam-note">Тримай телефон горизонтально. Якщо кадр ліг боком — тисни <b>⟲</b> (поворот запамʼятається). Кадри видно внизу <b>негативом</b>, проявимо в позитив <b>7 вересня</b> 🎞</div>
 
     <!-- проявлена плівка / замок -->
     <div id="rollbox"></div>
@@ -352,12 +353,23 @@ function compress(file){
 
 // ── ЖИВА КАМЕРА (getUserMedia) ──
 let camStream=null, camFacing='environment', camLive=false;
+let camRot = (()=>{ try{ return (+localStorage.getItem('kadr-rot')||0)%360; }catch(_){ return 0; } })();  // ручний поворот кадру
+function applyRot(){
+  const v=$('vid'); const rot=((camRot%360)+360)%360; const rotated=(rot===90||rot===270);
+  v.style.width  = rotated?'100vh':'100%';
+  v.style.height = rotated?'100vw':'100%';
+  v.style.transform = 'translate(-50%,-50%) rotate('+rot+'deg)'+(camFacing==='user'?' scaleX(-1)':'');
+}
+function cycleRot(){
+  camRot=(camRot+90)%360; try{ localStorage.setItem('kadr-rot', String(camRot)); }catch(_){}
+  applyRot();
+}
 async function startCamera(facing){
   camFacing=facing||camFacing; stopCamera();
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camFail(); return; }
   try{
     camStream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:camFacing}, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
-    const v=$('vid'); v.srcObject=camStream; v.style.transform = camFacing==='user' ? 'scaleX(-1)' : 'none';
+    const v=$('vid'); v.srcObject=camStream; applyRot();
     await v.play().catch(()=>{});
     camLive=true; $('vf').style.display='none';
   }catch(e){ camFail(); }
@@ -367,16 +379,19 @@ function stopCamera(){ if(camStream){ camStream.getTracks().forEach(t=>t.stop())
 function captureFromVideo(){
   const v=$('vid'); if(!v.videoWidth) return null;
   const vw=v.videoWidth, vh=v.videoHeight;
-  // кадруємо рівно так, як видно у видошукачі (ландшафтне співвідношення екрана),
-  // тримаючись «плівкового» діапазону — щоб фото не було ані розтягнутим, ані обрізаним інакше, ніж бачить око
+  const rot=((camRot%360)+360)%360, rotated=(rot===90||rot===270);
+  // 1) кадр у тій самій орієнтації, як видно у видошукачі (той самий ручний поворот + дзеркало фронталки)
+  const fw=rotated?vh:vw, fh=rotated?vw:vh;
+  const frame=document.createElement('canvas'); frame.width=fw; frame.height=fh; const fg=frame.getContext('2d');
+  fg.translate(fw/2, fh/2); fg.rotate(rot*Math.PI/180); if(camFacing==='user') fg.scale(-1,1);
+  fg.drawImage(v, -vw/2, -vh/2);
+  // 2) center-crop до «плівкового» ландшафту — так само, як бачить око
   const sw=window.innerWidth||360, sh=window.innerHeight||640;
-  let AR=Math.max(sw,sh)/Math.min(sw,sh);
-  AR=Math.max(1.4, Math.min(1.85, AR));
-  let cw=vw, ch=Math.round(vw/AR); if(ch>vh){ ch=vh; cw=Math.round(vh*AR); }   // center-crop без спотворення
-  const sx=Math.floor((vw-cw)/2), sy=Math.floor((vh-ch)/2);
-  const crop=document.createElement('canvas'); crop.width=cw; crop.height=ch; const cg=crop.getContext('2d');
-  if(camFacing==='user'){ cg.translate(cw,0); cg.scale(-1,1); }    // фронталка — дзеркалимо назад
-  cg.drawImage(v, sx,sy,cw,ch, 0,0,cw,ch);
+  let AR=Math.max(sw,sh)/Math.min(sw,sh); AR=Math.max(1.4, Math.min(1.85, AR));
+  let cw=fw, ch=Math.round(fw/AR); if(ch>fh){ ch=fh; cw=Math.round(fh*AR); }
+  const sx=Math.floor((fw-cw)/2), sy=Math.floor((fh-ch)/2);
+  const crop=document.createElement('canvas'); crop.width=cw; crop.height=ch;
+  crop.getContext('2d').drawImage(frame, sx,sy,cw,ch, 0,0,cw,ch);
   return filmFromSource(crop, cw, ch);
 }
 function shoot(){ // спалах + бліп
@@ -410,6 +425,7 @@ if(T){
   });
   $('shutter').addEventListener('click', takeShot);                                        // спуск
   $('btn-flip').addEventListener('click', ()=>startCamera(camFacing==='environment'?'user':'environment'));  // фронт/тил
+  $('btn-rot') && $('btn-rot').addEventListener('click', cycleRot);                          // ⟲ повернути кадр (якщо ліг боком)
   $('btn-exit').addEventListener('click', ()=>{ stopCamera(); location.href='kadr'; });     // ✕ → усі камери
   // DEV: додати еталонне фото для повтору
   $('reffile') && $('reffile').addEventListener('change', async e=>{
