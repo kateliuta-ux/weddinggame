@@ -220,13 +220,25 @@
   }
   .s-label{color:#bcb7a8;font-size:clamp(7px,1.6cqw,11px);align-self:center;padding-right:4px;text-align:right}
   .s-cell{
-    aspect-ratio:1;background:#2b2b38;border:1px solid #3c3a4a;cursor:pointer;border-radius:2px;
+    aspect-ratio:1;background:#2b2b38;border:1px solid #3c3a4a;cursor:pointer;border-radius:3px;min-height:22px;
+    transition:background .06s;
   }
-  .s-cell.on{background:var(--rose);border-color:#d98a96}
-  .s-cell.col-now{filter:brightness(1.6)}
-  .s-cell:nth-child(17n+6), .s-cell:nth-child(17n+10), .s-cell:nth-child(17n+14){border-left:2px solid #55515f}
-  .s-controls{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:96vw}
-  .s-btn{font-size:clamp(9px,2cqw,14px);padding:.35em .6em}
+  .s-cell.on{background:linear-gradient(160deg,#f4a0b0,var(--rose));border-color:#ffd0da;box-shadow:0 0 6px rgba(232,138,160,.5)}
+  .s-cell.col-now{filter:brightness(1.75);outline:2px solid rgba(244,207,94,.85);outline-offset:-2px}
+  .s-cell:nth-child(17n+6), .s-cell:nth-child(17n+10), .s-cell:nth-child(17n+14){border-left:2px solid #6a6478}
+  /* легка підсвітка непарних долей (кроки 1-4, 9-12) — щоб відчувався ритм */
+  .s-cell:nth-child(17n+2),.s-cell:nth-child(17n+3),.s-cell:nth-child(17n+4),.s-cell:nth-child(17n+5),
+  .s-cell:nth-child(17n+10),.s-cell:nth-child(17n+11),.s-cell:nth-child(17n+12),.s-cell:nth-child(17n+13){background:#33313f}
+  .s-cell.on{background:linear-gradient(160deg,#f4a0b0,var(--rose))!important}
+  .s-hint{color:#cfc7bb;font-size:clamp(10px,2.1cqw,12.5px);text-align:center;max-width:min(94%,560px);line-height:1.4}
+  .s-hint b{color:#f4cf5e}
+  .s-controls{display:flex;flex-direction:column;gap:9px;align-items:center;width:100%;max-width:96vw}
+  .s-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .s-primary{gap:8px}
+  .s-sec{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;
+    padding:7px 6px;border:1px solid #2c2a38;border-radius:10px;background:rgba(255,255,255,.02);max-width:min(96%,560px)}
+  .s-seclab{color:#8a8496;font-size:clamp(9px,1.8cqw,11px);letter-spacing:1px;text-transform:uppercase}
+  .s-btn{font-size:clamp(9px,2cqw,14px);padding:.4em .7em}
   #s-play{background:#2f9e4f!important;font-size:clamp(13px,3cqw,19px);padding:.5em 1.1em;
     box-shadow:0 0 0 3px #000, 0 0 14px rgba(63,174,84,.75);animation:pulse-btn 1.6s ease-in-out infinite}
   #s-code{background:var(--terra)} #s-back{background:#55515f}
@@ -484,20 +496,29 @@
     <div style="font-size:clamp(10px,2.2cqw,12px);color:#f4cf5e;text-align:center;max-width:min(96%,480px);line-height:1.3;padding:1px 6px">
       🎟 найкращий трек — запрошення на весілля · донат на збір ЗСУ від 100 грн 🌻
     </div>
+    <div class="s-hint">Тисни клітинки — вийде мелодія (<b>трек</b>). Хочеш свій голос — «Записати голос» (<b>пісня</b>). Далі — «У плейлист».</div>
     <div id="s-grid"></div>
     <div class="s-controls">
-      <button class="btn s-btn" id="s-play">▶ ПРОГРАТИ</button>
-      <button class="btn s-btn" id="s-wave" style="background:#6a5cff">ІНСТР.: БАНДУРА</button>
-      <button class="btn s-btn" id="s-tempo" style="background:#3a5c8a">ТЕМП: СПОКІЙНИЙ</button>
-      <button class="btn s-btn" id="s-samp" style="background:#c9584a">🎙 СВІЙ ЗВУК</button>
-      <button class="btn s-btn" id="s-lib" style="background:#7a5c3e">🎁 ЗВУКИ ГОСТЕЙ</button>
-      <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
-      <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
-      <button class="btn s-btn hidden" id="s-mysave" style="background:var(--rose)">💾 ЗБЕРЕГТИ ПІСНЮ</button>
-      <button class="btn s-btn" id="s-clear">ПОЧАТИ ЗАНОВО</button>
-      <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
-      <button class="btn s-btn" id="s-playlist">🎧 ПЛЕЙЛИСТ</button>
-      <button class="btn s-btn" id="s-back">НАЗАД</button>
+      <div class="s-row s-primary">
+        <button class="btn s-btn" id="s-play">▶ ПРОГРАТИ</button>
+        <button class="btn s-btn" id="s-clear" style="background:#55515f">↺ ЗАНОВО</button>
+      </div>
+      <div class="s-sec"><span class="s-seclab">🎛 звучання</span><div class="s-row">
+        <button class="btn s-btn" id="s-wave" style="background:#6a5cff">ІНСТР.: БАНДУРА</button>
+        <button class="btn s-btn" id="s-tempo" style="background:#3a5c8a">ТЕМП: СПОКІЙНИЙ</button>
+      </div></div>
+      <div class="s-sec"><span class="s-seclab">🎙 свій голос / звук</span><div class="s-row">
+        <button class="btn s-btn" id="s-samp" style="background:#c9584a">🎙 СВІЙ ЗВУК</button>
+        <button class="btn s-btn" id="s-lib" style="background:#7a5c3e">🎁 ЗВУКИ ГОСТЕЙ</button>
+        <button class="btn s-btn" id="s-rec" style="background:#a8323c">🎙 ЗАПИСАТИ ГОЛОС</button>
+        <button class="btn s-btn hidden" id="s-myplay" style="background:#3f7c77">▶ МІЙ ТРЕК</button>
+        <button class="btn s-btn hidden" id="s-mysave" style="background:var(--rose)">💾 ЗБЕРЕГТИ ПІСНЮ</button>
+      </div></div>
+      <div class="s-sec"><span class="s-seclab">💾 готово</span><div class="s-row">
+        <button class="btn s-btn" id="s-save" style="background:var(--rose)">💾 У ПЛЕЙЛИСТ</button>
+        <button class="btn s-btn" id="s-playlist" style="background:#3f7c77">🎧 ПЛЕЙЛИСТ</button>
+        <button class="btn s-btn" id="s-back" style="background:#55515f">← НАЗАД</button>
+      </div></div>
     </div>
     <div id="s-recbar" class="hidden" style="width:min(88%,420px);height:10px;background:#2b2b38;border:2px solid #000">
       <div id="s-recfill" style="height:100%;width:0%;background:var(--rose)"></div>
