@@ -1093,16 +1093,16 @@ function chatScript(pov){
   // ── СПРАВЖНЯ перша переписка (Tinder → Telegram), 10–11 серпня 2022 ──
   const common = [
     {who:null,   emo:null,    text:'ПАРА З Dima Liutyi · 10.08.2022'},
-    {who:'katya',emo:'wow',    text:'Привіт) Діма, а ми знайомились —\nя ж знімала Штормнадо з тобою'},
-    {who:'dima', emo:'happy',  text:'Хм, то був якийсь інший проєкт,\nу мене той рік — суцільні зйомки)'},
-    {who:'katya',emo:'normal', text:'Це інша зйомка, Діма'},
-    {who:'dima', emo:'shy',    text:'Блін. «Штормклуб» прочитав.\nТоді все памʼятаю)'},
-    {who:'dima', emo:'happy',  text:'Треба це якось відсвяткувати)'},
-    {who:'dima', emo:'happy',  text:'У мене в четвер концерт з гуртом.\nПрийдеш?'},
-    {who:'katya',emo:'normal', text:'Ой, не вийде — готуюсь\nдо змагань з джиу-джитсу'},
-    {who:'dima', emo:'wow',    text:'А шо за джиу-джитсу? Зальчик?'},
-    {who:'katya',emo:'happy',  text:'Майже боксік) тільки ми\nдушимо, а не бʼємо'},
-    {who:'dima', emo:'happy',  text:'О, туди ж мій друг ходить —\nЯрослав Соколовський'},
+    {who:'katya',emo:'wow',    text:'Привіт) Діма, а ми знайомились,\nя ж знімала Штормнадо з тобою'},
+    {who:'dima', emo:'normal', text:'Хм, не памʼятаю тебе там,\nхтось із іншої команди?'},
+    {who:'katya',emo:'normal', text:'Якої команди? Це інша зйомка, Діма'},
+    {who:'dima', emo:'shy',    text:'Блін. «Штормклуб» прочитав випадково,\nу мене той рік — суцільні зйомки)'},
+    {who:'dima', emo:'happy',  text:'Тоді все памʼятаю, ти та блондинка режисерка)'},
+    {who:'dima', emo:'happy',  text:'Доречі, у мене в четвер благодійний\nконц з гуртом. Прийдеш?'},
+    {who:'katya',emo:'normal', text:'Ой, не вийде — трєня..'},
+    {who:'dima', emo:'wow',    text:'А шо за дтрєня? Зальчик?'},
+    {who:'katya',emo:'happy',  text:'Джиу-джитцу майже боксік, як в тебе)\nтільки ми душимо, а не бʼємо'},
+    {who:'dima', emo:'happy',  text:'О, туди ж мій друг ходить\nЯрік Соколовський'},
     {who:null,   emo:null,     text:'Далі — вже телеграм, без зупинки, —\nі якось мова зайшла про напитки:'},
     {who:'dima', emo:'normal', text:'а яке пиво ти любиш, до речі?'},
     {who:'katya',emo:'happy',  text:'дуже люблю кокосове темне,\nв Хвильовому наливають'},
@@ -1110,7 +1110,7 @@ function chatScript(pov){
     {who:'katya',emo:'happy',  text:'але взагалі справа в кокосі.\nлюблю кокос'},
     {who:'dima', emo:'wow',    text:'Тобто ти любиш кокос як горіх?\nЧи як коканейро? МЕНІ ВАЖЛИВО ЗНАТИ'},
     {who:'katya',emo:'happy',  text:')))) ну не поняла прікола'},
-    {who:'katya',emo:'happy',  text:'в суботу пікнік у Марічки —\nбуду в центрі після'},
+    {who:'katya',emo:'happy',  text:'Доречі, в суботу пікнік у Марічки,\nбуду в центрі'},
     {who:'dima', emo:'happy',  text:'То може нарешті побачимось?)'},
   ];
   const outro = pov==='katya' ? [
@@ -1130,7 +1130,7 @@ const GUEST_CAMEOS = {
   ],
   kitana: [
     { match:/\bдан\b|данил|даня/, lines:[
-      {who:null, text:'А то ж у Дановім дворі знайшли ту кицю:\nвін нагледів — ми забрали чарівницю!'} ]},
+      {who:null, text:'А то ж у Дана у дворі знайшли ту кицю:\nвін позвав — ми забрали чарівницю!'} ]},
   ],
   poznyaky: [
     { match:/сміл|аліна см/, lines:[
@@ -1180,8 +1180,6 @@ const GUEST_CAMEOS = {
       {who:null, text:'А ти, дядьку Сашо, — рідна кров, у Софі:\nза столом під дзвіницею — у першій строфі!'} ]},
     { match:/брат саша|брат.* саш/, lines:[
       {who:null, text:'А ви ж, брате Сашо з Борею, — у Софі раді:\nрідня зібралась, як на святковім параді!'} ]},
-    { match:/дідор/, lines:[
-      {who:null, text:'А ти, Анічко Дідоро, — дружка вірная:\nаж з Праги прилетіла — до мене, рідная!'} ]},
     { match:/матвійчук/, lines:[
       {who:null, text:'А ти, Катю Матвійчук, — однокурсниця моя:\nстрілись раптом — й у Хвильовім гуля сімʼя!'} ]},
     { match:/костя|костянтин|давід|георгій|ліка/, lines:[
@@ -1236,6 +1234,8 @@ function guestVenue(){
   for(const g of GUEST_VENUE){ if(g.match.test(pn)) return g.v; }
   return 'khv';                              // названий гість без Софі-мітки → вечірка у Хвильовому
 }
+// зал за посиланням (?s=sofi|khv) у пріоритеті, далі — за іменем
+function venuePick(){ const vh=localStorage.getItem('wed-venue-hint'); return (vh==='sofi'||vh==='khv')?vh:guestVenue(); }
 function picnicScript(pov){
   if(pov==='katya') return [
     {who:null,    emo:null,   text:'Субота. Пікнік у зеленім парку:\nМарічці — рік новий, і всім по чарку!'},
@@ -1442,8 +1442,7 @@ function propChessOutroScript(pov){
   return [
     {who:'dima',  emo:'tired', text:'Все. Здаюсь. Ходити нема куди.'},
     {who:'katya', emo:'happy', text:'Шах і мат.'},
-    {who:'katya', emo:'happy', text:'І тримай подарунок —\n«Шахмати для дибілів».'},
-    {who:'dima',  emo:'tired', text:'Азаза.'},
+    {who:'katya', emo:'happy', text:'І тримай подарунок —\nкнига «Шахмати для дибілів».'},
     {who:'dima',  emo:'shy',   text:'Теж маю щось… десь тут…'},
   ];
 }
@@ -3954,7 +3953,7 @@ const CHESS_MOVES = [
 const CHESS_MOVES_D = [
   {label:'Пішак g6 — дірка для короля', sub:'g6',  note:'Тd8+ Крg7, Фb2-h8 — мат.'},
   {label:'Пішак f6 — тікати на f7',     sub:'f6',  note:'Фb7! — і поле f7 уже під боєм. Мат наступним.'},
-  {label:'Просто здатися',              sub:'🏳',  note:'чесно. і романтично.'},
+  {label:'Просто здатися',              sub:'🏳',  note:'(це романтично).'},
 ];
 /* спільний layout кнопок-ходів (щоб малювання й тапи збігались) */
 function chessBtn(i){
@@ -4580,7 +4579,7 @@ function drawProp(){
 }
 
 /* ================= Дія: шлюб онлайн ================= */
-const DIIA_STATUSES = ['Перевіряємо, чи це ви…','Дія.Підпис…','Узгоджуємо зірки…','Майже…'];
+const DIIA_STATUSES = ['Перевіряємо, чи це ви…','Дія.Підпис…','Кліпніть двічі…','Майже…'];
 const SURNAMES = [
   {label:'Люті',            note:'обоє — Лютий'},
   {label:'Синявська + Лютий', note:'кожен лишає своє'},
@@ -4621,7 +4620,7 @@ function updateDiia(){
 /* реєстр непохитний: приймається ЛИШЕ «Люті» — інші варіанти дають помилку */
 const SURNAME_ERRS = [null,
   '⚠ ПОМИЛКА 403: пара вже домовилась — «Люті» 💛',
-  '⚠ дефіс не пройшов Дія.Підпис. Реєстр: «Люті» 😅'];
+  '⚠ дефіс не пройшов Дія.Підпис. «Люті» 😅'];
 function diiaTap(pos){
   const d = game.diia; if(!d || d.step!=='surname') return false;
   for(let i=0;i<d.optRects.length;i++){
@@ -4766,7 +4765,7 @@ const CREDITS = [
   ['ДІМА', 'креативний директор · музикант · наречений'],
   ['', ''],
   ['ТАКОЖ У РОЛЯХ', ''],
-  ['КІТАНА', 'найкраща кішка · сама себе'],
+  ['КІТАНА', 'найкраща кішка · камяу'],
   ['СТАРОСТИ', 'самі себе (вигадані)'],
   ['ГАРБУЗ', 'драматичне камео'],
   ['КРЕАТИВНИК', 'той тіп із кадру'],
@@ -5457,13 +5456,13 @@ function drawRun(){
 /* ================= ЕКСКЛЮЗИВ КАТІ: МОНТАЖ ================= */
 function montageIntroScript(){
   return [
-    {who:'katya', emo:'normal', text:'Монтаж — це вже моя стихія.'},
+    {who:'katya', emo:'normal', text:'Обожнюю монтаж'},
     {who:null,    emo:null,     text:'Ріж таймлайн, коли бігунець на ▸ мітці.\n(тап / ПРОБІЛ)'},
   ];
 }
 function montageOutroScript(){
   return [
-    {who:'katya', emo:'happy', text:'Ідеальний рез.'},
+    {who:'katya', emo:'happy', text:'Ідеально'},
     {who:null,    emo:null,     text:'(Цей випуск Катя так і не монтувала, —\nа гра змонтує все, чого бракувало.)'},
   ];
 }
@@ -5522,12 +5521,12 @@ function drawMontage(){
 /* ================= ЕКСКЛЮЗИВ ДІМИ: SPACE SPICE BOY ================= */
 function bandIntroScript(){
   return [
-    {who:'dima', emo:'happy', text:'Оце — моя стихія. Пісня живе,\nпоки ти в ритмі!'},
+    {who:'dima', emo:'happy', text:'нада написать якийсь трек…'},
     {who:null,   emo:null,    text:'Лови ноти на лінії — і пісня грає.\nПроґавив — тиша. (тап у колонці / A S D)'},
   ];
 }
 function bandOutroScript(){
-  return [{who:'dima', emo:'happy', text:'Оце — «Позняки». Наша.'}];
+  return [{who:'dima', emo:'happy', text:'норм трек..'}];
 }
 function bandAudio(){
   let el = bgmEls['pozniaky'];
@@ -7176,7 +7175,7 @@ function drawNovel(){
       ctx.fillText(LANG==='en' ? 'enter it on the start screen' : 'введи його на стартовому екрані', W/2, 130);
       ctx.textAlign='left';
     } else {
-    const v = guestVenue();                                // sofi / khv / null(обидві)
+    const v = venuePick();                                 // sofi / khv / null(обидві)
     const blocks = [];
     if(v!=='khv') blocks.push(SLOTS.A);
     if(v!=='sofi') blocks.push(SLOTS.B);
@@ -7682,9 +7681,7 @@ function finishGame(){
     body.innerHTML = zaprosyny +
       (sl
         ? `<b>${T(sl.what)}</b><br>${T(sl.when)}<br>${T(sl.where)}`
-        : (LANG==='en'
-            ? 'September 6, 2026 · Kyiv<br>«Buty Sofi» gather at 11:30 · «Khvylovy» 16:20'
-            : '6 вересня 2026 · Київ<br>«Бути Софі» збір об 11:30 · «Хвильовий» 16:20')) +
+        : (LANG==='en' ? 'September 6, 2026' : '6 вересня 2026')) +
       surn + more;
   }
   stopChip(); if(!musicMuted) playChip('horila');    // фінальна музика — весільна традиційна
@@ -7762,9 +7759,11 @@ document.getElementById('btn-ics').addEventListener('click', ()=>{
 /* ---------------- запрошення як картинка (зберегти на телефон) ---------------- */
 /* слот гостя: персональний код → інакше за іменем (дружки/родичі → Софі, решта → Хвильовий) */
 function mySlot(){
-  if(GUEST) return SLOTS[GUEST.slot];
-  const v = guestVenue();
-  return v==='sofi' ? SLOTS.A : v==='khv' ? SLOTS.B : null;
+  if(GUEST) return SLOTS[GUEST.slot];                    // персональний код гостя
+  const vh = localStorage.getItem('wed-venue-hint');     // посилання Софі / Хвильовий (?s=sofi|khv)
+  if(vh==='sofi') return SLOTS.A;
+  if(vh==='khv')  return SLOTS.B;
+  return null;                                           // загальне посилання — без часу і місця
 }
 function invitationData(){
   const name = (rsvp.plusOne && rsvp.plusOne.name) || (rsvp.pickedGuest && rsvp.pickedGuest.name)
@@ -7774,8 +7773,8 @@ function invitationData(){
     greeting: name ? name : '',
     surname: '',
     what: slot ? slot.what : '',
-    when: slot ? slot.when : '6 вересня 2026 · Софі 11:30 · Хвильовий 16:20',
-    where: slot ? slot.where : 'Київ',
+    when: slot ? slot.when : '6 вересня 2026',
+    where: slot ? slot.where : '',
     hasSlot: !!slot,
   };
 }
@@ -8035,8 +8034,8 @@ function viberVenue(){
   const vh = localStorage.getItem('wed-venue-hint');     // версія з візитівки (QR)
   if(vh==='sofi') return '«Бути Софі», Софійська площа · ' + T('збір об 11:30');
   if(vh==='khv')  return '«Хвильовий», Київ · 16:20';
-  // без імені й без картки — тільки загальне
-  return LANG==='en' ? 'September 6, 2026 · Kyiv' : '6 вересня 2026 · Київ';
+  // загальне посилання — без часу і місця, лише дата
+  return LANG==='en' ? 'September 6, 2026' : '6 вересня 2026';
 }
 function inviteName(){ return ((GUEST&&GUEST.name)||localStorage.getItem('wed-player-name')||'').trim(); }
 function inviteHello(){
@@ -11463,7 +11462,7 @@ async function sendInvitationEmail(){
   const email = localStorage.getItem('wed-email'); if(!email) return 'noemail';
   if(localStorage.getItem('wed-invite-mailed')) return 'already';
   const name = (localStorage.getItem('wed-player-name')||'Гість').trim();
-  const v = guestVenue();
+  const v = venuePick();
   const blocks = [];
   if(isAuthed()){
     if(v!=='khv') blocks.push(SLOTS.A.what+' — '+SLOTS.A.where+', '+SLOTS.A.when);
