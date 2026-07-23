@@ -292,7 +292,9 @@
     background:#fff6e6;border:2px solid #cbb26a;border-radius:8px;padding:8px 16px;box-shadow:0 2px 0 rgba(181,138,46,.25)}
   .stub-note{font-family:Georgia,serif;font-size:12.5px;color:#7a5f52;max-width:88%;line-height:1.6}
   .stub-note b{color:#a8233c}
-  #release-stub .dev-row{display:flex;gap:8px;align-items:center;margin-top:8px;opacity:.72}
+  #release-stub .dev-row{display:none;gap:8px;align-items:center;margin-top:8px;opacity:.72}
+  #release-stub .dev-row.show{display:flex}
+  .stub-doves{cursor:default}
   #release-stub #stub-pass{font-family:Georgia,serif;font-size:12.5px;padding:.5em;width:150px;text-align:center;
     background:#fffdf9;border:2px solid #cbb26a;border-radius:6px;color:#6a4a2a}
   #release-stub #stub-go{background:#cbb26a;box-shadow:0 2px 0 rgba(120,90,30,.4)}
@@ -4772,16 +4774,11 @@ const CREDITS = [
   ['', ''],
   ['ТАКОЖ У РОЛЯХ', ''],
   ['КІТАНА', 'найкраща кішка · камяу'],
-  ['СТАРОСТИ', 'самі себе (вигадані)'],
-  ['ГАРБУЗ', 'драматичне камео'],
-  ['КРЕАТИВНИК', 'той тіп із кадру'],
   ['', ''],
   ['СЦЕНАРІЙ', 'саме життя, 2021–2026'],
   ['МОНТАЖ', 'Катя (а хто ж ще)'],
   ['МУЗИКА', 'Space Spice Boy (морально)'],
   ['ЕТНОГРАФІЯ', 'Музей Івана Гончара'],
-  ['', ''],
-  ['ЗНЯТО ЗА МОТИВАМИ', '125 000 повідомлень'],
   ['', ''],
   ['06 · 09 · 2026', 'КИЇВ'],
   ['', ''],
@@ -11650,6 +11647,9 @@ document.getElementById('btn-install').addEventListener('click', async ()=>{
   }
   document.getElementById('stub-go').addEventListener('click', tryDev);
   document.getElementById('stub-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') tryDev(); });
+  // поле розробників приховане; 3 тапи по голубах 🕊 — для нас
+  (function(){ let t=0; const dv=stub.querySelector('.stub-doves'); if(!dv) return;
+    dv.addEventListener('click', ()=>{ if(++t>=3){ const r=stub.querySelector('.dev-row'); if(r){ r.classList.add('show'); document.getElementById('stub-pass').focus(); } } }); })();
   if(!released() && !DEV_MODE){ show(); }                        // до релізу — ЛИШЕ заглушка (семплер закрито)
 })();
 </script>
